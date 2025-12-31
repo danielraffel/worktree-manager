@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Worktree Manager | Parallel Universes for Claude Code</title>
+    <meta name="description" content="A Claude Code plugin that turns AI coding from a single assistant into a coordinated team using Git Worktrees.">
+    <style>
+        :root {
+            --bg: #ffffff;
+            --text: #111111;
+            --gray: #888888;
+            --light-gray: #f4f4f4;
+            --accent: #2e8b57; /* Seagreen - subtle, organic code feel */
+            --code-bg: #1c1c1c;
+            --code-text: #e0e0e0;
+            --font-main: -apple-system, BlinkMacSystemFont, "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            --font-mono: "SF Mono", "Menlo", "Monaco", "Courier New", monospace;
+            --spacing-unit: 2rem;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: var(--font-main);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Typography */
+        h1, h2, h3 {
+            font-weight: 700;
+            letter-spacing: -0.04em;
+            line-height: 1.1;
+        }
+
+        h1 {
+            font-size: clamp(3rem, 8vw, 6rem);
+            margin-bottom: var(--spacing-unit);
+        }
+
+        h2 {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            margin-bottom: calc(var(--spacing-unit) * 1.5);
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+
+        p {
+            font-size: 1.25rem;
+            max-width: 34ch;
+            color: #333;
+            margin-bottom: var(--spacing-unit);
+        }
+
+        a {
+            color: var(--text);
+            text-decoration: underline;
+            text-underline-offset: 4px;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--accent);
+        }
+
+        /* Layout */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 var(--spacing-unit);
+        }
+
+        section {
+            padding: calc(var(--spacing-unit) * 4) 0;
+            border-top: 1px solid var(--light-gray);
+        }
+
+        section:first-of-type {
+            border-top: none;
+            padding-top: calc(var(--spacing-unit) * 6);
+            min-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: var(--spacing-unit);
+        }
+
+        .col-left { grid-column: 1 / 6; }
+        .col-right { grid-column: 7 / 13; }
+        .col-full { grid-column: 1 / 13; }
+
+        /* Mobile adjustments */
+        @media (max-width: 768px) {
+            .col-left, .col-right { grid-column: 1 / 13; }
+            h1 { font-size: 3rem; }
+            section { padding: calc(var(--spacing-unit) * 2) 0; }
+        }
+
+        /* Components */
+        .tag {
+            display: inline-block;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            border: 1px solid var(--text);
+            padding: 4px 12px;
+            border-radius: 50px;
+            margin-bottom: var(--spacing-unit);
+            text-transform: uppercase;
+        }
+
+        .feature-list {
+            list-style: none;
+        }
+
+        .feature-list li {
+            border-bottom: 1px solid var(--light-gray);
+            padding: 1.5rem 0;
+            font-size: 1.5rem;
+            font-weight: 500;
+        }
+
+        .code-block {
+            background: var(--code-bg);
+            color: var(--code-text);
+            padding: 2rem;
+            border-radius: 8px;
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            overflow-x: auto;
+            line-height: 1.7;
+            margin-top: 1rem;
+        }
+
+        .code-comment { color: #6a6a6a; }
+        .code-command { color: #fff; font-weight: bold; }
+        .code-prompt { color: var(--accent); user-select: none; }
+
+        .btn {
+            display: inline-block;
+            background: var(--text);
+            color: var(--bg);
+            padding: 1rem 2rem;
+            text-decoration: none;
+            font-weight: 600;
+            border-radius: 4px;
+            margin-top: var(--spacing-unit);
+        }
+
+        .btn:hover {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        /* Footer */
+        footer {
+            padding: var(--spacing-unit) 0;
+            border-top: 4px solid var(--text);
+            margin-top: var(--spacing-unit);
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+        }
+
+    </style>
+</head>
+<body>
+
+    <main class="container">
+        
+        <!-- Hero Section -->
+        <section>
+            <div class="tag">For Claude Code</div>
+            <h1>Parallel universes<br>for your code.</h1>
+            <div class="grid">
+                <div class="col-left">
+                    <p>Stop stashing. Stop switching branches. Worktree Manager creates isolated environments for your AI agent to plan and build features while you stay productive.</p>
+                </div>
+                <div class="col-right">
+                    <div class="code-block">
+                        <span class="code-comment"># The old way: juggling chaos</span><br>
+                        <span class="code-prompt">$</span> git stash && git checkout -b feature-a<br>
+                        <br>
+                        <span class="code-comment"># The new way: parallel execution</span><br>
+                        <span class="code-prompt">></span> <span class="code-command">Worktree for admin-messaging, plan with feature-dev</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Concept -->
+        <section>
+            <div class="grid">
+                <div class="col-left">
+                    <h3>The Concept</h3>
+                    <h2>Don't let the AI <br>block your terminal.</h2>
+                </div>
+                <div class="col-right">
+                    <p>When you ask an AI to build a feature, it usually monopolizes your environment. You wait. You watch text stream.</p>
+                    <p><strong>Worktree Manager changes the topology.</strong> It spins up a clean, separate copy of your project (a git worktree), installs dependencies, and assigns an AI worker to that specific directory.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features -->
+        <section>
+            <div class="grid">
+                <div class="col-left">
+                    <h3>Capabilities</h3>
+                    <p>It turns "a single assistant you chat with" into a coordinated mini-team.</p>
+                </div>
+                <div class="col-right">
+                    <ul class="feature-list">
+                        <li>Creates isolated Git Worktrees automatically</li>
+                        <li>Auto-detects project type & installs dependencies</li>
+                        <li>Runs "Ralph" or "Feature-dev" agents in the background</li>
+                        <li>Safe experimentation without contaminating main</li>
+                        <li>Zero bookkeeping required</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- How it works / Install -->
+        <section>
+            <div class="grid">
+                <div class="col-left">
+                    <h3>Installation</h3>
+                    <h2>One minute setup.</h2>
+                    <a href="https://github.com/danielraffel/worktree-manager" class="btn">View on GitHub &rarr;</a>
+                </div>
+                <div class="col-right">
+                    <p>Requires Claude Code. Clone the repo and symlink it to your plugins directory.</p>
+                    
+                    <div class="code-block">
+<span class="code-comment"># 1. Clone the plugin</span>
+<span class="code-prompt">$</span> cd /path/to/claude-plugins
+<span class="code-prompt">$</span> git clone https://github.com/danielraffel/worktree-manager
+
+<span class="code-comment"># 2. Build and install</span>
+<span class="code-prompt">$</span> cd worktree-manager
+<span class="code-prompt">$</span> npm install && npm run build
+
+<span class="code-comment"># 3. Symlink to Claude config</span>
+<span class="code-prompt">$</span> ln -s $(pwd) ~/.config/claude/plugins/worktree-manager
+
+<span class="code-comment"># 4. Restart Claude Code</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Workflow Examples -->
+        <section>
+            <div class="grid">
+                <div class="col-full">
+                    <h3>Workflows</h3>
+                    <h2>Choose your automation level.</h2>
+                </div>
+                
+                <div class="col-left">
+                    <div class="code-block" style="height: 100%">
+                        <span class="code-comment">// Plan-only Workflow</span><br>
+                        <span class="code-prompt">></span> "Worktree for password-reset, plan with feature-dev"<br><br>
+                        <span class="code-comment">Result:</span><br>
+                        Creates worktree → Generates spec → Saves to audit/
+                    </div>
+                </div>
+                <div class="col-right">
+                    <div class="code-block" style="height: 100%">
+                        <span class="code-comment">// Full Automation</span><br>
+                        <span class="code-prompt">></span> "Plan admin messaging and implement P0 items"<br><br>
+                        <span class="code-comment">Result:</span><br>
+                        Creates worktree → Plans → Implements (Background)
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="container">
+        <div class="grid">
+            <div class="col-left">
+                Daniel Raffel &copy; 2026
+            </div>
+            <div class="col-right" style="text-align: right;">
+                <a href="https://github.com/danielraffel/worktree-manager" style="text-decoration: none;">GitHub Repository ↗</a>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>
