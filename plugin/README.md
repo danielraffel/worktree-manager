@@ -79,6 +79,60 @@ ln -s /path/to/worktree-manager-plugin ~/.config/claude/plugins/worktree-manager
 /worktree-manager:cleanup ~/worktrees/done-feature --merge
 ```
 
+## Configuration
+
+Create a config file to customize behavior. Settings can be global (user-level) or per-project.
+
+**Global config:** `~/.claude/worktree-manager.local.md`
+**Project config:** `.claude/worktree-manager.local.md` (overrides global)
+
+### Example Config
+
+```yaml
+---
+# Where to create worktrees (default: ~/worktrees)
+worktree_base_path: ~/my-worktrees
+
+# Branch prefix (default: feature/)
+branch_prefix: feature/
+
+# Default workflow: simple | plan-only | implement-only | plan-and-implement
+default_workflow: simple
+
+# Auto-commit changes during ralph execution (default: false)
+auto_commit: false
+
+# Auto-push to remote after commits (default: false)
+auto_push: false
+
+# Create LEARNINGS.md to capture insights (default: false)
+create_learnings_file: true
+
+# Directory for spec files (default: audit)
+spec_directory: specs
+
+# Max iterations for ralph (default: 50)
+default_max_iterations: 100
+---
+
+# Project Notes
+
+Add any project-specific context here.
+```
+
+### Configuration Options
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `worktree_base_path` | `~/worktrees` | Base directory for all worktrees |
+| `branch_prefix` | `feature/` | Prefix for new branches |
+| `default_workflow` | `simple` | Workflow when not specified |
+| `auto_commit` | `false` | Auto-commit during ralph |
+| `auto_push` | `false` | Auto-push after commits |
+| `create_learnings_file` | `false` | Create LEARNINGS.md in worktree |
+| `spec_directory` | `audit` | Where to save spec files |
+| `default_max_iterations` | `50` | Max ralph iterations |
+
 ## How It Works
 
 ```

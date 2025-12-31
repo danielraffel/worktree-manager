@@ -6,6 +6,7 @@ import { GitHelpers } from '../utils/git-helpers';
 import { ProjectDetector } from '../utils/project-detector';
 import { SetupRunner } from '../utils/setup-runner';
 import { CommandBuilder } from '../utils/command-builder';
+import { ConfigReader, WorktreeConfig } from '../utils/config-reader';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 
@@ -20,20 +21,22 @@ export class WorktreeStartTool {
    * Create a new worktree with optional automation
    */
   static async execute(params: WorktreeStartParams): Promise<WorktreeStartResult> {
-    // Set defaults
+    // Load configuration
+    const cwd = process.cwd();
+    const config = ConfigReader.getConfig(cwd);
+
+    // Set defaults from config
     const baseBranch = params.base_branch || 'main';
-    const workflow = params.workflow || 'simple';
+    const workflow = params.workflow || config.default_workflow;
     const defaultWorktreePath = path.join(
-      os.homedir(),
-      'worktrees',
+      config.worktree_base_path,
       params.feature_name
     );
     const worktreePath = params.worktree_path || defaultWorktreePath;
-    const branchName = `feature/${params.feature_name}`;
+    const branchName = `${config.branch_prefix}${params.feature_name}`;
 
     try {
       // Step 1: Verify we're in a git repo
-      const cwd = process.cwd();
       const isGitRepo = await GitHelpers.isGitRepo(cwd);
       if (!isGitRepo) {
         return {
@@ -98,6 +101,35 @@ export class WorktreeStartTool {
         setupMessages.push('No setup commands needed');
       }
 
+      // Step 4.5: Create learnings file if configured
+      if (config.create_learnings_file) {
+        const learningsPath = path.join(worktreePath, 'LEARNINGS.md');
+        const learningsContent = `# Learnings - ${params.feature_name}
+
+## Overview
+This file captures insights, decisions, and learnings during development.
+
+## Key Decisions
+
+## Challenges & Solutions
+
+## What Worked Well
+
+## What Could Be Improved
+
+## Notes
+
+---
+*Created by worktree-manager on ${new Date().toISOString()}*
+`;
+        try {
+          fs.writeFileSync(learningsPath, learningsContent);
+          setupMessages.push(`Created LEARNINGS.md for capturing insights`);
+        } catch (e) {
+          setupMessages.push(`Warning: Could not create LEARNINGS.md`);
+        }
+      }
+
       // Step 5: Execute workflow-specific logic
       const result = await this.executeWorkflow({
         workflow,
@@ -106,6 +138,7 @@ export class WorktreeStartTool {
         params,
         setupMessages,
         setupComplete,
+        config,
       });
 
       return result;
@@ -133,8 +166,9 @@ export class WorktreeStartTool {
     params: WorktreeStartParams;
     setupMessages: string[];
     setupComplete: boolean;
+    config: WorktreeConfig;
   }): Promise<WorktreeStartResult> {
-    const { workflow, worktreePath, branchName, params, setupMessages, setupComplete } = options;
+    const { workflow, worktreePath, branchName, params, setupMessages, setupComplete, config } = options;
 
     switch (workflow) {
       case 'simple':
@@ -153,6 +187,7 @@ export class WorktreeStartTool {
           params,
           setupMessages,
           setupComplete,
+          config,
         });
 
       case 'implement-only':
@@ -162,6 +197,7 @@ export class WorktreeStartTool {
           params,
           setupMessages,
           setupComplete,
+          config,
         });
 
       case 'plan-and-implement':
@@ -169,6 +205,7 @@ export class WorktreeStartTool {
           worktreePath,
           branchName,
           params,
+          config,
           setupMessages,
           setupComplete,
         });
@@ -236,8 +273,9 @@ export class WorktreeStartTool {
     params: WorktreeStartParams;
     setupMessages: string[];
     setupComplete: boolean;
+    config: WorktreeConfig;
   }): Promise<WorktreeStartResult> {
-    const { worktreePath, branchName, params, setupMessages, setupComplete } = options;
+    const { worktreePath, branchName, params, setupMessages, setupComplete, config } = options;
 
     if (!params.plan_config) {
       return {
@@ -255,9 +293,9 @@ export class WorktreeStartTool {
     // Build feature-dev command
     const featureDevCmd = CommandBuilder.buildFeatureDevCommand(params.plan_config);
 
-    // Default spec file location
+    // Default spec file location (uses config.spec_directory)
     const specFile =
-      params.plan_config.save_to || path.join('audit', `${params.feature_name}.md`);
+      params.plan_config.save_to || path.join(config.spec_directory, `${params.feature_name}.md`);
     const specFilePath = path.join(worktreePath, specFile);
 
     // Build full command to run in worktree
@@ -326,8 +364,9 @@ export class WorktreeStartTool {
     params: WorktreeStartParams;
     setupMessages: string[];
     setupComplete: boolean;
+    config: WorktreeConfig;
   }): Promise<WorktreeStartResult> {
-    const { worktreePath, branchName, params, setupMessages, setupComplete } = options;
+    const { worktreePath, branchName, params, setupMessages, setupComplete, config } = options;
 
     if (!params.ralph_config) {
       return {
@@ -355,23 +394,29 @@ export class WorktreeStartTool {
       };
     }
 
+    // Apply config defaults to ralph_config
+    const ralphConfigWithDefaults = {
+      ...params.ralph_config,
+      max_iterations: params.ralph_config.max_iterations || config.default_max_iterations,
+    };
+
     // Build ralph command
-    const ralphCmd = CommandBuilder.buildRalphCommand(params.ralph_config);
+    const ralphCmd = CommandBuilder.buildRalphCommand(ralphConfigWithDefaults);
 
     // Determine execution mode
-    const executionMode = params.ralph_config.execution_mode || 'background';
+    const executionMode = ralphConfigWithDefaults.execution_mode || 'background';
     const isBackground = executionMode === 'background';
 
     setupMessages.push('');
     setupMessages.push('Phase: Implementation with ralph-wiggum');
-    setupMessages.push(`Source: ${params.ralph_config.source_file}`);
-    if (params.ralph_config.work_on) {
-      setupMessages.push(`Working on: ${params.ralph_config.work_on.join(', ')}`);
+    setupMessages.push(`Source: ${ralphConfigWithDefaults.source_file}`);
+    if (ralphConfigWithDefaults.work_on) {
+      setupMessages.push(`Working on: ${ralphConfigWithDefaults.work_on.join(', ')}`);
     }
-    if (params.ralph_config.skip_items) {
-      setupMessages.push(`Skipping: ${params.ralph_config.skip_items.join(', ')}`);
+    if (ralphConfigWithDefaults.skip_items) {
+      setupMessages.push(`Skipping: ${ralphConfigWithDefaults.skip_items.join(', ')}`);
     }
-    setupMessages.push(`Max iterations: ${params.ralph_config.max_iterations || 50}`);
+    setupMessages.push(`Max iterations: ${ralphConfigWithDefaults.max_iterations}`);
     setupMessages.push(`Execution mode: ${executionMode}`);
 
     if (isBackground) {
@@ -455,8 +500,9 @@ export class WorktreeStartTool {
     params: WorktreeStartParams;
     setupMessages: string[];
     setupComplete: boolean;
+    config: WorktreeConfig;
   }): Promise<WorktreeStartResult> {
-    const { worktreePath, branchName, params, setupMessages, setupComplete } = options;
+    const { worktreePath, branchName, params, setupMessages, setupComplete, config } = options;
 
     if (!params.plan_config) {
       return {
@@ -489,13 +535,13 @@ export class WorktreeStartTool {
     setupMessages.push('=== Phase 1: Planning with feature-dev ===');
 
     const specFile =
-      params.plan_config.save_to || path.join('audit', `${params.feature_name}.md`);
+      params.plan_config.save_to || path.join(config.spec_directory, `${params.feature_name}.md`);
     const specFilePath = path.join(worktreePath, specFile);
 
-    // Ensure audit directory exists
-    const auditDir = path.join(worktreePath, 'audit');
-    if (!fs.existsSync(auditDir)) {
-      fs.mkdirSync(auditDir, { recursive: true });
+    // Ensure spec directory exists
+    const specDir = path.join(worktreePath, config.spec_directory);
+    if (!fs.existsSync(specDir)) {
+      fs.mkdirSync(specDir, { recursive: true });
     }
 
     const featureDevCmd = CommandBuilder.buildFeatureDevCommand(params.plan_config);
@@ -530,10 +576,11 @@ export class WorktreeStartTool {
     setupMessages.push('');
     setupMessages.push('=== Phase 2: Implementation with ralph-wiggum ===');
 
-    // Auto-fill source_file from plan
+    // Auto-fill source_file from plan and apply config defaults
     const ralphConfig = {
       ...params.ralph_config,
       source_file: params.ralph_config.source_file || specFile,
+      max_iterations: params.ralph_config.max_iterations || config.default_max_iterations,
     };
 
     const ralphCmd = CommandBuilder.buildRalphCommand(ralphConfig);

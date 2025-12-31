@@ -53,53 +53,78 @@ Creates worktree, plans with feature-dev, then implements with ralph.
 
 ## Instructions for Claude
 
+**CRITICAL: Always use the `mcp__worktree__worktree_start` MCP tool. Never manually run git commands or do the work yourself.**
+
 When user invokes this command:
 
-1. **Parse the arguments**:
-   - feature-name (required): Extract from first argument
-   - workflow (optional): simple | plan-only | implement-only | plan-and-implement (default: simple)
-   - Additional arguments depend on workflow
+### 1. Parse the arguments and detect workflow
 
-2. **For simple workflow**:
-   - Call `mcp__worktree__worktree_start` with just `feature_name`
-   - Display the result's `setup_messages` and `next_steps` to user
-   - If setup failed, explain the error
+- **feature-name** (required): First argument (e.g., "new-feature", "bug-fix")
+- **workflow**: Detect from arguments OR infer from context
 
-3. **For plan-only workflow**:
-   - Extract planning prompt from arguments
-   - Call `mcp__worktree__worktree_start` with:
-     - `feature_name`
-     - `workflow: "plan-only"`
-     - `plan_config: { prompt: "<extracted prompt>" }`
-   - Display spec file location and next options (implement manually or with ralph)
+**Workflow detection rules (in order):**
 
-4. **For implement-only workflow**:
-   - Extract source file path
-   - Extract --work-on and --skip flags
-   - Call `mcp__worktree__worktree_start` with:
-     - `feature_name`
-     - `workflow: "implement-only"`
-     - `ralph_config: { source_file, work_on, skip_items }`
-   - Explain that ralph is running in background
+1. If explicit keyword present → use that workflow:
+   - `simple` → simple
+   - `plan-only` → plan-only
+   - `implement-only` → implement-only
+   - `plan-and-implement` → plan-and-implement
 
-5. **For plan-and-implement workflow**:
-   - Extract planning prompt
-   - Extract --work-on and --skip flags
-   - Call `mcp__worktree__worktree_start` with:
-     - `feature_name`
-     - `workflow: "plan-and-implement"`
-     - `plan_config: { prompt }`
-     - `ralph_config: { work_on, skip_items }`
-   - Display automation status and monitoring instructions
+2. If a file path like `audit/*.md` is provided → `implement-only` (build from existing spec)
 
-6. **Error handling**:
-   - If tool call fails, show user the error
-   - Suggest fixes based on common issues (not in git repo, branch exists, etc.)
+3. If a long description/prompt is provided (more than just feature name) → `plan-and-implement`
+   - Phrases like "I want to build...", "Create a...", "Design...", "Build..." indicate planning needed
+   - Phrases like "build with ralph", "implement", "then build" indicate implementation wanted
 
-7. **Success response**:
-   - Always show the worktree path and branch created
-   - For automated workflows, explain what's happening in background
-   - Provide monitoring commands if applicable
+4. If only feature-name provided → `simple`
+
+### 2. Call the MCP tool
+
+**Always call `mcp__worktree__worktree_start`** with appropriate parameters:
+
+**Simple:**
+```json
+{ "feature_name": "bug-fix" }
+```
+
+**Plan-only:**
+```json
+{
+  "feature_name": "auth",
+  "workflow": "plan-only",
+  "plan_config": { "prompt": "Design OAuth2 login..." }
+}
+```
+
+**Implement-only:**
+```json
+{
+  "feature_name": "auth",
+  "workflow": "implement-only",
+  "ralph_config": { "source_file": "audit/auth.md" }
+}
+```
+
+**Plan-and-implement:**
+```json
+{
+  "feature_name": "comments",
+  "workflow": "plan-and-implement",
+  "plan_config": { "prompt": "Add comment system..." },
+  "ralph_config": {}
+}
+```
+
+### 3. Display results
+
+- Show worktree path and branch created
+- For automated workflows, explain what's running in background
+- Provide monitoring commands: `tail -f /tmp/claude-worktree-*.log`
+
+### 4. Error handling
+
+- If MCP tool fails, show error and suggest fixes
+- Common issues: not in git repo, branch exists, no initial commit
 
 ## Tips
 
