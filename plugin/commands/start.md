@@ -104,7 +104,7 @@ When user invokes this command:
 ## Tips
 
 - Feature name becomes `feature/<name>` branch
-- Worktrees created in `~/snapguide-worktrees/<feature-name>/`
+- Worktrees created in `~/worktrees/<feature-name>/`
 - Web projects get automatic `npm install`
 - Background tasks can be monitored with `tail -f /tmp/claude-worktree-*.log`
 

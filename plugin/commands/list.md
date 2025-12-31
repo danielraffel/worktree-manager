@@ -42,11 +42,11 @@ When user invokes this command:
    ```
    Active worktrees:
 
-   1. ~/snapguide-worktrees/admin-messaging
+   1. ~/worktrees/admin-messaging
       Branch: feature/admin-messaging
       Status: 3 uncommitted, 1 untracked, 2 ahead, 0 behind
 
-   2. ~/snapguide-worktrees/bug-fix
+   2. ~/worktrees/bug-fix
       Branch: feature/bug-fix
       Status: Clean ✅
    ```

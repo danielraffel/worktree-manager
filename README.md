@@ -15,7 +15,7 @@ Create isolated git worktrees for parallel feature development with automatic en
 ```
 
 This single command:
-1. Creates a new git worktree at `~/snapguide-worktrees/my-feature/`
+1. Creates a new git worktree at `~/worktrees/my-feature/`
 2. Creates branch `feature/my-feature`
 3. Auto-detects and runs environment setup (npm install, etc.)
 4. Runs `feature-dev` to generate implementation spec
@@ -165,12 +165,12 @@ You should see `worktree-manager:*` commands listed.
 
 **Check status**:
 ```
-/worktree-manager:status ~/snapguide-worktrees/bug-fix
+/worktree-manager:status ~/worktrees/bug-fix
 ```
 
 **Cleanup (merge and remove)**:
 ```
-/worktree-manager:cleanup ~/snapguide-worktrees/bug-fix --merge
+/worktree-manager:cleanup ~/worktrees/bug-fix --merge
 ```
 
 ### Automated Workflows

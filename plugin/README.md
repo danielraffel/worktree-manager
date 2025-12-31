@@ -69,14 +69,14 @@ ln -s /path/to/worktree-manager-plugin ~/.config/claude/plugins/worktree-manager
 ### Check Status
 
 ```
-/worktree-manager:status ~/snapguide-worktrees/feature-name
+/worktree-manager:status ~/worktrees/feature-name
 ```
 
 ### Cleanup
 
 ```
-/worktree-manager:cleanup ~/snapguide-worktrees/old-feature
-/worktree-manager:cleanup ~/snapguide-worktrees/done-feature --merge
+/worktree-manager:cleanup ~/worktrees/old-feature
+/worktree-manager:cleanup ~/worktrees/done-feature --merge
 ```
 
 ## How It Works

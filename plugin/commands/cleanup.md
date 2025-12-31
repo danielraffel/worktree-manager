@@ -61,7 +61,7 @@ When user invokes this command:
 
 6. **Format example**:
    ```
-   Cleaning up worktree: ~/snapguide-worktrees/feature-name
+   Cleaning up worktree: ~/worktrees/feature-name
 
    ✅ Merged feature/feature-name into main
    ✅ Worktree removed
@@ -75,19 +75,19 @@ When user invokes this command:
 
 **Remove without merge**:
 ```
-User: /worktree-manager:cleanup ~/snapguide-worktrees/old-feature
+User: /worktree-manager:cleanup ~/worktrees/old-feature
 Claude: [Removes worktree, keeps branch]
 ```
 
 **Merge and remove**:
 ```
-User: /worktree-manager:cleanup ~/snapguide-worktrees/completed-feature --merge
+User: /worktree-manager:cleanup ~/worktrees/completed-feature --merge
 Claude: [Merges to main, removes worktree, deletes branch]
 ```
 
 **Force remove (dangerous)**:
 ```
-User: /worktree-manager:cleanup ~/snapguide-worktrees/experiment --force
+User: /worktree-manager:cleanup ~/worktrees/experiment --force
 Claude: ⚠️ WARNING: This will discard uncommitted changes. Continue? (yes/no)
 User: yes
 Claude: [Forces removal, changes lost]
@@ -95,7 +95,7 @@ Claude: [Forces removal, changes lost]
 
 **Custom target branch**:
 ```
-User: /worktree-manager:cleanup ~/snapguide-worktrees/feature --merge --target=develop
+User: /worktree-manager:cleanup ~/worktrees/feature --merge --target=develop
 Claude: [Merges into develop instead of main]
 ```
 

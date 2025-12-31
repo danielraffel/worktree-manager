@@ -40,7 +40,7 @@ const TOOLS: Tool[] = [
         },
         worktree_path: {
           type: 'string',
-          description: 'Custom worktree path (default: ~/snapguide-worktrees/<feature-name>)',
+          description: 'Custom worktree path (default: ~/worktrees/<feature-name>)',
         },
         workflow: {
           type: 'string',

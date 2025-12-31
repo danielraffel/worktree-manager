@@ -44,7 +44,7 @@ describe('WorktreeStartTool', () => {
       expect(result.workflow).toBe('simple');
       expect(result.setup_complete).toBe(true);
       expect(result.worktree_path).toBe(
-        path.join(os.homedir(), 'snapguide-worktrees', 'test-feature')
+        path.join(os.homedir(), 'worktrees', 'test-feature')
       );
       expect(result.next_steps[0]).toContain('ready to use');
     });

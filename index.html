@@ -230,7 +230,7 @@
                     <ul class="feature-list">
                         <li>Creates isolated Git Worktrees automatically</li>
                         <li>Auto-detects project type & installs dependencies</li>
-                        <li>Runs "Ralph" or "Feature-dev" agents in the background</li>
+                        <li>Can run <a href="https://github.com/anthropics/claude-code/tree/main/plugins/feature-dev">Feature-dev</a> and <a href="https://github.com/anthropics/claude-code/tree/main/plugins/ralph-wiggum">Ralph-Wiggum</a> as agents that collaborate together in the background</li>
                         <li>Safe experimentation without contaminating main</li>
                         <li>Zero bookkeeping required</li>
                     </ul>
@@ -247,21 +247,21 @@
                     <a href="https://github.com/danielraffel/worktree-manager" class="btn">View on GitHub &rarr;</a>
                 </div>
                 <div class="col-right">
-                    <p>Requires Claude Code. Clone the repo and symlink it to your plugins directory.</p>
+                    <p>Requires <a href="https://claude.ai/code">Claude Code</a>. For automated workflows, also install the <a href="https://github.com/anthropics/claude-code/tree/main/plugins/feature-dev">feature-dev</a> and <a href="https://github.com/anthropics/claude-code/tree/main/plugins/ralph-wiggum">ralph-wiggum</a> plugins.</p>
                     
                     <div class="code-block">
-<span class="code-comment"># 1. Clone the plugin</span>
-<span class="code-prompt">$</span> cd /path/to/claude-plugins
+<span class="code-comment"># 1. Clone the repo</span>
 <span class="code-prompt">$</span> git clone https://github.com/danielraffel/worktree-manager
-
-<span class="code-comment"># 2. Build and install</span>
 <span class="code-prompt">$</span> cd worktree-manager
-<span class="code-prompt">$</span> npm install && npm run build
 
-<span class="code-comment"># 3. Symlink to Claude config</span>
-<span class="code-prompt">$</span> ln -s $(pwd) ~/.config/claude/plugins/worktree-manager
+<span class="code-comment"># 2. Build the MCP server</span>
+<span class="code-prompt">$</span> cd mcp-server && npm install && npm run build && cd ..
 
-<span class="code-comment"># 4. Restart Claude Code</span>
+<span class="code-comment"># 3. Add to your project (in project root)</span>
+<span class="code-prompt">$</span> mkdir -p .claude/plugins
+<span class="code-prompt">$</span> ln -s /path/to/worktree-manager/plugin .claude/plugins/worktree-manager
+
+<span class="code-comment"># 4. Restart Claude Code in that project</span>
                     </div>
                 </div>
             </div>
@@ -274,21 +274,37 @@
                     <h3>Workflows</h3>
                     <h2>Choose your automation level.</h2>
                 </div>
-                
+
                 <div class="col-left">
-                    <div class="code-block" style="height: 100%">
-                        <span class="code-comment">// Plan-only Workflow</span><br>
-                        <span class="code-prompt">></span> "Worktree for password-reset, plan with feature-dev"<br><br>
-                        <span class="code-comment">Result:</span><br>
-                        Creates worktree → Generates spec → Saves to audit/
+                    <div class="code-block">
+                        <span class="code-comment">// Simple: Just create the worktree</span><br>
+                        <span class="code-prompt">/</span>worktree-manager:start bug-fix<br><br>
+                        <span class="code-comment">Creates ~/worktrees/bug-fix/</span><br>
+                        <span class="code-comment">You work manually in the new worktree</span>
                     </div>
                 </div>
                 <div class="col-right">
-                    <div class="code-block" style="height: 100%">
-                        <span class="code-comment">// Full Automation</span><br>
-                        <span class="code-prompt">></span> "Plan admin messaging and implement P0 items"<br><br>
-                        <span class="code-comment">Result:</span><br>
-                        Creates worktree → Plans → Implements (Background)
+                    <div class="code-block">
+                        <span class="code-comment">// Plan-only: Uses feature-dev to create spec</span><br>
+                        <span class="code-prompt">/</span>worktree-manager:start auth plan-only "OAuth2 login"<br><br>
+                        <span class="code-comment">Creates worktree → Runs feature-dev</span><br>
+                        <span class="code-comment">Saves spec to audit/auth.md</span>
+                    </div>
+                </div>
+                <div class="col-left">
+                    <div class="code-block">
+                        <span class="code-comment">// Implement-only: Ralph builds from existing spec</span><br>
+                        <span class="code-prompt">/</span>worktree-manager:start auth implement-only audit/auth.md<br><br>
+                        <span class="code-comment">Creates worktree → Ralph implements in background</span><br>
+                        <span class="code-comment">You keep working while it builds</span>
+                    </div>
+                </div>
+                <div class="col-right">
+                    <div class="code-block">
+                        <span class="code-comment">// Full automation: Plan + implement together</span><br>
+                        <span class="code-prompt">/</span>worktree-manager:start comments plan-and-implement "Add threading"<br><br>
+                        <span class="code-comment">Creates worktree → Plans → Implements</span><br>
+                        <span class="code-comment">Entire feature developed autonomously</span>
                     </div>
                 </div>
             </div>

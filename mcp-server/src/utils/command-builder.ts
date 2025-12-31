@@ -6,13 +6,29 @@ import { TemplateFiller } from './template-filler';
  */
 export class CommandBuilder {
   /**
+   * Escape a string for safe use in shell commands
+   * Uses $'...' syntax which handles all special characters properly
+   */
+  static escapeForShell(str: string): string {
+    // Replace backslash first, then other special chars
+    return str
+      .replace(/\\/g, '\\\\')     // backslash
+      .replace(/'/g, "\\'")       // single quote
+      .replace(/"/g, '\\"')       // double quote
+      .replace(/`/g, '\\`')       // backtick (command substitution)
+      .replace(/\$/g, '\\$')      // dollar sign (variable expansion)
+      .replace(/!/g, '\\!')       // exclamation (history expansion)
+      .replace(/\n/g, '\\n')      // newline
+      .replace(/\r/g, '\\r')      // carriage return
+      .replace(/\t/g, '\\t');     // tab
+  }
+
+  /**
    * Build feature-dev command for planning
    */
   static buildFeatureDevCommand(config: PlanConfig): string {
-    // Escape prompt for shell
-    const escapedPrompt = config.prompt.replace(/'/g, "'\\''");
-
-    return `claude skill feature-dev:feature-dev '${escapedPrompt}'`;
+    const escapedPrompt = this.escapeForShell(config.prompt);
+    return `claude skill feature-dev:feature-dev $'${escapedPrompt}'`;
   }
 
   /**

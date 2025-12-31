@@ -25,7 +25,7 @@ export class WorktreeStartTool {
     const workflow = params.workflow || 'simple';
     const defaultWorktreePath = path.join(
       os.homedir(),
-      'snapguide-worktrees',
+      'worktrees',
       params.feature_name
     );
     const worktreePath = params.worktree_path || defaultWorktreePath;

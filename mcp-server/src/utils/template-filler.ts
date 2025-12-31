@@ -63,6 +63,22 @@ export class TemplateFiller {
   }
 
   /**
+   * Escape a string for safe use in shell commands using $'...' syntax
+   */
+  static escapeForShell(str: string): string {
+    return str
+      .replace(/\\/g, '\\\\')     // backslash
+      .replace(/'/g, "\\'")       // single quote
+      .replace(/"/g, '\\"')       // double quote
+      .replace(/`/g, '\\`')       // backtick (command substitution)
+      .replace(/\$/g, '\\$')      // dollar sign (variable expansion)
+      .replace(/!/g, '\\!')       // exclamation (history expansion)
+      .replace(/\n/g, '\\n')      // newline
+      .replace(/\r/g, '\\r')      // carriage return
+      .replace(/\t/g, '\\t');     // tab
+  }
+
+  /**
    * Build ralph command with filled template
    */
   static buildRalphCommand(params: {
@@ -81,9 +97,9 @@ export class TemplateFiller {
 
     const maxIterations = params.max_iterations || 50;
 
-    // Escape template for shell (wrap in single quotes, escape existing single quotes)
-    const escapedTemplate = filledTemplate.replace(/'/g, "'\\''");
+    // Escape template for shell using $'...' syntax
+    const escapedTemplate = this.escapeForShell(filledTemplate);
 
-    return `claude skill ralph-wiggum:ralph-loop '${escapedTemplate}' --completion-promise "DONE" --max-iterations ${maxIterations}`;
+    return `claude skill ralph-wiggum:ralph-loop $'${escapedTemplate}' --completion-promise "DONE" --max-iterations ${maxIterations}`;
   }
 }

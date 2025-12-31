@@ -41,7 +41,7 @@ When user invokes this command:
 
 4. **Format example**:
    ```
-   Worktree: ~/snapguide-worktrees/admin-messaging
+   Worktree: ~/worktrees/admin-messaging
    Branch: feature/admin-messaging
 
    Status:
@@ -61,7 +61,7 @@ When user invokes this command:
 
 **Check status**:
 ```
-User: /worktree-manager:status ~/snapguide-worktrees/feature-name
+User: /worktree-manager:status ~/worktrees/feature-name
 Claude: [Shows detailed status of that worktree]
 ```
 

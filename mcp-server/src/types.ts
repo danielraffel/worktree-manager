@@ -35,7 +35,7 @@ export interface WorktreeStartParams {
   base_branch?: string;
   /** Description of what you're working on */
   task_description?: string;
-  /** Custom worktree location (default: ~/snapguide-worktrees/<feature_name>) */
+  /** Custom worktree location (default: ~/worktrees/<feature_name>) */
   worktree_path?: string;
   /** Workflow mode */
   workflow?: WorkflowMode;
