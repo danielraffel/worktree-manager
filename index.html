@@ -809,6 +809,17 @@ create_learnings_file: false
                         </div>
                     </div>
                     <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">How do I install plugins in Claude Code?</div>
+                        <div class="faq-answer">
+                            <p><strong>For official marketplace plugins</strong> (like feature-dev and ralph-wiggum): Launch Claude Code and type <code>/plugins</code>. Search for the plugin you want, select it, and install. After installing marketplace plugins, you must quit and restart Claude Code for them to take effect. See the <a href="https://code.claude.com/docs/en/discover-plugins">official plugin documentation</a> for more details.</p>
+                            <p><strong>For Worktree Manager:</strong> This plugin isn't in the marketplace yet (but will be). For now, clone the repository and use the <code>--plugin-dir</code> flag:</p>
+                            <p><code>git clone https://github.com/danielraffel/worktree-manager ~/worktree-manager</code><br>
+                            <code>cd ~/worktree-manager/mcp-server && npm install && npm run build</code><br>
+                            <code>claude --plugin-dir ~/worktree-manager/plugin</code></p>
+                            <p>You'll need to include <code>--plugin-dir</code> each time you launch Claude, or add a shell alias for convenience.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
                         <div class="faq-question" onclick="toggleFaq(this)">Why would I need a plugin like this? What's the alternative?</div>
                         <div class="faq-answer">
                             <p>Without worktrees, the typical process is: stash your current changes, create a new branch, work on the feature, commit, switch back to your original branch, pop your stash. If you want AI help, it monopolizes your terminal while it works.</p>
