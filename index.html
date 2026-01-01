@@ -5,6 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Worktree Manager | Parallel Universes for Claude Code</title>
     <meta name="description" content="A Claude Code plugin that turns AI coding from a single assistant into a coordinated team using Git Worktrees.">
+
+    <!-- Open Graph (iMessage, Slack, Discord, etc.) -->
+    <meta property="og:title" content="Worktree Manager">
+    <meta property="og:description" content="A Claude Code plugin that turns AI coding from a single assistant into a coordinated team using Git Worktrees.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://danielraffel.github.io/worktree-manager/">
+    <meta property="og:image" content="https://raw.githubusercontent.com/danielraffel/worktree-manager/refs/heads/main/wtree.png">
+    <meta property="og:image:width" content="1024">
+    <meta property="og:image:height" content="1024">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Worktree Manager">
+    <meta name="twitter:description" content="A Claude Code plugin that turns AI coding from a single assistant into a coordinated team using Git Worktrees.">
+    <meta name="twitter:image" content="https://raw.githubusercontent.com/danielraffel/worktree-manager/refs/heads/main/wtree.png">
+
     <style>
         :root {
             --bg: #ffffff;
@@ -270,6 +286,42 @@
             margin-bottom: 0.5rem;
         }
 
+        /* FAQ */
+        .faq-item {
+            border-bottom: 1px solid var(--light-gray);
+        }
+        .faq-question {
+            padding: 1.5rem 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: color 0.2s;
+        }
+        .faq-question:hover { color: var(--accent); }
+        .faq-question::after {
+            content: '+';
+            font-size: 1.5rem;
+            font-weight: 300;
+            color: var(--gray);
+            transition: transform 0.2s;
+        }
+        .faq-item.open .faq-question::after {
+            content: '−';
+        }
+        .faq-answer {
+            display: none;
+            padding-bottom: 1.5rem;
+            font-size: 1rem;
+            line-height: 1.7;
+            color: #444;
+        }
+        .faq-answer p { max-width: none; font-size: 1rem; margin-bottom: 1rem; }
+        .faq-answer p:last-child { margin-bottom: 0; }
+        .faq-item.open .faq-answer { display: block; }
+
     </style>
 </head>
 <body>
@@ -284,6 +336,7 @@
                 <a href="#capabilities">Capabilities</a>
                 <a href="#installation">Installation</a>
                 <a href="#workflows">Workflows</a>
+                <a href="#faq">FAQ</a>
             </nav>
             <h1>Parallel universes<br>for your code.</h1>
             <div class="grid">
@@ -476,6 +529,46 @@ ln -s /path/to/worktree-manager/plugin .claude/plugins/worktree-manager
             </div>
         </section>
 
+        <!-- FAQ -->
+        <section id="faq">
+            <div class="grid">
+                <div class="col-full">
+                    <h3>FAQ</h3>
+                    <h2>Common questions.</h2>
+                </div>
+                <div class="col-full">
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">Why would I need a plugin like this? What's the alternative?</div>
+                        <div class="faq-answer">
+                            <p>Without worktrees, the typical process is: stash your current changes, create a new branch, work on the feature, commit, switch back to your original branch, pop your stash. If you want AI help, it monopolizes your terminal while it works.</p>
+                            <p>With Worktree Manager, you skip all that context-switching. The AI works in a completely separate directory on a separate branch. You can spin up multiple worktrees and have several Claude agents working in parallel—each isolated, each on its own feature.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">What can I do with just the worktree-manager plugin?</div>
+                        <div class="faq-answer">
+                            <p>Even without the optional plugins, Worktree Manager handles the tedious parts: creating the worktree directory, checking out a new branch, detecting your project type, and running setup commands like <code>npm install</code>.</p>
+                            <p>You can spin up multiple worktrees and open separate Claude Code sessions in each—giving you parallel AI agents working on different features simultaneously. When you're done, use <code>/worktree-manager:cleanup --merge</code> to merge changes back to main and clean up. Push to git manually or let Claude do it.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">Do I need to install feature-dev and ralph-wiggum?</div>
+                        <div class="faq-answer">
+                            <p>No, they're optional. The "simple" workflow works without them.</p>
+                            <p>But the real power comes from chaining them together. <a href="https://github.com/anthropics/claude-code/tree/main/plugins/feature-dev">feature-dev</a> analyzes your codebase and generates detailed implementation specs. <a href="https://github.com/anthropics/claude-code/tree/main/plugins/ralph-wiggum">ralph-wiggum</a> takes those specs and implements them autonomously, iterating until done. Together, you describe what you want in plain English and come back to a completed feature.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">Why does it say "no git repo detected" when I have one?</div>
+                        <div class="faq-answer">
+                            <p>Git worktrees require an existing repository with at least one commit. If you just ran <code>git init</code> but haven't committed anything yet, worktrees won't work.</p>
+                            <p>Fix: make an initial commit first (<code>git add . && git commit -m "Initial commit"</code>), then try again.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
     </main>
 
     <footer class="container">
@@ -518,6 +611,10 @@ ln -s /path/to/worktree-manager/plugin .claude/plugins/worktree-manager
             const details = el.parentElement.nextElementSibling;
             details.classList.toggle('open');
             el.textContent = details.classList.contains('open') ? 'Show less' : 'Learn more';
+        }
+
+        function toggleFaq(el) {
+            el.parentElement.classList.toggle('open');
         }
     </script>
 </body>

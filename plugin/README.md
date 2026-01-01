@@ -16,13 +16,18 @@ This is the **frontend layer** of the Worktree Manager system. It provides user-
 ## Installation
 
 **Prerequisites**:
-1. Install the MCP server (see `../claude-plugin/`)
-2. Build the MCP server (`npm install && npm run build`)
+1. Install the MCP server (see `../mcp-server/`)
+2. Build the MCP server (`cd ../mcp-server && npm install && npm run build`)
 
 **Install plugin**:
 ```bash
-# Symlink to Claude plugins directory
-ln -s /path/to/worktree-manager-plugin ~/.config/claude/plugins/worktree-manager
+# Project-level (recommended) - in your project root
+mkdir -p .claude/plugins
+ln -s /path/to/worktree-manager/plugin .claude/plugins/worktree-manager
+
+# Or global
+mkdir -p ~/.claude/plugins
+ln -s /path/to/worktree-manager/plugin ~/.claude/plugins/worktree-manager
 
 # Restart Claude Code
 ```
@@ -153,8 +158,8 @@ Claude formats and displays to user
 
 This plugin is a simple wrapper - all logic is in the MCP server. To modify behavior:
 
-1. Update MCP server code (`../claude-plugin/src/`)
-2. Rebuild MCP server (`npm run build`)
+1. Update MCP server code (`../mcp-server/src/`)
+2. Rebuild MCP server (`cd ../mcp-server && npm run build`)
 3. Update command instructions if needed (`commands/*.md`)
 4. Restart Claude Code
 

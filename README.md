@@ -132,12 +132,20 @@ npm test  # Should show 45 passing tests
 
 ### Step 2: Install Plugin
 
+**Option A: Project-level (recommended)**
 ```bash
-# Symlink plugin to Claude Code plugins directory
-ln -s ~/worktree-manager/plugin ~/.config/claude/plugins/worktree-manager
-
-# Restart Claude Code
+# In your project root
+mkdir -p .claude/plugins
+ln -s /path/to/worktree-manager/plugin .claude/plugins/worktree-manager
 ```
+
+**Option B: Global**
+```bash
+mkdir -p ~/.claude/plugins
+ln -s /path/to/worktree-manager/plugin ~/.claude/plugins/worktree-manager
+```
+
+Restart Claude Code after installation.
 
 ### Step 3: Verify Installation
 
@@ -189,6 +197,28 @@ You should see `worktree-manager:*` commands listed.
 ```
 /worktree-manager:start comments plan-and-implement "Add comment system with threading" --work-on="P0" --skip="P2"
 ```
+
+## Configuration
+
+Customize behavior with a config file. Settings can be global or per-project.
+
+**Global:** `~/.claude/worktree-manager.local.md`
+**Project:** `.claude/worktree-manager.local.md` (overrides global)
+
+```yaml
+---
+worktree_base_path: ~/my-worktrees
+branch_prefix: feature/
+default_workflow: simple
+auto_commit: false
+auto_push: false
+create_learnings_file: true
+spec_directory: audit
+default_max_iterations: 50
+---
+```
+
+See [plugin/README.md](plugin/README.md) for full configuration options.
 
 ## Documentation
 
@@ -258,10 +288,13 @@ worktree-manager/
 ### Plugin not showing up
 
 ```bash
-# Check symlink
-ls -la ~/.config/claude/plugins/worktree-manager
+# Check project-level symlink
+ls -la .claude/plugins/worktree-manager
 
-# Should point to ~/worktree-manager/plugin
+# Or global symlink
+ls -la ~/.claude/plugins/worktree-manager
+
+# Should point to your worktree-manager/plugin directory
 ```
 
 ### MCP server not responding
@@ -294,7 +327,6 @@ Contributions welcome! Please:
 ## Roadmap
 
 - [ ] Support for additional project types (Python, Ruby, etc.)
-- [ ] Custom worktree directory configuration
 - [ ] Worktree templates for common workflows
 - [ ] Integration with additional Claude Code plugins
 - [ ] PR creation workflow
