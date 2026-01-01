@@ -872,6 +872,16 @@ create_learnings_file: false
                             <p>This means all file reads, writes, and git operations happen in the isolated worktree—not your main project. If an existing clean worktree is found, it's reused automatically.</p>
                         </div>
                     </div>
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">Why does ralph-wiggum keep looping after the work is done?</div>
+                        <div class="faq-answer">
+                            <p>This is a known quirk of ralph-wiggum's design. To exit the loop, Claude must output the literal text <code>&lt;promise&gt;DONE&lt;/promise&gt;</code>. Sometimes Claude completes the work but says things like "Done", "Complete", or "Finished" instead of outputting the exact escape tag.</p>
+                            <p>When this happens, you'll see iterations increment (e.g., "Ralph iteration 25... 26... 27...") with Claude repeatedly confirming completion but not exiting. The loop will run until it hits the max iterations limit (default: 50).</p>
+                            <p><strong>This is harmless but wasteful.</strong> Your work was completed successfully—the extra iterations just burn through API credits. You can manually stop Claude (Ctrl+C) once you see the work is done, or wait for max iterations.</p>
+                            <p><strong>Workaround:</strong> Lower <code>default_max_iterations</code> in your config file if your tasks typically complete quickly. This caps the wasted iterations if Claude doesn't exit cleanly.</p>
+                            <p><strong>Why can't we fix this?</strong> The ralph-wiggum plugin is maintained by Anthropic in the <a href="https://github.com/anthropics/claude-code/tree/main/plugins/ralph-wiggum">official claude-code repository</a>. Worktree Manager just chains to it—we don't control how ralph-wiggum detects completion. A fix would need to happen upstream in the ralph-wiggum plugin itself.</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
