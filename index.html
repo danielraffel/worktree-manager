@@ -878,11 +878,19 @@ create_learnings_file: false
                             <p>This is a known quirk of ralph-wiggum's design. To exit the loop, Claude must output the literal text <code>&lt;promise&gt;DONE&lt;/promise&gt;</code>. Sometimes Claude completes the work but says things like "Done", "Complete", or "Finished" instead of outputting the exact escape tag.</p>
                             <p>When this happens, you'll see iterations increment (e.g., "Ralph iteration 25... 26... 27...") with Claude repeatedly confirming completion but not exiting. The loop will run until it hits the max iterations limit (default: 50).</p>
                             <p><strong>This is harmless but wasteful.</strong> Your work was completed successfully—the extra iterations just burn through API credits. You can manually stop Claude (Ctrl+C) once you see the work is done, or wait for max iterations.</p>
-                            <p><strong>Workarounds:</strong></p>
-                            <p>1. <strong>We now include explicit exit instructions</strong> in the task prompt telling Claude to output the literal <code>&lt;promise&gt;DONE&lt;/promise&gt;</code> tag when done. This may improve exit behavior.</p>
-                            <p>2. Lower <code>default_max_iterations</code> in your config file if your tasks typically complete quickly. This caps wasted iterations.</p>
-                            <p>3. Manually stop Claude (Ctrl+C) once you see the work is done.</p>
-                            <p><strong>Why is this tricky?</strong> The ralph-wiggum plugin is maintained by Anthropic in the <a href="https://github.com/anthropics/claude-code/tree/main/plugins/ralph-wiggum">official claude-code repository</a>. Worktree Manager chains to it and adds the exit instruction, but Claude's interpretation of that instruction can vary. A more robust fix would need to happen upstream.</p>
+                            <p><strong>Update:</strong> We've added explicit exit instructions to the task prompt, and testing shows this <strong>significantly improves</strong> Claude's exit behavior. Most tasks now exit cleanly with the proper tag.</p>
+                            <p><strong>If you still see excessive looping:</strong></p>
+                            <p>1. Lower <code>default_max_iterations</code> in your config file (e.g., to 20) to cap wasted iterations.</p>
+                            <p>2. Manually stop Claude (Ctrl+C) once you see the work is done.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">Can I run multiple ralph-wiggum loops in parallel worktrees?</div>
+                        <div class="faq-answer">
+                            <p><strong>Not from the same directory.</strong> Ralph-wiggum's state file (<code>.claude/ralph-loop.local.md</code>) is tied to your Claude session's current working directory, not the worktree. If you run multiple Claude sessions from the same parent directory, they'll all see the same state file and interfere with each other.</p>
+                            <p><strong>Workaround:</strong> Run each Claude session <strong>from within the worktree directory</strong> instead of your main project directory:</p>
+                            <p><code>cd ~/worktrees/feature-a<br>claude --plugin-dir ~/worktree-manager/plugin</code></p>
+                            <p>This way each worktree has its own isolated <code>.claude/</code> directory, and ralph loops won't cross-contaminate. You can then have multiple terminals, each running Claude from a different worktree, all working independently.</p>
                         </div>
                     </div>
                 </div>
@@ -894,7 +902,7 @@ create_learnings_file: false
     <footer class="container">
         <div class="grid">
             <div class="col-left">
-                Daniel Raffel &copy; 2026
+                <a href="https://danielraffel.me" style="text-decoration: none;">Daniel Raffel</a> &copy; 2026</a>
             </div>
             <div class="col-right" style="text-align: right;">
                 <a href="https://github.com/danielraffel/worktree-manager" style="text-decoration: none;">GitHub Repository ↗</a>
