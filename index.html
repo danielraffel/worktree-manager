@@ -441,6 +441,7 @@
                 <a href="#installation">Installation</a>
                 <a href="#workflows">Workflows</a>
                 <a href="#commands">Commands</a>
+                <a href="#config">Config</a>
                 <a href="#faq">FAQ</a>
             </nav>
             <h1>Parallel universes<br>for your code.</h1>
@@ -689,6 +690,102 @@ claude --plugin-dir ~/worktree-manager/plugin
                                 <td><code>/worktree-manager:cleanup &lt;path&gt; [--merge]</code></td>
                                 <td>worktree path, optional --merge flag</td>
                                 <td>Removes worktree. With --merge, merges branch to main first.<br><span class="uses">Uses: Worktrees only</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Configuration -->
+        <section id="config">
+            <div class="grid">
+                <div class="col-full">
+                    <h3>Configuration</h3>
+                    <h2>Override defaults.</h2>
+                    <p style="max-width: 60ch;">Create a config file to customize behavior. Project config overrides user config, which overrides defaults.</p>
+                </div>
+                <div class="col-left">
+                    <h4 style="margin-bottom: 1rem; font-size: 1rem;">Config file locations</h4>
+                    <ul class="feature-list" style="font-size: 1rem;">
+                        <li><strong>Project:</strong> <code>.claude/worktree-manager.local.md</code></li>
+                        <li><strong>Global:</strong> <code>~/.claude/worktree-manager.local.md</code></li>
+                    </ul>
+                </div>
+                <div class="col-right">
+                    <div class="code-block-wrapper">
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        <div class="code-block"><span class="code-comment"># .claude/worktree-manager.local.md</span>
+---
+<span class="code-comment"># Where to create worktrees</span>
+worktree_base_path: ~/worktrees
+
+<span class="code-comment"># Branch prefix (default: feature/)</span>
+branch_prefix: feature/
+
+<span class="code-comment"># Default workflow when not specified</span>
+default_workflow: simple
+
+<span class="code-comment"># Directory for spec files</span>
+spec_directory: audit
+
+<span class="code-comment"># Max iterations for ralph</span>
+default_max_iterations: 50
+
+<span class="code-comment"># Create LEARNINGS.md in worktree</span>
+create_learnings_file: false
+---</div>
+                    </div>
+                </div>
+                <div class="col-full" style="margin-top: 2rem;">
+                    <table class="cmd-table">
+                        <thead>
+                            <tr>
+                                <th>Option</th>
+                                <th>Default</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>worktree_base_path</code></td>
+                                <td><code>~/worktrees</code></td>
+                                <td>Base directory where all worktrees are created</td>
+                            </tr>
+                            <tr>
+                                <td><code>branch_prefix</code></td>
+                                <td><code>feature/</code></td>
+                                <td>Prefix for new branches (e.g., <code>feature/my-task</code>)</td>
+                            </tr>
+                            <tr>
+                                <td><code>default_workflow</code></td>
+                                <td><code>simple</code></td>
+                                <td>Workflow when not specified: <code>simple</code>, <code>plan-only</code>, <code>implement-only</code>, <code>plan-and-implement</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>spec_directory</code></td>
+                                <td><code>audit</code></td>
+                                <td>Where spec files are saved (relative to project root)</td>
+                            </tr>
+                            <tr>
+                                <td><code>default_max_iterations</code></td>
+                                <td><code>50</code></td>
+                                <td>Maximum ralph-wiggum iterations before auto-stop</td>
+                            </tr>
+                            <tr>
+                                <td><code>create_learnings_file</code></td>
+                                <td><code>false</code></td>
+                                <td>Create <code>LEARNINGS.md</code> in worktree to capture insights</td>
+                            </tr>
+                            <tr>
+                                <td><code>auto_commit</code></td>
+                                <td><code>false</code></td>
+                                <td>Auto-commit changes during ralph execution</td>
+                            </tr>
+                            <tr>
+                                <td><code>auto_push</code></td>
+                                <td><code>false</code></td>
+                                <td>Auto-push to remote after commits</td>
                             </tr>
                         </tbody>
                     </table>
