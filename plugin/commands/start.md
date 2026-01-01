@@ -124,12 +124,16 @@ After MCP tool succeeds:
 2. **IMPORTANT: Do NOT use the Skill tool for ralph-wiggum** - the Skill tool cannot properly invoke ralph-loop because it has `hide-from-slash-command-tool: true` and its setup script won't execute.
 3. **Run the setup script in the CURRENT directory** (not the worktree) - the Stop hook looks for the state file relative to the Claude session's cwd:
    ```bash
-   SCRIPT_PATH="$(find ~/.claude/plugins -name 'setup-ralph-loop.sh' -path '*ralph-wiggum*' 2>/dev/null | head -1)" && bash "$SCRIPT_PATH" "CRITICAL: Work ONLY in <worktree_path>/ using absolute paths. Do NOT modify files outside this directory. Implement the features described in <spec_file_path>" --max-iterations 50 --completion-promise DONE
+   SCRIPT_PATH="$(find ~/.claude/plugins -name 'setup-ralph-loop.sh' -path '*ralph-wiggum*' 2>/dev/null | head -1)" && bash "$SCRIPT_PATH" "CRITICAL: Work ONLY in <worktree_path>/ using absolute paths. Do NOT modify files outside this directory. Implement the features described in <spec_file_path>
+
+When implementation is complete and verified, you MUST output the literal text <promise>DONE</promise> to exit the loop." --max-iterations 50 --completion-promise DONE
    ```
 
    For example:
    ```bash
-   SCRIPT_PATH="$(find ~/.claude/plugins -name 'setup-ralph-loop.sh' -path '*ralph-wiggum*' 2>/dev/null | head -1)" && bash "$SCRIPT_PATH" "CRITICAL: Work ONLY in /Users/danielraffel/worktrees/unit-test/ using absolute paths. Do NOT modify files outside this directory. Implement the features described in /Users/danielraffel/snapguide/audit/unit-test-plan.md" --max-iterations 50 --completion-promise DONE
+   SCRIPT_PATH="$(find ~/.claude/plugins -name 'setup-ralph-loop.sh' -path '*ralph-wiggum*' 2>/dev/null | head -1)" && bash "$SCRIPT_PATH" "CRITICAL: Work ONLY in /Users/danielraffel/worktrees/unit-test/ using absolute paths. Do NOT modify files outside this directory. Implement the features described in /Users/danielraffel/snapguide/audit/unit-test-plan.md
+
+When implementation is complete and verified, you MUST output the literal text <promise>DONE</promise> to exit the loop." --max-iterations 50 --completion-promise DONE
    ```
 4. You should see "🔄 Ralph loop activated" message - this confirms ralph is running
 5. After the script runs, **immediately start working on the task in the worktree** using absolute paths
@@ -147,7 +151,9 @@ After MCP tool succeeds:
 4. **IMPORTANT: Do NOT use the Skill tool for ralph-wiggum** - the Skill tool cannot properly invoke ralph-loop because it has `hide-from-slash-command-tool: true` and its setup script won't execute.
 5. **Run the setup script in the CURRENT directory** (not the worktree) - the Stop hook looks for the state file relative to the Claude session's cwd:
    ```bash
-   SCRIPT_PATH="$(find ~/.claude/plugins -name 'setup-ralph-loop.sh' -path '*ralph-wiggum*' 2>/dev/null | head -1)" && bash "$SCRIPT_PATH" "CRITICAL: Work ONLY in <worktree_path>/ using absolute paths. Do NOT modify files outside this directory. Implement the features described in <spec_file_path>" --max-iterations 50 --completion-promise DONE
+   SCRIPT_PATH="$(find ~/.claude/plugins -name 'setup-ralph-loop.sh' -path '*ralph-wiggum*' 2>/dev/null | head -1)" && bash "$SCRIPT_PATH" "CRITICAL: Work ONLY in <worktree_path>/ using absolute paths. Do NOT modify files outside this directory. Implement the features described in <spec_file_path>
+
+When implementation is complete and verified, you MUST output the literal text <promise>DONE</promise> to exit the loop." --max-iterations 50 --completion-promise DONE
    ```
 6. You should see "🔄 Ralph loop activated" message - this confirms ralph is running
 7. After the script runs, **immediately start working on the task in the worktree** using absolute paths
