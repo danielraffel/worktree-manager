@@ -39,9 +39,19 @@ alias claude-wt='claude --plugin-dir ~/worktree-manager/plugin'
 # Should show worktree-manager commands
 ```
 
-## Usage
+## Command Reference
 
-### Quick Start
+| What you want | Command | You provide | What happens |
+|--------------|---------|-------------|--------------|
+| Create worktree (manual) | `/worktree-manager:start <name>` | name | Creates isolated workspace. No AI automation. |
+| Create + plan | `/worktree-manager:start <name> plan-only "<idea>"` | name, idea | Creates workspace + generates spec with feature-dev. |
+| Create + implement | `/worktree-manager:start <name> implement-only <spec>` | name, spec path | Creates workspace + implements spec with ralph-wiggum. |
+| Create + plan + implement | `/worktree-manager:start <name> plan-and-implement "<idea>"` | name, idea | Full automation: workspace → plan → implement. |
+| List worktrees | `/worktree-manager:list` | nothing | Shows all worktrees with paths and branches. |
+| Check status | `/worktree-manager:status <path>` | worktree path | Shows git status and branch info. |
+| Cleanup | `/worktree-manager:cleanup <path> [--merge]` | path, optional --merge | Removes worktree. --merge merges to main first. |
+
+## Usage Examples
 
 **Create a simple worktree**:
 ```
@@ -55,31 +65,17 @@ alias claude-wt='claude --plugin-dir ~/worktree-manager/plugin'
 
 **Implement from spec with ralph**:
 ```
-/worktree-manager:start build-auth implement-only audit/auth-spec.md --work-on="P0 items"
+/worktree-manager:start build-auth implement-only audit/auth-spec.md
 ```
 
 **Full automation (plan + implement)**:
 ```
-/worktree-manager:start comments plan-and-implement "Add comment system" --work-on="P0"
+/worktree-manager:start comments plan-and-implement "Add comment system"
 ```
 
-### List Worktrees
-
+**List and cleanup**:
 ```
 /worktree-manager:list
-/worktree-manager:list --status
-```
-
-### Check Status
-
-```
-/worktree-manager:status ~/worktrees/feature-name
-```
-
-### Cleanup
-
-```
-/worktree-manager:cleanup ~/worktrees/old-feature
 /worktree-manager:cleanup ~/worktrees/done-feature --merge
 ```
 

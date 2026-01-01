@@ -322,6 +322,44 @@
         .faq-answer p:last-child { margin-bottom: 0; }
         .faq-item.open .faq-answer { display: block; }
 
+        /* Command Reference Table */
+        .cmd-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1.5rem;
+            font-size: 0.95rem;
+        }
+        .cmd-table th {
+            text-align: left;
+            padding: 1rem;
+            background: var(--light-gray);
+            font-weight: 600;
+            border-bottom: 2px solid var(--text);
+        }
+        .cmd-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--light-gray);
+            vertical-align: top;
+        }
+        .cmd-table tr:hover {
+            background: #fafafa;
+        }
+        .cmd-table code {
+            background: var(--code-bg);
+            color: var(--code-text);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            white-space: nowrap;
+        }
+        .cmd-table .uses {
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+        .cmd-table .uses a {
+            color: var(--accent);
+        }
+
     </style>
 </head>
 <body>
@@ -336,6 +374,7 @@
                 <a href="#capabilities">Capabilities</a>
                 <a href="#installation">Installation</a>
                 <a href="#workflows">Workflows</a>
+                <a href="#commands">Commands</a>
                 <a href="#faq">FAQ</a>
             </nav>
             <h1>Parallel universes<br>for your code.</h1>
@@ -527,6 +566,70 @@ claude --plugin-dir ~/worktree-manager/plugin
             </div>
         </section>
 
+        <!-- Command Reference -->
+        <section id="commands">
+            <div class="grid">
+                <div class="col-full">
+                    <h3>Command Reference</h3>
+                    <h2>Quick lookup.</h2>
+                    <table class="cmd-table">
+                        <thead>
+                            <tr>
+                                <th>What you want</th>
+                                <th>Command</th>
+                                <th>You provide</th>
+                                <th>What happens</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Create a worktree<br>(manual work)</td>
+                                <td><code>/worktree-manager:start &lt;name&gt;</code></td>
+                                <td>name (e.g. <code>bug-fix</code>)</td>
+                                <td>Creates an isolated workspace for that task. No AI planning/building kicked off.<br><span class="uses">Uses: Worktrees only</span></td>
+                            </tr>
+                            <tr>
+                                <td>Create + plan<br>(feature exploration)</td>
+                                <td><code>/worktree-manager:start &lt;name&gt; plan-only "&lt;idea&gt;"</code></td>
+                                <td>name, a short idea/goal string</td>
+                                <td>Creates a fresh workspace and generates a structured plan/spec for the feature.<br><span class="uses">Uses: Worktrees + <a href="https://github.com/anthropics/claude-code/tree/main/plugins/feature-dev">feature-dev</a></span></td>
+                            </tr>
+                            <tr>
+                                <td>Create + implement<br>(from existing spec)</td>
+                                <td><code>/worktree-manager:start &lt;name&gt; implement-only &lt;spec&gt;</code></td>
+                                <td>name, path to spec file (e.g. <code>audit/auth.md</code>)</td>
+                                <td>Creates a fresh workspace and implements what's described in the spec.<br><span class="uses">Uses: Worktrees + <a href="https://github.com/anthropics/claude-code/tree/main/plugins/ralph-wiggum">ralph-wiggum</a></span></td>
+                            </tr>
+                            <tr>
+                                <td>Create + plan + implement<br>(full automation)</td>
+                                <td><code>/worktree-manager:start &lt;name&gt; plan-and-implement "&lt;idea&gt;"</code></td>
+                                <td>name, a short idea/goal string</td>
+                                <td>Creates a fresh workspace, plans the work, then implements it—iterating until done.<br><span class="uses">Uses: Worktrees + <a href="https://github.com/anthropics/claude-code/tree/main/plugins/feature-dev">feature-dev</a> + <a href="https://github.com/anthropics/claude-code/tree/main/plugins/ralph-wiggum">ralph-wiggum</a></span></td>
+                            </tr>
+                            <tr>
+                                <td>List all worktrees</td>
+                                <td><code>/worktree-manager:list</code></td>
+                                <td>nothing</td>
+                                <td>Shows all active worktrees with their paths and branches.<br><span class="uses">Uses: Worktrees only</span></td>
+                            </tr>
+                            <tr>
+                                <td>Check worktree status</td>
+                                <td><code>/worktree-manager:status &lt;path&gt;</code></td>
+                                <td>worktree path</td>
+                                <td>Shows git status, uncommitted changes, and branch info for a worktree.<br><span class="uses">Uses: Worktrees only</span></td>
+                            </tr>
+                            <tr>
+                                <td>Cleanup worktree</td>
+                                <td><code>/worktree-manager:cleanup &lt;path&gt; [--merge]</code></td>
+                                <td>worktree path, optional --merge flag</td>
+                                <td>Removes worktree. With --merge, merges branch to main first.<br><span class="uses">Uses: Worktrees only</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
         <!-- FAQ -->
         <section id="faq">
             <div class="grid">
@@ -585,6 +688,14 @@ claude --plugin-dir ~/worktree-manager/plugin
                             4. The AI loops—plan, implement, adjust—inside that isolated workspace until it reaches a good stopping point.<br>
                             5. You review the results and decide what to bring back into your main project.</p>
                             <p><strong>Why this matters:</strong> You can run multiple tasks in parallel, each in its own isolated workspace. Your main project stays clean and stable while experiments happen elsewhere. The AI only works inside the workspace you created for it, and you only merge changes you've reviewed.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">How does ralph-wiggum know to work in the worktree?</div>
+                        <div class="faq-answer">
+                            <p><strong>Technical detail:</strong> When you use <code>implement-only</code> or <code>plan-and-implement</code>, Worktree Manager activates ralph-wiggum with explicit instructions to work only in the worktree directory using absolute paths.</p>
+                            <p>The ralph-wiggum "loop" works by having a Stop hook that prevents Claude from exiting and feeds the same task back. This hook looks for a state file in your current Claude session directory. Worktree Manager creates this state file with instructions like: "CRITICAL: Work ONLY in ~/worktrees/my-feature/ using absolute paths."</p>
+                            <p>This means all file reads, writes, and git operations happen in the isolated worktree—not your main project. If an existing clean worktree is found, it's reused automatically.</p>
                         </div>
                     </div>
                 </div>

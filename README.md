@@ -155,6 +155,18 @@ In Claude Code:
 
 You should see `worktree-manager:*` commands listed.
 
+## Command Reference
+
+| What you want | Command | You provide | What happens |
+|--------------|---------|-------------|--------------|
+| Create worktree (manual) | `/worktree-manager:start <name>` | name | Creates isolated workspace. No AI automation. |
+| Create + plan | `/worktree-manager:start <name> plan-only "<idea>"` | name, idea | Creates workspace + generates spec with feature-dev. |
+| Create + implement | `/worktree-manager:start <name> implement-only <spec>` | name, spec path | Creates workspace + implements spec with ralph-wiggum. |
+| Create + plan + implement | `/worktree-manager:start <name> plan-and-implement "<idea>"` | name, idea | Full automation: workspace → plan → implement. |
+| List worktrees | `/worktree-manager:list` | nothing | Shows all worktrees with paths and branches. |
+| Check status | `/worktree-manager:status <path>` | worktree path | Shows git status and branch info. |
+| Cleanup | `/worktree-manager:cleanup <path> [--merge]` | path, optional --merge | Removes worktree. --merge merges to main first. |
+
 ## Quick Start
 
 ### Basic Usage
@@ -167,7 +179,6 @@ You should see `worktree-manager:*` commands listed.
 **List all worktrees**:
 ```
 /worktree-manager:list
-/worktree-manager:list --status
 ```
 
 **Check status**:
@@ -189,12 +200,12 @@ You should see `worktree-manager:*` commands listed.
 
 **Implement from spec** (automated coding):
 ```
-/worktree-manager:start build-auth implement-only audit/auth-spec.md --work-on="P0 items"
+/worktree-manager:start build-auth implement-only audit/auth-spec.md
 ```
 
 **Full automation** (plan + implement):
 ```
-/worktree-manager:start comments plan-and-implement "Add comment system with threading" --work-on="P0" --skip="P2"
+/worktree-manager:start comments plan-and-implement "Add comment system with threading"
 ```
 
 ## Configuration
