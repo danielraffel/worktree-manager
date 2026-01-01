@@ -62,8 +62,10 @@ export class CommandBuilder {
     let fullCommand = `cd "${worktree_path}" && ${command}`;
 
     if (background) {
-      // For background execution, redirect output and run in background
-      fullCommand = `(${fullCommand}) > /tmp/claude-worktree-$(date +%s).log 2>&1 &`;
+      // For background execution, use nohup + setsid to fully detach process
+      // setsid creates a new session so process survives parent exit
+      const logFile = `/tmp/claude-worktree-${Date.now()}.log`;
+      fullCommand = `nohup bash -c 'cd "${worktree_path}" && ${command}' > "${logFile}" 2>&1 & disown`;
     }
 
     return fullCommand;

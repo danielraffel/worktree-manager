@@ -51,7 +51,7 @@ export class WorktreeStartTool {
         };
       }
 
-      // Step 2: Create worktree
+      // Step 2: Create worktree (or reuse existing clean one)
       const createResult = await GitHelpers.createWorktree({
         path: worktreePath,
         branch: branchName,
@@ -59,35 +59,78 @@ export class WorktreeStartTool {
         cwd,
       });
 
+      let reusingExisting = false;
       if (!createResult.success) {
-        return {
-          success: false,
-          worktree_path: worktreePath,
-          branch: branchName,
-          workflow,
-          setup_complete: false,
-          setup_messages: [],
-          error: createResult.error,
-          next_steps: [
-            'Check if worktree path already exists',
-            'Check if branch name already exists',
-            'Try a different feature name',
-          ],
-        };
+        // Check if worktree already exists and is clean - if so, reuse it
+        if (fs.existsSync(worktreePath)) {
+          const isGitRepo = await GitHelpers.isGitRepo(worktreePath);
+          if (isGitRepo) {
+            const status = await GitHelpers.getStatus(worktreePath);
+            const isClean = status.uncommitted_changes === 0 && status.untracked_files === 0;
+
+            if (isClean) {
+              // Worktree exists and is clean - reuse it!
+              reusingExisting = true;
+            } else {
+              // Worktree exists but has uncommitted changes
+              return {
+                success: false,
+                worktree_path: worktreePath,
+                branch: branchName,
+                workflow,
+                setup_complete: false,
+                setup_messages: [],
+                error: `Worktree already exists with uncommitted changes: ${worktreePath}`,
+                next_steps: [
+                  'Commit or stash changes in existing worktree',
+                  'Or use /worktree-manager:cleanup to remove it',
+                  'Or try a different feature name',
+                ],
+              };
+            }
+          }
+        }
+
+        // If we're not reusing, return the original error
+        if (!reusingExisting) {
+          return {
+            success: false,
+            worktree_path: worktreePath,
+            branch: branchName,
+            workflow,
+            setup_complete: false,
+            setup_messages: [],
+            error: createResult.error,
+            next_steps: [
+              'Check if worktree path already exists',
+              'Check if branch name already exists',
+              'Try a different feature name',
+            ],
+          };
+        }
       }
 
       // Step 3: Detect project type
       const projectInfo = ProjectDetector.detect(worktreePath);
 
       // Step 4: Run setup commands
-      const setupMessages: string[] = [
-        `Worktree created: ${worktreePath}`,
-        `Branch: ${branchName} (from ${baseBranch})`,
-        `Project type: ${projectInfo.type}`,
-      ];
+      const setupMessages: string[] = reusingExisting
+        ? [
+            `♻️  Reusing existing clean worktree: ${worktreePath}`,
+            `Branch: ${branchName}`,
+            `Project type: ${projectInfo.type}`,
+          ]
+        : [
+            `Worktree created: ${worktreePath}`,
+            `Branch: ${branchName} (from ${baseBranch})`,
+            `Project type: ${projectInfo.type}`,
+          ];
 
       let setupComplete = true;
-      if (projectInfo.setup_commands.length > 0) {
+      if (reusingExisting) {
+        // Skip setup when reusing - already done
+        setupMessages.push('Skipping setup (already configured)');
+      } else if (projectInfo.setup_commands.length > 0) {
         setupMessages.push('Running setup commands...');
 
         const setupResult = await SetupRunner.runSetupCommands(projectInfo.setup_commands);
@@ -101,10 +144,13 @@ export class WorktreeStartTool {
         setupMessages.push('No setup commands needed');
       }
 
-      // Step 4.5: Create learnings file if configured
+      // Step 4.5: Create learnings file if configured (skip if reusing and file exists)
       if (config.create_learnings_file) {
         const learningsPath = path.join(worktreePath, 'LEARNINGS.md');
-        const learningsContent = `# Learnings - ${params.feature_name}
+        if (reusingExisting && fs.existsSync(learningsPath)) {
+          // Skip - already exists
+        } else {
+          const learningsContent = `# Learnings - ${params.feature_name}
 
 ## Overview
 This file captures insights, decisions, and learnings during development.
@@ -122,11 +168,12 @@ This file captures insights, decisions, and learnings during development.
 ---
 *Created by worktree-manager on ${new Date().toISOString()}*
 `;
-        try {
-          fs.writeFileSync(learningsPath, learningsContent);
-          setupMessages.push(`Created LEARNINGS.md for capturing insights`);
-        } catch (e) {
-          setupMessages.push(`Warning: Could not create LEARNINGS.md`);
+          try {
+            fs.writeFileSync(learningsPath, learningsContent);
+            setupMessages.push(`Created LEARNINGS.md for capturing insights`);
+          } catch (e) {
+            setupMessages.push(`Warning: Could not create LEARNINGS.md`);
+          }
         }
       }
 
@@ -403,8 +450,9 @@ This file captures insights, decisions, and learnings during development.
     // Build ralph command
     const ralphCmd = CommandBuilder.buildRalphCommand(ralphConfigWithDefaults);
 
-    // Determine execution mode
-    const executionMode = ralphConfigWithDefaults.execution_mode || 'background';
+    // Determine execution mode - default to manual since background doesn't work reliably
+    // (claude is an interactive terminal app that can't be fully backgrounded)
+    const executionMode = ralphConfigWithDefaults.execution_mode || 'manual';
     const isBackground = executionMode === 'background';
 
     setupMessages.push('');
@@ -468,15 +516,17 @@ This file captures insights, decisions, and learnings during development.
         };
       }
     } else {
-      // Manual execution
+      // Manual execution - provide clear terminal commands
       const nextSteps = [
-        'Ralph command ready!',
+        '🎯 Worktree ready for implementation!',
         '',
-        'To run ralph, open new terminal:',
-        `cd ${worktreePath}`,
-        `${ralphCmd}`,
+        'Open a NEW terminal and run:',
+        `  cd ${worktreePath} && claude`,
         '',
-        'This will run ralph interactively in the worktree.',
+        'Then start ralph with:',
+        `  /ralph-wiggum:ralph-loop`,
+        '',
+        `Spec file: ${ralphConfigWithDefaults.source_file}`,
       ];
 
       return {
@@ -486,6 +536,8 @@ This file captures insights, decisions, and learnings during development.
         workflow: 'implement-only',
         setup_complete: setupComplete,
         setup_messages: setupMessages,
+        spec_file: ralphConfigWithDefaults.source_file,
+        ralph_command: '/ralph-wiggum:ralph-loop',
         next_steps: nextSteps,
       };
     }
@@ -584,7 +636,8 @@ This file captures insights, decisions, and learnings during development.
     };
 
     const ralphCmd = CommandBuilder.buildRalphCommand(ralphConfig);
-    const executionMode = ralphConfig.execution_mode || 'background';
+    // Default to manual since background doesn't work reliably
+    const executionMode = ralphConfig.execution_mode || 'manual';
     const isBackground = executionMode === 'background';
 
     setupMessages.push(`Source: ${ralphConfig.source_file}`);
@@ -658,12 +711,17 @@ This file captures insights, decisions, and learnings during development.
       }
     } else {
       const nextSteps = [
-        'Planning complete!',
+        '🎯 Planning complete! Worktree ready for implementation.',
+        '',
         `Spec saved to: ${specFile}`,
         '',
-        'To implement with ralph, open new terminal:',
-        `cd ${worktreePath}`,
-        `${ralphCmd}`,
+        'Open a NEW terminal and run:',
+        `  cd ${worktreePath} && claude`,
+        '',
+        'Then start ralph with:',
+        `  /ralph-wiggum:ralph-loop`,
+        '',
+        'Ralph will implement from the generated spec.',
       ];
 
       return {
@@ -674,6 +732,7 @@ This file captures insights, decisions, and learnings during development.
         setup_complete: setupComplete,
         setup_messages: setupMessages,
         spec_file: specFilePath,
+        ralph_command: '/ralph-wiggum:ralph-loop',
         next_steps: nextSteps,
       };
     }

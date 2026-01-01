@@ -71,6 +71,8 @@ export interface WorktreeStartResult {
   setup_messages: string[];
   /** Spec file path (if plan workflow) */
   spec_file?: string;
+  /** Ralph command to run (for manual execution) */
+  ralph_command?: string;
   /** Background task ID (if background execution) */
   task_id?: string;
   /** Error message (if success = false) */

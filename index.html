@@ -341,7 +341,7 @@
             <h1>Parallel universes<br>for your code.</h1>
             <div class="grid">
                 <div class="col-left">
-                    <p><b>Worktree Manager</b> chains Claude Code plugins like <a href=https://github.com/anthropics/claude-code/tree/main/plugins/feature-dev">feature-dev</a> and <a href="https://github.com/anthropics/claude-code/tree/main/plugins/ralph-wiggum">ralph-wiggim</a> to explore and build features in parallel&mdash;each in a clean workspace.</p>
+                    <p><b>Worktree Manager</b> chains Claude Code plugins like <a href="https://github.com/anthropics/claude-code/tree/main/plugins/feature-dev">feature-dev</a> and <a href="https://github.com/anthropics/claude-code/tree/main/plugins/ralph-wiggum">ralph-wiggum</a> to explore and build features in parallel&mdash;each in a clean workspace.</p>
                 </div>
                 <div class="col-right">
                     <div class="code-block-wrapper">
@@ -357,8 +357,8 @@
                         1. Creates <code>~/worktrees/payments/</code> with new branch<br>
                         2. Runs <code>npm install</code> automatically<br>
                         3. <code>feature-dev</code> generates detailed spec<br>
-                        4. <code>Ralph-Wiggum</code> implements iteratively in background<br>
-                        5. You keep working while agents run in the background&mdash;spin up more workspaces to parallelize further.<br><br>
+                        4. <code>ralph-wiggum</code> implements iteratively until done<br>
+                        5. Spin up additional worktrees to parallelize multiple features.<br><br>
                         When done: review, merge to main.
                     </div>
                 </div>
@@ -390,7 +390,7 @@
                     <ul class="feature-list">
                         <li>Creates isolated Git Worktrees automatically</li>
                         <li>Auto-detects project type & installs dependencies</li>
-                        <li>Can run <a href="https://github.com/anthropics/claude-code/tree/main/plugins/feature-dev">Feature-dev</a> and <a href="https://github.com/anthropics/claude-code/tree/main/plugins/ralph-wiggum">Ralph-Wiggum</a> as agents that collaborate together in the background</li>
+                        <li>Chains <a href="https://github.com/anthropics/claude-code/tree/main/plugins/feature-dev">feature-dev</a> and <a href="https://github.com/anthropics/claude-code/tree/main/plugins/ralph-wiggum">ralph-wiggum</a> for automated planning and implementation</li>
                         <li>Safe experimentation without contaminating main</li>
                         <li>Zero bookkeeping required</li>
                     </ul>
@@ -495,9 +495,9 @@ claude --plugin-dir ~/worktree-manager/plugin
                         <div class="details">
                             <strong>What happens:</strong><br>
                             1. Creates worktree and branch<br>
-                            2. Runs <a href="https://github.com/anthropics/claude-code/tree/main/plugins/ralph-wiggum">ralph-wiggum</a> in background<br>
+                            2. Activates <a href="https://github.com/anthropics/claude-code/tree/main/plugins/ralph-wiggum">ralph-wiggum</a> loop<br>
                             3. Ralph reads your spec and implements iteratively<br>
-                            4. You keep working in your main terminal<br><br>
+                            4. Loops until completion promise is met<br><br>
                             <strong>Use when:</strong> You have a spec already and want autonomous implementation.
                         </div>
                     </div>
@@ -517,8 +517,8 @@ claude --plugin-dir ~/worktree-manager/plugin
                             <strong>What happens:</strong><br>
                             1. Creates worktree and branch<br>
                             2. Runs feature-dev → generates spec<br>
-                            3. Passes spec to Ralph automatically<br>
-                            4. Ralph implements in background<br>
+                            3. Activates ralph-wiggum loop with the spec<br>
+                            4. Ralph implements iteratively until done<br>
                             5. Entire feature developed autonomously<br><br>
                             <strong>Use when:</strong> You want end-to-end automation. Just describe what you want.
                         </div>

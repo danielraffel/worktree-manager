@@ -5,6 +5,7 @@ allowed-tools:
   - "mcp__worktree__worktree_start"
   - "Read"
   - "Bash"
+  - "Skill"
 ---
 
 # Worktree Start Command
@@ -54,9 +55,9 @@ Creates worktree, plans with feature-dev, then implements with ralph.
 ## Instructions for Claude
 
 **CRITICAL REQUIREMENTS:**
-1. **Always use the `mcp__worktree__worktree_start` MCP tool** - this tool handles worktree creation AND launches ralph-wiggum automatically
+1. **Always use the `mcp__worktree__worktree_start` MCP tool** to create/reuse worktrees
 2. **NEVER manually run git commands** - no `git worktree add`, no `git branch`, no manual setup
-3. **NEVER implement the spec yourself** - the MCP tool launches ralph-wiggum to do implementation
+3. **NEVER implement specs yourself** - chain to feature-dev and/or ralph-wiggum as needed
 4. **If the MCP tool is unavailable, STOP and tell the user** - do not fall back to manual work
 
 **If `mcp__worktree__worktree_start` fails or is not found:**
@@ -64,9 +65,9 @@ Creates worktree, plans with feature-dev, then implements with ralph.
 - Do NOT attempt to create worktrees manually
 - Do NOT read the spec file and implement it yourself
 
-When user invokes this command:
+---
 
-### 1. Parse the arguments and detect workflow
+## Step 1: Parse arguments and detect workflow
 
 - **feature-name** (required): First argument (e.g., "new-feature", "bug-fix")
 - **workflow**: Detect from arguments OR infer from context
@@ -79,98 +80,142 @@ When user invokes this command:
    - `implement-only` → implement-only
    - `plan-and-implement` → plan-and-implement
 
-2. If a file path like `audit/*.md` is provided → `implement-only` (build from existing spec)
+2. If a file path like `audit/*.md` or absolute path to .md file is provided → `implement-only`
 
 3. If a long description/prompt is provided (more than just feature name) → `plan-and-implement`
-   - Phrases like "I want to build...", "Create a...", "Design...", "Build..." indicate planning needed
-   - Phrases like "build with ralph", "implement", "then build" indicate implementation wanted
 
 4. If only feature-name provided → `simple`
 
-### 2. Call the MCP tool
+---
 
-**Always call `mcp__worktree__worktree_start`** with appropriate parameters:
+## Step 2: Call MCP tool to create/reuse worktree
 
-**Simple:**
+**Always call `mcp__worktree__worktree_start`** with `workflow: "simple"` - the MCP tool just creates the worktree, and YOU (Claude) will chain the plugins:
+
 ```json
-{ "feature_name": "bug-fix" }
+{ "feature_name": "<feature-name>", "workflow": "simple" }
 ```
 
-**Plan-only:**
-```json
-{
-  "feature_name": "auth",
-  "workflow": "plan-only",
-  "plan_config": { "prompt": "Design OAuth2 login..." }
-}
-```
+Save the returned `worktree_path` for the next steps.
 
-**Implement-only:**
-```json
-{
-  "feature_name": "auth",
-  "workflow": "implement-only",
-  "ralph_config": { "source_file": "audit/auth.md" }
-}
-```
+---
 
-**Plan-and-implement:**
-```json
-{
-  "feature_name": "comments",
-  "workflow": "plan-and-implement",
-  "plan_config": { "prompt": "Add comment system..." },
-  "ralph_config": {}
-}
-```
+## Step 3: Chain plugins based on workflow
 
-### 3. Display results
+**CRITICAL: You MUST chain the plugins automatically. Do NOT tell user to run commands manually.**
 
-- Show worktree path and branch created
-- For automated workflows, explain what's running in background
-- Provide monitoring commands: `tail -f /tmp/claude-worktree-*.log`
+### Workflow: simple
+- Just display the worktree path and next steps for manual work
+- No chaining needed
 
-### 4. Error handling
+### Workflow: plan-only (worktree → feature-dev)
+After MCP tool succeeds:
+1. Tell user: "Worktree ready. Starting feature-dev to create implementation plan..."
+2. Invoke feature-dev using the Skill tool:
+   ```
+   Skill: feature-dev:feature-dev
+   Args: <the planning prompt from user>
+   ```
+3. Feature-dev will run and create a spec file in the worktree
 
-**If MCP tool `mcp__worktree__worktree_start` is not available:**
-- STOP immediately - do not proceed with manual worktree creation
+### Workflow: implement-only (worktree → ralph)
+After MCP tool succeeds:
+1. Tell user: "Worktree ready. Starting ralph-wiggum to implement from spec..."
+2. **IMPORTANT: Do NOT use the Skill tool for ralph-wiggum** - the Skill tool cannot properly invoke ralph-loop because it has `hide-from-slash-command-tool: true` and its setup script won't execute.
+3. Instead, **run the setup script directly via Bash** to initialize the ralph loop:
+   ```bash
+   cd <worktree_path> && SCRIPT_PATH="$(find ~/.claude/plugins -name 'setup-ralph-loop.sh' -path '*ralph-wiggum*' 2>/dev/null | head -1)" && bash "$SCRIPT_PATH" "Implement the features described in <spec_file_path>" --max-iterations 50 --completion-promise DONE
+   ```
+
+   For example:
+   ```bash
+   cd /Users/danielraffel/worktrees/unit-test && SCRIPT_PATH="$(find ~/.claude/plugins -name 'setup-ralph-loop.sh' -path '*ralph-wiggum*' 2>/dev/null | head -1)" && bash "$SCRIPT_PATH" "Implement the features described in /Users/danielraffel/snapguide/audit/unit-test-plan.md" --max-iterations 50 --completion-promise DONE
+   ```
+4. You should see "🔄 Ralph loop activated" message - this confirms ralph is running
+5. After the script runs, **immediately start working on the task** - the Stop hook is now active and will loop your output back as the next iteration
+6. Ralph will iterate and show "🔄 Ralph iteration N" as it works
+
+### Workflow: plan-and-implement (worktree → feature-dev → ralph)
+After MCP tool succeeds:
+1. Tell user: "Worktree ready. Starting feature-dev to create implementation plan..."
+2. Invoke feature-dev using the Skill tool:
+   ```
+   Skill: feature-dev:feature-dev
+   Args: <the planning prompt from user>
+   ```
+3. After feature-dev completes and creates a spec file (usually in `audit/<feature-name>.md`), tell user: "Plan complete. Starting ralph-wiggum to implement..."
+4. **IMPORTANT: Do NOT use the Skill tool for ralph-wiggum** - the Skill tool cannot properly invoke ralph-loop because it has `hide-from-slash-command-tool: true` and its setup script won't execute.
+5. Instead, **run the setup script directly via Bash** to initialize the ralph loop:
+   ```bash
+   cd <worktree_path> && SCRIPT_PATH="$(find ~/.claude/plugins -name 'setup-ralph-loop.sh' -path '*ralph-wiggum*' 2>/dev/null | head -1)" && bash "$SCRIPT_PATH" "Implement the features described in <spec_file_path>" --max-iterations 50 --completion-promise DONE
+   ```
+6. You should see "🔄 Ralph loop activated" message - this confirms ralph is running
+7. After the script runs, **immediately start working on the task** - the Stop hook is now active and will loop your output back as the next iteration
+8. Ralph will iterate and show "🔄 Ralph iteration N" as it works
+
+---
+
+## Step 4: Error handling
+
+**If MCP tool is not available:**
+- STOP immediately
 - Tell user: "The worktree-manager MCP server is not available."
 - Suggest: "Run `cd ~/worktree-manager/mcp-server && npm run build` and restart Claude Code"
 
 **If MCP tool fails:**
 - Show the error message from the tool
-- Common issues: not in git repo, branch exists, no initial commit
+- Common issues: not in git repo, branch exists, worktree has uncommitted changes
 - Do NOT fall back to manual git commands
+
+**If feature-dev or ralph-wiggum fails:**
+- Show the error
+- The worktree was still created successfully, user can retry the plugin manually
 
 ## Tips
 
 - Feature name becomes `feature/<name>` branch
 - Worktrees created in `~/worktrees/<feature-name>/`
 - Web projects get automatic `npm install`
-- Background tasks can be monitored with `tail -f /tmp/claude-worktree-*.log`
+- Existing clean worktrees are automatically reused
+- implement-only and plan-and-implement chain directly into ralph-wiggum
 
 ## Examples
 
-**Quick bug fix**:
+**Simple** (worktree only):
 ```
 User: /worktree-manager:start quick-fix
-Claude: [Creates worktree, runs setup, shows next steps]
+Claude:
+  1. MCP tool → creates worktree
+  2. Shows next steps for manual work
 ```
 
-**Plan new feature**:
+**Plan-only** (worktree → feature-dev):
 ```
-User: /worktree-manager:start auth-system plan-only "Design OAuth2 authentication with JWT tokens"
-Claude: [Creates worktree, runs feature-dev, saves spec to audit/auth-system.md]
-```
-
-**Implement from spec**:
-```
-User: /worktree-manager:start build-auth implement-only audit/auth-system.md --work-on="P0 items"
-Claude: [Creates worktree, runs ralph in background with auto-filled template]
+User: /worktree-manager:start auth-system plan-only "Design OAuth2 authentication"
+Claude:
+  1. MCP tool → creates worktree
+  2. Invokes /feature-dev:feature-dev with the prompt
+  3. Feature-dev runs and creates spec
 ```
 
-**Full automation**:
+**Implement-only** (worktree → ralph):
 ```
-User: /worktree-manager:start comments plan-and-implement "Add comment system with replies and threading" --work-on="P0 features" --skip="P2 features"
-Claude: [Creates worktree, plans with feature-dev, implements with ralph, all automated]
+User: /worktree-manager:start unit-test implement-only audit/unit-test-plan.md
+Claude:
+  1. MCP tool → creates/reuses worktree
+  2. Runs setup-ralph-loop.sh directly via Bash (NOT Skill tool)
+  3. Sees "🔄 Ralph loop activated" message
+  4. Starts working on the task; Stop hook loops iterations
+```
+
+**Plan-and-implement** (worktree → feature-dev → ralph):
+```
+User: /worktree-manager:start comments plan-and-implement "Add comment system"
+Claude:
+  1. MCP tool → creates worktree
+  2. Invokes /feature-dev:feature-dev via Skill tool
+  3. Feature-dev creates spec
+  4. Runs setup-ralph-loop.sh directly via Bash (NOT Skill tool)
+  5. Sees "🔄 Ralph loop activated" message
+  6. Starts working; Stop hook loops iterations
 ```
