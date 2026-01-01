@@ -411,23 +411,21 @@
                         <button class="copy-btn" onclick="copyInstall(this)">Copy</button>
                         <div class="code-block" id="install-code">
 <span class="code-comment"># 1. Clone the repo</span>
-git clone https://github.com/danielraffel/worktree-manager
-cd worktree-manager
+git clone https://github.com/danielraffel/worktree-manager ~/worktree-manager
+cd ~/worktree-manager
 
 <span class="code-comment"># 2. Build the MCP server</span>
 cd mcp-server && npm install && npm run build && cd ..
 
-<span class="code-comment"># 3. Add to your project (in project root)</span>
-mkdir -p .claude/plugins
-ln -s /path/to/worktree-manager/plugin .claude/plugins/worktree-manager
-
-<span class="code-comment"># 4. Restart Claude Code</span>
+<span class="code-comment"># 3. Run Claude Code with the plugin</span>
+cd /your/project
+claude --plugin-dir ~/worktree-manager/plugin
                         </div>
                     </div>
                     <div style="display: flex; gap: 2rem; align-items: center; margin-top: 1.5rem; flex-wrap: wrap;">
                         <a href="https://github.com/danielraffel/worktree-manager" class="btn" style="margin: 0;">View on GitHub &rarr;</a>
                         <div style="color: var(--gray); font-size: 0.9rem;">
-                            Or test without installing: <code style="background: var(--light-gray); padding: 0.3rem 0.6rem; border-radius: 4px; font-size: 0.85rem;">claude --plugin-dir /path/to/worktree-manager/plugin</code>
+                            Use <code style="background: var(--light-gray); padding: 0.3rem 0.6rem; border-radius: 4px; font-size: 0.85rem;">--plugin-dir</code> each time, or add to shell alias for convenience.
                         </div>
                     </div>
                 </div>
@@ -537,6 +535,13 @@ ln -s /path/to/worktree-manager/plugin .claude/plugins/worktree-manager
                     <h2>Common questions.</h2>
                 </div>
                 <div class="col-full">
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">What's the status of this project?</div>
+                        <div class="faq-answer">
+                            <p><strong>Very early beta.</strong> This project was cobbled together on December 31, 2025 and should be considered experimental. Only a handful of people have tried it so far.</p>
+                            <p>Expect rough edges, breaking changes, and incomplete features. Use at your own risk. This notice will be updated if/when the project matures.</p>
+                        </div>
+                    </div>
                     <div class="faq-item">
                         <div class="faq-question" onclick="toggleFaq(this)">Why would I need a plugin like this? What's the alternative?</div>
                         <div class="faq-answer">

@@ -16,20 +16,19 @@ This is the **frontend layer** of the Worktree Manager system. It provides user-
 ## Installation
 
 **Prerequisites**:
-1. Install the MCP server (see `../mcp-server/`)
-2. Build the MCP server (`cd ../mcp-server && npm install && npm run build`)
+1. Clone the repo: `git clone https://github.com/danielraffel/worktree-manager ~/worktree-manager`
+2. Build the MCP server: `cd ~/worktree-manager/mcp-server && npm install && npm run build`
 
-**Install plugin**:
+**Run Claude Code with the plugin**:
 ```bash
-# Project-level (recommended) - in your project root
-mkdir -p .claude/plugins
-ln -s /path/to/worktree-manager/plugin .claude/plugins/worktree-manager
+cd /your/project
+claude --plugin-dir ~/worktree-manager/plugin
+```
 
-# Or global
-mkdir -p ~/.claude/plugins
-ln -s /path/to/worktree-manager/plugin ~/.claude/plugins/worktree-manager
-
-# Restart Claude Code
+**Tip**: Add a shell alias for convenience:
+```bash
+# Add to ~/.zshrc or ~/.bashrc
+alias claude-wt='claude --plugin-dir ~/worktree-manager/plugin'
 ```
 
 **Verify installation**:

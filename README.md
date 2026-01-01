@@ -117,35 +117,34 @@ Becomes a complete ralph prompt with:
 - Node.js 18+ (for MCP server)
 - Git repository
 
-### Step 1: Install MCP Server
+### Step 1: Clone and Build
 
 ```bash
-cd ~/worktree-manager/mcp-server
-npm install
-npm run build
+# Clone the repo
+git clone https://github.com/danielraffel/worktree-manager ~/worktree-manager
+cd ~/worktree-manager
+
+# Build the MCP server
+cd mcp-server && npm install && npm run build && cd ..
 ```
 
-Verify installation:
+Verify build:
 ```bash
-npm test  # Should show 45 passing tests
+cd mcp-server && npm test  # Should show 45 passing tests
 ```
 
-### Step 2: Install Plugin
+### Step 2: Run Claude Code with the Plugin
 
-**Option A: Project-level (recommended)**
 ```bash
-# In your project root
-mkdir -p .claude/plugins
-ln -s /path/to/worktree-manager/plugin .claude/plugins/worktree-manager
+cd /your/project
+claude --plugin-dir ~/worktree-manager/plugin
 ```
 
-**Option B: Global**
+**Tip**: Add a shell alias for convenience:
 ```bash
-mkdir -p ~/.claude/plugins
-ln -s /path/to/worktree-manager/plugin ~/.claude/plugins/worktree-manager
+# Add to ~/.zshrc or ~/.bashrc
+alias claude-wt='claude --plugin-dir ~/worktree-manager/plugin'
 ```
-
-Restart Claude Code after installation.
 
 ### Step 3: Verify Installation
 
@@ -287,14 +286,14 @@ worktree-manager/
 
 ### Plugin not showing up
 
+Make sure you're using `--plugin-dir` with the correct path:
 ```bash
-# Check project-level symlink
-ls -la .claude/plugins/worktree-manager
+claude --plugin-dir ~/worktree-manager/plugin
+```
 
-# Or global symlink
-ls -la ~/.claude/plugins/worktree-manager
-
-# Should point to your worktree-manager/plugin directory
+Verify the plugin directory exists:
+```bash
+ls ~/worktree-manager/plugin/.claude-plugin/plugin.json
 ```
 
 ### MCP server not responding

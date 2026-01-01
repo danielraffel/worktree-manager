@@ -53,7 +53,16 @@ Creates worktree, plans with feature-dev, then implements with ralph.
 
 ## Instructions for Claude
 
-**CRITICAL: Always use the `mcp__worktree__worktree_start` MCP tool. Never manually run git commands or do the work yourself.**
+**CRITICAL REQUIREMENTS:**
+1. **Always use the `mcp__worktree__worktree_start` MCP tool** - this tool handles worktree creation AND launches ralph-wiggum automatically
+2. **NEVER manually run git commands** - no `git worktree add`, no `git branch`, no manual setup
+3. **NEVER implement the spec yourself** - the MCP tool launches ralph-wiggum to do implementation
+4. **If the MCP tool is unavailable, STOP and tell the user** - do not fall back to manual work
+
+**If `mcp__worktree__worktree_start` fails or is not found:**
+- Tell the user: "The worktree-manager MCP server is not available. Please ensure the plugin is installed correctly and the MCP server is built (`cd ~/worktree-manager/mcp-server && npm run build`)."
+- Do NOT attempt to create worktrees manually
+- Do NOT read the spec file and implement it yourself
 
 When user invokes this command:
 
@@ -123,8 +132,15 @@ When user invokes this command:
 
 ### 4. Error handling
 
-- If MCP tool fails, show error and suggest fixes
+**If MCP tool `mcp__worktree__worktree_start` is not available:**
+- STOP immediately - do not proceed with manual worktree creation
+- Tell user: "The worktree-manager MCP server is not available."
+- Suggest: "Run `cd ~/worktree-manager/mcp-server && npm run build` and restart Claude Code"
+
+**If MCP tool fails:**
+- Show the error message from the tool
 - Common issues: not in git repo, branch exists, no initial commit
+- Do NOT fall back to manual git commands
 
 ## Tips
 
