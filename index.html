@@ -565,6 +565,23 @@ ln -s /path/to/worktree-manager/plugin .claude/plugins/worktree-manager
                             <p>Fix: make an initial commit first (<code>git add . && git commit -m "Initial commit"</code>), then try again.</p>
                         </div>
                     </div>
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">Can you explain this without all the jargon?</div>
+                        <div class="faq-answer">
+                            <p>Worktree Manager lets you safely ask AI to try ideas and make changes to a project without messing up what you're currently working on.</p>
+                            <p><strong>The simple mental model:</strong> it creates a separate "workspace" for each task—like making a duplicate of your project dedicated to "try Feature A" or "fix Bug B." You keep working in your normal workspace while the AI works in the separate one.</p>
+                            <p><strong>It pairs well with two other plugins:</strong></p>
+                            <p>• <strong>feature-dev</strong> helps you explore a feature: it asks the right questions, proposes approaches, and turns a vague idea into a clear plan.<br>
+                            • <strong>ralph-wiggum</strong> takes that plan and does the work: it makes changes, checks things, and keeps iterating until the feature is done.</p>
+                            <p><strong>Worktree Manager coordinates the whole thing:</strong></p>
+                            <p>1. You tell it what you want ("try a new onboarding flow").<br>
+                            2. It spins up a fresh, isolated workspace for that task.<br>
+                            3. It can automatically run the planning helper, then the implementation helper.<br>
+                            4. The AI loops—plan, implement, adjust—inside that isolated workspace until it reaches a good stopping point.<br>
+                            5. You review the results and decide what to bring back into your main project.</p>
+                            <p><strong>Why this matters:</strong> You can run multiple tasks in parallel, each in its own isolated workspace. Your main project stays clean and stable while experiments happen elsewhere. The AI only works inside the workspace you created for it, and you only merge changes you've reviewed.</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
