@@ -123,8 +123,32 @@
             border: 1px solid var(--text);
             padding: 4px 12px;
             border-radius: 50px;
-            margin-bottom: var(--spacing-unit);
             text-transform: uppercase;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .tag:hover {
+            background: var(--text);
+            color: var(--bg);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            margin: 1rem 0 var(--spacing-unit) 0;
+            flex-wrap: wrap;
+        }
+        .nav-links a {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--gray);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .nav-links a:hover {
+            color: var(--text);
         }
 
         .feature-list {
@@ -148,6 +172,7 @@
             overflow-x: auto;
             line-height: 1.7;
             margin-top: 1rem;
+            white-space: pre-wrap;
         }
 
         .code-comment { color: #6a6a6a; }
@@ -179,6 +204,72 @@
             font-size: 0.8rem;
         }
 
+        /* Copy button */
+        .code-block-wrapper {
+            position: relative;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            background: #333;
+            color: #aaa;
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .copy-btn:hover { background: #444; color: #fff; }
+        .copy-btn.copied { background: var(--accent); color: #fff; }
+
+        /* Workflow cards */
+        .workflow-card {
+            margin-bottom: 1.5rem;
+        }
+        .workflow-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+        .workflow-desc {
+            color: var(--gray);
+            font-size: 0.9rem;
+            margin-top: 0.75rem;
+        }
+        .learn-more {
+            color: var(--accent);
+            font-size: 0.85rem;
+            cursor: pointer;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+        }
+        .learn-more:hover { color: var(--text); }
+        .details {
+            display: none;
+            background: var(--light-gray);
+            padding: 1rem;
+            border-radius: 4px;
+            margin-top: 0.75rem;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+        .details.open { display: block; }
+
+        /* Alt install */
+        .alt-install {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #333;
+        }
+        .alt-install-label {
+            color: var(--gray);
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+        }
+
     </style>
 </head>
 <body>
@@ -187,26 +278,42 @@
         
         <!-- Hero Section -->
         <section>
-            <div class="tag">For Claude Code</div>
+            <a href="https://code.claude.com/docs/en/plugins" class="tag">Plugin for Claude Code</a>
+            <nav class="nav-links">
+                <a href="#concept">Concept</a>
+                <a href="#capabilities">Capabilities</a>
+                <a href="#installation">Installation</a>
+                <a href="#workflows">Workflows</a>
+            </nav>
             <h1>Parallel universes<br>for your code.</h1>
             <div class="grid">
                 <div class="col-left">
-                    <p>Stop stashing. Stop switching branches. Worktree Manager creates isolated environments for your AI agent to plan and build features while you stay productive.</p>
+                    <p>Worktree Manager chains Claude Code plugins like <a href=https://github.com/anthropics/claude-code/tree/main/plugins/feature-dev">feature-dev</a> and <a href="https://github.com/anthropics/claude-code/tree/main/plugins/ralph-wiggum">ralph-wiggim</a> to explore and build features in parallel — each in a clean workspace.</p>
                 </div>
                 <div class="col-right">
-                    <div class="code-block">
-                        <span class="code-comment"># The old way: juggling chaos</span><br>
-                        <span class="code-prompt">$</span> git stash && git checkout -b feature-a<br>
-                        <br>
-                        <span class="code-comment"># The new way: parallel execution</span><br>
-                        <span class="code-prompt">></span> <span class="code-command">Worktree for admin-messaging, plan with feature-dev</span>
+                    <div class="code-block-wrapper">
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        <div class="code-block"><span class="code-prompt">/</span>worktree-manager:start payments plan-and-implement "Add Stripe subscriptions with usage-based billing"</div>
+                    </div>
+                    <div class="workflow-desc" style="margin-top: 1rem;">
+                        One command: creates worktree, plans with feature-dev, builds with Ralph.
+                        <span class="learn-more" onclick="toggleDetails(this)">What happens</span>
+                    </div>
+                    <div class="details">
+                        <strong>Behind that one command:</strong><br>
+                        1. Creates <code>~/worktrees/payments/</code> with new branch<br>
+                        2. Runs <code>npm install</code> automatically<br>
+                        3. feature-dev generates detailed spec<br>
+                        4. Ralph implements iteratively in background<br>
+                        5. You keep working in your main terminal<br><br>
+                        When done: review, merge to main.
                     </div>
                 </div>
             </div>
         </section>
 
         <!-- The Concept -->
-        <section>
+        <section id="concept">
             <div class="grid">
                 <div class="col-left">
                     <h3>The Concept</h3>
@@ -220,7 +327,7 @@
         </section>
 
         <!-- Features -->
-        <section>
+        <section id="capabilities">
             <div class="grid">
                 <div class="col-left">
                     <h3>Capabilities</h3>
@@ -239,36 +346,43 @@
         </section>
 
         <!-- How it works / Install -->
-        <section>
+        <section id="installation">
             <div class="grid">
-                <div class="col-left">
+                <div class="col-full">
                     <h3>Installation</h3>
                     <h2>One minute setup.</h2>
-                    <a href="https://github.com/danielraffel/worktree-manager" class="btn">View on GitHub &rarr;</a>
+                    <p style="max-width: 60ch;">Requires <a href="https://claude.ai/code">Claude Code</a>. For automated workflows, also install <a href="https://github.com/anthropics/claude-code/tree/main/plugins/feature-dev">feature-dev</a> and <a href="https://github.com/anthropics/claude-code/tree/main/plugins/ralph-wiggum">ralph-wiggum</a>.</p>
                 </div>
-                <div class="col-right">
-                    <p>Requires <a href="https://claude.ai/code">Claude Code</a>. For automated workflows, also install the <a href="https://github.com/anthropics/claude-code/tree/main/plugins/feature-dev">feature-dev</a> and <a href="https://github.com/anthropics/claude-code/tree/main/plugins/ralph-wiggum">ralph-wiggum</a> plugins.</p>
-                    
-                    <div class="code-block">
+                <div class="col-full">
+                    <div class="code-block-wrapper">
+                        <button class="copy-btn" onclick="copyInstall(this)">Copy</button>
+                        <div class="code-block" id="install-code">
 <span class="code-comment"># 1. Clone the repo</span>
-<span class="code-prompt">$</span> git clone https://github.com/danielraffel/worktree-manager
-<span class="code-prompt">$</span> cd worktree-manager
+git clone https://github.com/danielraffel/worktree-manager
+cd worktree-manager
 
 <span class="code-comment"># 2. Build the MCP server</span>
-<span class="code-prompt">$</span> cd mcp-server && npm install && npm run build && cd ..
+cd mcp-server && npm install && npm run build && cd ..
 
 <span class="code-comment"># 3. Add to your project (in project root)</span>
-<span class="code-prompt">$</span> mkdir -p .claude/plugins
-<span class="code-prompt">$</span> ln -s /path/to/worktree-manager/plugin .claude/plugins/worktree-manager
+mkdir -p .claude/plugins
+ln -s /path/to/worktree-manager/plugin .claude/plugins/worktree-manager
 
-<span class="code-comment"># 4. Restart Claude Code in that project</span>
+<span class="code-comment"># 4. Restart Claude Code</span>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 2rem; align-items: center; margin-top: 1.5rem; flex-wrap: wrap;">
+                        <a href="https://github.com/danielraffel/worktree-manager" class="btn" style="margin: 0;">View on GitHub &rarr;</a>
+                        <div style="color: var(--gray); font-size: 0.9rem;">
+                            Or test without installing: <code style="background: var(--light-gray); padding: 0.3rem 0.6rem; border-radius: 4px; font-size: 0.85rem;">claude --plugin-dir /path/to/worktree-manager/plugin</code>
+                        </div>
                     </div>
                 </div>
             </div>
         </section>
 
         <!-- Workflow Examples -->
-        <section>
+        <section id="workflows">
             <div class="grid">
                 <div class="col-full">
                     <h3>Workflows</h3>
@@ -276,35 +390,87 @@
                 </div>
 
                 <div class="col-left">
-                    <div class="code-block">
-                        <span class="code-comment">// Simple: Just create the worktree</span><br>
-                        <span class="code-prompt">/</span>worktree-manager:start bug-fix<br><br>
-                        <span class="code-comment">Creates ~/worktrees/bug-fix/</span><br>
-                        <span class="code-comment">You work manually in the new worktree</span>
+                    <div class="workflow-card">
+                        <div class="workflow-title">Simple</div>
+                        <div class="code-block-wrapper">
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                            <div class="code-block">/worktree-manager:start bug-fix</div>
+                        </div>
+                        <div class="workflow-desc">
+                            Creates isolated worktree for manual work.
+                            <span class="learn-more" onclick="toggleDetails(this)">Learn more</span>
+                        </div>
+                        <div class="details">
+                            <strong>What happens:</strong><br>
+                            1. Creates <code>~/worktrees/bug-fix/</code> directory<br>
+                            2. Creates <code>feature/bug-fix</code> branch<br>
+                            3. Auto-detects project type (Node, Swift, etc.)<br>
+                            4. Runs setup commands (npm install, etc.)<br><br>
+                            <strong>Use when:</strong> You want a clean workspace to work in manually.
+                        </div>
                     </div>
                 </div>
                 <div class="col-right">
-                    <div class="code-block">
-                        <span class="code-comment">// Plan-only: Uses feature-dev to create spec</span><br>
-                        <span class="code-prompt">/</span>worktree-manager:start auth plan-only "OAuth2 login"<br><br>
-                        <span class="code-comment">Creates worktree → Runs feature-dev</span><br>
-                        <span class="code-comment">Saves spec to audit/auth.md</span>
+                    <div class="workflow-card">
+                        <div class="workflow-title">Plan-only</div>
+                        <div class="code-block-wrapper">
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                            <div class="code-block">/worktree-manager:start auth plan-only "OAuth2 login"</div>
+                        </div>
+                        <div class="workflow-desc">
+                            Creates worktree + generates spec with feature-dev.
+                            <span class="learn-more" onclick="toggleDetails(this)">Learn more</span>
+                        </div>
+                        <div class="details">
+                            <strong>What happens:</strong><br>
+                            1. Creates worktree and branch<br>
+                            2. Runs <a href="https://github.com/anthropics/claude-code/tree/main/plugins/feature-dev">feature-dev</a> plugin with your prompt<br>
+                            3. Saves detailed spec to <code>audit/auth.md</code><br><br>
+                            <strong>Use when:</strong> You want AI to plan the feature, then implement yourself or review before building.
+                        </div>
                     </div>
                 </div>
                 <div class="col-left">
-                    <div class="code-block">
-                        <span class="code-comment">// Implement-only: Ralph builds from existing spec</span><br>
-                        <span class="code-prompt">/</span>worktree-manager:start auth implement-only audit/auth.md<br><br>
-                        <span class="code-comment">Creates worktree → Ralph implements in background</span><br>
-                        <span class="code-comment">You keep working while it builds</span>
+                    <div class="workflow-card">
+                        <div class="workflow-title">Implement-only</div>
+                        <div class="code-block-wrapper">
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                            <div class="code-block">/worktree-manager:start auth implement-only audit/auth.md</div>
+                        </div>
+                        <div class="workflow-desc">
+                            Creates worktree + Ralph builds from existing spec.
+                            <span class="learn-more" onclick="toggleDetails(this)">Learn more</span>
+                        </div>
+                        <div class="details">
+                            <strong>What happens:</strong><br>
+                            1. Creates worktree and branch<br>
+                            2. Runs <a href="https://github.com/anthropics/claude-code/tree/main/plugins/ralph-wiggum">ralph-wiggum</a> in background<br>
+                            3. Ralph reads your spec and implements iteratively<br>
+                            4. You keep working in your main terminal<br><br>
+                            <strong>Use when:</strong> You have a spec already and want autonomous implementation.
+                        </div>
                     </div>
                 </div>
                 <div class="col-right">
-                    <div class="code-block">
-                        <span class="code-comment">// Full automation: Plan + implement together</span><br>
-                        <span class="code-prompt">/</span>worktree-manager:start comments plan-and-implement "Add threading"<br><br>
-                        <span class="code-comment">Creates worktree → Plans → Implements</span><br>
-                        <span class="code-comment">Entire feature developed autonomously</span>
+                    <div class="workflow-card">
+                        <div class="workflow-title">Full Automation</div>
+                        <div class="code-block-wrapper">
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                            <div class="code-block">/worktree-manager:start comments plan-and-implement "Add threading"</div>
+                        </div>
+                        <div class="workflow-desc">
+                            Plans with feature-dev, then implements with Ralph.
+                            <span class="learn-more" onclick="toggleDetails(this)">Learn more</span>
+                        </div>
+                        <div class="details">
+                            <strong>What happens:</strong><br>
+                            1. Creates worktree and branch<br>
+                            2. Runs feature-dev → generates spec<br>
+                            3. Passes spec to Ralph automatically<br>
+                            4. Ralph implements in background<br>
+                            5. Entire feature developed autonomously<br><br>
+                            <strong>Use when:</strong> You want end-to-end automation. Just describe what you want.
+                        </div>
                     </div>
                 </div>
             </div>
@@ -323,5 +489,36 @@
         </div>
     </footer>
 
+    <script>
+        function copyInstall(btn) {
+            const code = document.getElementById('install-code').innerText;
+            navigator.clipboard.writeText(code).then(() => {
+                btn.textContent = 'Copied!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = 'Copy';
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        }
+
+        function copyCode(btn) {
+            const code = btn.nextElementSibling.innerText;
+            navigator.clipboard.writeText(code).then(() => {
+                btn.textContent = 'Copied!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = 'Copy';
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        }
+
+        function toggleDetails(el) {
+            const details = el.parentElement.nextElementSibling;
+            details.classList.toggle('open');
+            el.textContent = details.classList.contains('open') ? 'Show less' : 'Learn more';
+        }
+    </script>
 </body>
 </html>

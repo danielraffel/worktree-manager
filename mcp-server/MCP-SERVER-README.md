@@ -53,7 +53,7 @@ npm run build
 
 # Add to Claude Code
 claude mcp add --transport stdio worktree \
-  -- node /Users/danielraffel/snapguide/claude-plugin/dist/index.js
+  -- node /path/to/worktree-manager/mcp-server/dist/index.js
 ```
 
 ### With Plugin Wrapper (recommended)
