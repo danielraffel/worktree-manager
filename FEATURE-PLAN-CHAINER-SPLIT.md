@@ -7,7 +7,7 @@
 | Executive Summary | ✅ Complete |
 | Project Directories | ✅ Complete |
 | Phase 0: Verify tmux | ⬜ Not Started |
-| Phase 1: Chainer MVP | ⬜ Not Started |
+| Phase 1: Chainer MVP | ✅ Complete |
 | Phase 2: Refactor Worktree Manager | ⬜ Not Started |
 | Phase 3: Integration | ⬜ Not Started |
 | Phase 4: tmux in Chainer | ⬜ Not Started |
@@ -142,7 +142,7 @@ tmux kill-session -t test-phase0
 
 ## Phase 1: Chainer MVP
 
-### Status: ⬜ Not Started
+### Status: ✅ Complete
 
 ### Goal
 Create Chainer as a separate plugin that can run chains from config.
@@ -155,14 +155,14 @@ Create Chainer as a separate plugin that can run chains from config.
 ### Tasks
 | Task | Status | Notes |
 |------|--------|-------|
-| Create plugin structure | ⬜ | plugin.json, commands/ |
-| Implement config parser | ⬜ | Parse YAML from .claude/chainer.local.md |
-| Create `/chainer:run` command | ⬜ | Execute chain by name |
-| Create `/chainer:list` command | ⬜ | Show available chains |
-| Ship default chains | ⬜ | plan-and-implement, plan-only, implement-only |
-| Build settings.html | ⬜ | Visual chain editor |
-| Write unit tests | ⬜ | Config parser, variable substitution |
-| Write README.md | ⬜ | |
+| Create plugin structure | ✅ | plugin.json, commands/ |
+| Implement config parser | ✅ | Parse YAML from .claude/chainer.local.md |
+| Create `/chainer:run` command | ✅ | Execute chain by name |
+| Create `/chainer:list` command | ✅ | Show available chains |
+| Ship default chains | ✅ | plan-and-implement, plan-only, implement-only |
+| Build settings.html | ✅ | Visual chain editor |
+| Write unit tests | ✅ | Config parser, variable substitution |
+| Write README.md | ✅ | |
 
 ### Configuration Format
 
