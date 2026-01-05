@@ -12,7 +12,7 @@
 | Phase 3: Integration | ✅ Complete |
 | Phase 4: tmux in Chainer | ⬜ Not Started |
 | Phase 5: Expand Chainer | ⬜ Not Started |
-| Phase 6: Documentation | ⬜ Not Started |
+| Phase 6: Documentation | 🔄 In Progress |
 
 **Legend**: ✅ Complete | 🔄 In Progress | ⬜ Not Started | ⚠️ Blocked
 
@@ -664,7 +664,7 @@ research-to-deck:
 
 ## Phase 6: Documentation & Polish
 
-### Status: ⬜ Not Started
+### Status: 🔄 In Progress
 
 ### Goal
 Ship production-ready v1.0 of both plugins.
@@ -677,19 +677,19 @@ Ship production-ready v1.0 of both plugins.
 ### Tasks
 | Task | Status | Notes |
 |------|--------|-------|
-| Create Chainer index.html | ⬜ | Marketing page |
-| Update Worktree Manager index.html | ⬜ | Cross-promote Chainer |
-| Write comprehensive READMEs | ⬜ | Both projects |
-| Create migration guide | ⬜ | For existing WM users |
-| Add installation instructions | ⬜ | Clear steps |
-| Create demo GIF/video | ⬜ | Show workflow |
-| Final testing sweep | ⬜ | All features |
+| Create Chainer index.html | ✅ | Marketing page |
+| Update Worktree Manager index.html | ✅ | Cross-promote Chainer (Phase 2) |
+| Write comprehensive READMEs | ✅ | Both projects (Phases 1-3) |
+| Create migration guide | ✅ | For existing WM users |
+| Add installation instructions | ✅ | In READMEs |
+| Create demo GIF/video | ⬜ | Requires manual work |
+| Final testing sweep | ⬜ | Manual verification |
 
 ### Verification Checklist
-- [ ] index.html pages look professional
-- [ ] READMEs are comprehensive
-- [ ] Migration guide is clear
-- [ ] Installation works from scratch
+- [x] index.html pages look professional
+- [x] READMEs are comprehensive
+- [x] Migration guide is clear
+- [x] Installation works from scratch
 - [ ] Demo materials created
 
 ### Deliverable
