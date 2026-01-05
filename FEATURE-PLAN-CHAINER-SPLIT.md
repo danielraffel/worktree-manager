@@ -11,8 +11,8 @@
 | Phase 2: Refactor Worktree Manager | ✅ Complete |
 | Phase 3: Integration | ✅ Complete |
 | Phase 4: tmux in Chainer | ✅ Complete |
-| Phase 5: Expand Chainer | 🔄 In Progress |
-| Phase 6: Documentation | 🔄 In Progress |
+| Phase 5: Expand Chainer | ✅ Complete |
+| Phase 6: Documentation | ✅ Complete |
 
 **Legend**: ✅ Complete | 🔄 In Progress | ⬜ Not Started | ⚠️ Blocked
 
@@ -596,7 +596,7 @@ tmux new -s test
 
 ## Phase 5: Expand Chainer
 
-### Status: 🔄 In Progress
+### Status: ✅ Complete
 
 ### Goal
 Add more chains, syntax options, and polish.
@@ -664,7 +664,7 @@ research-to-deck:
 
 ## Phase 6: Documentation & Polish
 
-### Status: 🔄 In Progress
+### Status: ✅ Complete
 
 ### Goal
 Ship production-ready v1.0 of both plugins.
