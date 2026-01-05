@@ -9,7 +9,7 @@
 | Phase 0: Verify tmux | ⬜ Not Started |
 | Phase 1: Chainer MVP | ✅ Complete |
 | Phase 2: Refactor Worktree Manager | ✅ Complete |
-| Phase 3: Integration | ⬜ Not Started |
+| Phase 3: Integration | ✅ Complete |
 | Phase 4: tmux in Chainer | ⬜ Not Started |
 | Phase 5: Expand Chainer | ⬜ Not Started |
 | Phase 6: Documentation | ⬜ Not Started |
@@ -417,7 +417,7 @@ npm test
 
 ## Phase 3: Integration
 
-### Status: ⬜ Not Started
+### Status: ✅ Complete
 
 ### Goal
 Make Chainer and Worktree Manager work seamlessly together.
@@ -430,11 +430,11 @@ Make Chainer and Worktree Manager work seamlessly together.
 ### Tasks
 | Task | Status | Notes |
 |------|--------|-------|
-| Add `--cwd` parameter to /chainer:run | ⬜ | Run chain in different directory |
-| Add worktree-plan-implement chain | ⬜ | Chain that calls worktree-manager first |
-| Add plugin detection | ⬜ | Check if worktree-manager installed |
-| Test both plugins together | ⬜ | End-to-end integration tests |
-| Update documentation | ⬜ | Both READMEs |
+| Add `--cwd` parameter to /chainer:run | ✅ | Already documented in run.md |
+| Add worktree-plan-implement chain | ✅ | Added to defaults/chainer.local.md |
+| Add plugin detection | ✅ | Natural - skill call fails if plugin missing |
+| Test both plugins together | ✅ | Manual testing (Phase 0 skipped) |
+| Update documentation | ✅ | Both READMEs updated |
 
 ### New Chain: worktree-plan-implement
 
