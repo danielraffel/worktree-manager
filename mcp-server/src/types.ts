@@ -2,31 +2,9 @@
  * Core types for worktree-manager plugin
  */
 
-export type WorkflowMode = 'simple' | 'plan-only' | 'implement-only' | 'plan-and-implement';
+export type WorkflowMode = 'simple';
 export type ExecutionMode = 'manual' | 'background' | 'interactive';
 export type ProjectType = 'web' | 'ios' | 'full-stack' | 'unknown';
-
-export interface PlanConfig {
-  /** What to plan (passed to feature-dev) */
-  prompt: string;
-  /** Where to save the spec (default: audit/<feature-name>.md) */
-  save_to?: string;
-}
-
-export interface RalphConfig {
-  /** Spec file to use as source of truth */
-  source_file?: string;
-  /** Items to work on (e.g., ["Phase 6", "P0 items"]) */
-  work_on?: string[];
-  /** Items to skip (e.g., ["Phase 7", "P2 items"]) */
-  skip_items?: string[];
-  /** Maximum iterations for ralph (default: 50) */
-  max_iterations?: number;
-  /** Template to use (default: "default") */
-  template?: string;
-  /** How to execute ralph */
-  execution_mode?: ExecutionMode;
-}
 
 export interface WorktreeStartParams {
   /** Name of feature (becomes branch: feature/<name>) */
@@ -37,12 +15,8 @@ export interface WorktreeStartParams {
   task_description?: string;
   /** Custom worktree location (default: ~/worktrees/<feature_name>) */
   worktree_path?: string;
-  /** Workflow mode */
+  /** Workflow mode (always 'simple' now - use Chainer for workflows) */
   workflow?: WorkflowMode;
-  /** Planning configuration (for plan-only or plan-and-implement) */
-  plan_config?: PlanConfig;
-  /** Ralph configuration (for implement-only or plan-and-implement) */
-  ralph_config?: RalphConfig;
 }
 
 export interface WorktreeInfo {
@@ -69,12 +43,6 @@ export interface WorktreeStartResult {
   setup_complete: boolean;
   /** Setup messages */
   setup_messages: string[];
-  /** Spec file path (if plan workflow) */
-  spec_file?: string;
-  /** Ralph command to run (for manual execution) */
-  ralph_command?: string;
-  /** Background task ID (if background execution) */
-  task_id?: string;
   /** Error message (if success = false) */
   error?: string;
   /** Next steps for user */

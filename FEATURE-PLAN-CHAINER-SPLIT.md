@@ -8,7 +8,7 @@
 | Project Directories | ✅ Complete |
 | Phase 0: Verify tmux | ⬜ Not Started |
 | Phase 1: Chainer MVP | ✅ Complete |
-| Phase 2: Refactor Worktree Manager | ⬜ Not Started |
+| Phase 2: Refactor Worktree Manager | ✅ Complete |
 | Phase 3: Integration | ⬜ Not Started |
 | Phase 4: tmux in Chainer | ⬜ Not Started |
 | Phase 5: Expand Chainer | ⬜ Not Started |
@@ -303,7 +303,7 @@ npm test
 
 ## Phase 2: Refactor Worktree Manager
 
-### Status: ⬜ Not Started
+### Status: ✅ Complete
 
 ### Goal
 Remove chaining logic from Worktree Manager, make it worktree-only.
@@ -316,15 +316,15 @@ Remove chaining logic from Worktree Manager, make it worktree-only.
 ### Tasks
 | Task | Status | Notes |
 |------|--------|-------|
-| Remove command-builder.ts plugin methods | ⬜ | Lines 29-49 |
-| Remove template-filler.ts | ⬜ | Entire file |
-| Remove ralph-default.ts template | ⬜ | Entire file |
-| Simplify worktree-start.ts | ⬜ | Remove workflow execution |
-| Remove PlanConfig, RalphConfig types | ⬜ | In types.ts |
-| Simplify start.md | ⬜ | Remove chaining, add Chainer suggestion |
-| Update tests | ⬜ | Remove workflow tests |
-| Update README | ⬜ | Document new scope |
-| Update index.html | ⬜ | Cross-promote Chainer |
+| Remove command-builder.ts plugin methods | ✅ | Lines 29-49 |
+| Remove template-filler.ts | ✅ | Entire file |
+| Remove ralph-default.ts template | ✅ | Entire file |
+| Simplify worktree-start.ts | ✅ | Remove workflow execution |
+| Remove PlanConfig, RalphConfig types | ✅ | In types.ts |
+| Simplify start.md | ✅ | Remove chaining, add Chainer suggestion |
+| Update tests | ✅ | Remove workflow tests |
+| Update README | ✅ | Document new scope |
+| Update index.html | ✅ | Cross-promote Chainer |
 
 ### Files to Modify
 

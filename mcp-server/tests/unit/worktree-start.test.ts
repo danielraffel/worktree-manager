@@ -46,7 +46,7 @@ describe('WorktreeStartTool', () => {
       expect(result.worktree_path).toBe(
         path.join(os.homedir(), 'worktrees', 'test-feature')
       );
-      expect(result.next_steps[0]).toContain('ready to use');
+      expect(result.next_steps[0]).toContain('Worktree created successfully');
     });
 
     it('should use custom worktree path when provided', async () => {
@@ -152,7 +152,7 @@ describe('WorktreeStartTool', () => {
       expect(result.setup_messages).toContain('❌ npm install failed');
     });
 
-    it('should include task description in next steps when provided', async () => {
+    it('should succeed when task_description is provided (legacy parameter)', async () => {
       (GitHelpers.isGitRepo as jest.Mock).mockResolvedValue(true);
       (GitHelpers.createWorktree as jest.Mock).mockResolvedValue({ success: true });
       (ProjectDetector.detect as jest.Mock).mockReturnValue({
@@ -166,7 +166,9 @@ describe('WorktreeStartTool', () => {
         task_description: 'Implement user authentication',
       });
 
-      expect(result.next_steps.join('\n')).toContain('Implement user authentication');
+      // task_description is now ignored (legacy parameter), but tool should still succeed
+      expect(result.success).toBe(true);
+      expect(result.next_steps[0]).toContain('Worktree created successfully');
     });
 
     it('should handle unknown project type with no setup commands', async () => {
@@ -199,62 +201,4 @@ describe('WorktreeStartTool', () => {
     });
   });
 
-  describe('execute - advanced workflows validation', () => {
-    it('should require plan_config for plan-only workflow', async () => {
-      (GitHelpers.isGitRepo as jest.Mock).mockResolvedValue(true);
-      (GitHelpers.createWorktree as jest.Mock).mockResolvedValue({ success: true });
-      (ProjectDetector.detect as jest.Mock).mockReturnValue({
-        type: 'web',
-        setup_commands: [],
-        details: { has_web: true, has_ios: false, has_root_package_json: false },
-      });
-
-      const result = await WorktreeStartTool.execute({
-        feature_name: 'test-feature',
-        workflow: 'plan-only',
-        // Missing plan_config
-      });
-
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('plan_config');
-    });
-
-    it('should require ralph_config for implement-only workflow', async () => {
-      (GitHelpers.isGitRepo as jest.Mock).mockResolvedValue(true);
-      (GitHelpers.createWorktree as jest.Mock).mockResolvedValue({ success: true });
-      (ProjectDetector.detect as jest.Mock).mockReturnValue({
-        type: 'web',
-        setup_commands: [],
-        details: { has_web: true, has_ios: false, has_root_package_json: false },
-      });
-
-      const result = await WorktreeStartTool.execute({
-        feature_name: 'test-feature',
-        workflow: 'implement-only',
-        // Missing ralph_config
-      });
-
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('ralph_config');
-    });
-
-    it('should require both plan_config and ralph_config for plan-and-implement workflow', async () => {
-      (GitHelpers.isGitRepo as jest.Mock).mockResolvedValue(true);
-      (GitHelpers.createWorktree as jest.Mock).mockResolvedValue({ success: true });
-      (ProjectDetector.detect as jest.Mock).mockReturnValue({
-        type: 'web',
-        setup_commands: [],
-        details: { has_web: true, has_ios: false, has_root_package_json: false },
-      });
-
-      const result = await WorktreeStartTool.execute({
-        feature_name: 'test-feature',
-        workflow: 'plan-and-implement',
-        // Missing both configs
-      });
-
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('plan_config');
-    });
-  });
 });

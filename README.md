@@ -1,26 +1,31 @@
 # Worktree Manager
 
-**Effortless git worktrees with automated feature development**
+**Effortless git worktrees for parallel development**
 
-A two-layer system combining a Claude Code plugin with an MCP server for parallel feature development using git worktrees.
+A two-layer system combining a Claude Code plugin with an MCP server for creating and managing git worktrees with automatic environment setup.
 
 ## What This Does
 
-Create isolated git worktrees for parallel feature development with automatic environment setup and optional integration with Claude Code's `feature-dev` and `ralph-wiggum` plugins for fully automated implementation workflows.
+Create isolated git worktrees for parallel feature development with automatic environment setup. Works standalone or pairs with **Chainer** plugin for automated workflows.
 
 **Quick example**:
 ```bash
-# In Claude Code
-/worktree-manager:start my-feature plan-and-implement "Design OAuth2 authentication"
+# Create worktree
+/worktree-manager:start oauth-flow
+
+# For automated workflows, use Chainer
+/chainer:run plan-and-implement \
+  --prompt="Build OAuth2 authentication" \
+  --feature_name="oauth-flow"
 ```
 
-This single command:
-1. Creates a new git worktree at `~/worktrees/my-feature/`
-2. Creates branch `feature/my-feature`
-3. Auto-detects and runs environment setup (npm install, etc.)
-4. Runs `feature-dev` to generate implementation spec
-5. Runs `ralph-wiggum` to automatically implement the spec
-6. All automated - come back to a completed feature ready for review
+## Key Features
+
+- **One command** creates worktree + new branch
+- **Auto-detects** project type (web, iOS, full-stack)
+- **Auto-runs** setup (npm install, swift build, etc.)
+- **99% test coverage** - reliable and well-tested
+- **Pairs with Chainer** for automated planning & implementation
 
 ## Architecture
 
@@ -45,313 +50,304 @@ This project consists of two layers:
 │  • TypeScript tools (99% test coverage) │
 │  • Git worktree operations              │
 │  • Environment auto-detection           │
-│  • Template automation system           │
-│  • 4 workflows: simple, plan-only,      │
-│    implement-only, plan-and-implement   │
+│  • Auto-setup execution                 │
+│  • Project type detection               │
 └─────────────────────────────────────────┘
 ```
 
 ### Why Two Layers?
 
-- **Plugin layer**: Provides user-friendly commands and integrates with Claude Code's ecosystem
-- **MCP server layer**: Type-safe TypeScript implementation with comprehensive tests
-- **Separation of concerns**: UI/UX in plugin, business logic in MCP server
-- **Maintainability**: Can update either layer independently
+- **Plugin layer**: User-friendly commands, integrates with Claude Code
+- **MCP server layer**: Type-safe TypeScript with comprehensive tests
+- **Separation of concerns**: UI in plugin, business logic in MCP server
+- **Maintainability**: Update either layer independently
+
+## Installation
+
+### 1. Install the MCP Server
+
+```bash
+cd ~/.claude/plugins
+git clone https://github.com/danielraffel/worktree-manager
+cd worktree-manager/mcp-server
+npm install
+npm run build
+```
+
+### 2. Configure Claude Code
+
+The plugin is automatically detected. Verify with:
+
+```bash
+claude
+/help
+# Should show worktree-manager commands
+```
+
+### 3. Optional: Install Chainer
+
+For automated workflows (planning + implementation):
+
+```bash
+git clone https://github.com/danielraffel/Chainer ~/.claude/plugins/chainer
+```
+
+## Usage
+
+### Basic Worktree Creation
+
+```bash
+# Create worktree from main branch
+/worktree-manager:start my-feature
+
+# Custom base branch
+/worktree-manager:start hotfix --base-branch=develop
+
+# Custom location
+/worktree-manager:start experiment --worktree-path=/tmp/test
+```
+
+### What Happens
+
+1. Creates worktree at `~/worktrees/my-feature/`
+2. Creates branch `feature/my-feature`
+3. Detects project type (web → npm, iOS → swift, etc.)
+4. Runs setup commands automatically
+5. Suggests next steps
+
+### Auto-Detection & Setup
+
+| Project Type | Detection | Auto-Setup |
+|--------------|-----------|------------|
+| Web | `package.json` in root or `web/` | `npm install` |
+| iOS | `Package.swift` | `swift build` |
+| Full-stack | Both web + iOS | Both setups |
+
+### List Worktrees
+
+```bash
+/worktree-manager:list
+```
+
+Shows all worktrees with:
+- Path
+- Branch name
+- Commit SHA
+- Uncommitted changes
+- Untracked files
+
+### Check Status
+
+```bash
+/worktree-manager:status
+```
+
+Shows git status for all worktrees.
+
+### Cleanup
+
+```bash
+/worktree-manager:cleanup <path-or-branch>
+```
+
+Safely removes worktree after checking for uncommitted changes.
+
+## Automated Workflows with Chainer
+
+Worktree Manager creates the environment. **Chainer** handles automated workflows.
+
+### Full Workflow (Plan + Implement)
+
+```bash
+# Create worktree
+/worktree-manager:start oauth
+
+# Run automated workflow
+/chainer:run plan-and-implement \
+  --cwd="~/worktrees/oauth" \
+  --prompt="Build OAuth2 authentication" \
+  --feature_name="oauth"
+```
+
+This will:
+1. Plan feature with `feature-dev` plugin
+2. Implement with `ralph-wiggum` plugin
+3. Iterate until complete
+
+### Or Combine in One Step
+
+With Chainer's `worktree-plan-implement` chain (Phase 3):
+
+```bash
+/chainer:run worktree-plan-implement \
+  --feature_name="oauth" \
+  --prompt="Build OAuth2 authentication"
+```
+
+## Configuration
+
+Create `~/.claude/worktree-manager.local.md` (global) or `.claude/worktree-manager.local.md` (project-specific):
+
+```yaml
+---
+worktree_base_path: ~/my-worktrees
+branch_prefix: feat/
+create_learnings_file: true
+---
+
+# Notes
+Project-specific configuration notes here.
+```
+
+### Configuration Options
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `worktree_base_path` | `~/worktrees` | Where to create worktrees |
+| `branch_prefix` | `feature/` | Prefix for feature branches |
+| `create_learnings_file` | `false` | Auto-create LEARNINGS.md |
+
+## Development
+
+### Build
+
+```bash
+cd mcp-server
+npm install
+npm run build
+```
+
+### Tests
+
+```bash
+cd mcp-server
+npm test
+
+# With coverage
+npm run test:coverage
+```
+
+Current coverage: **99%** (42 passing tests)
+
+### Watch Mode
+
+```bash
+cd mcp-server
+npm run watch
+```
+
+### Lint
+
+```bash
+cd mcp-server
+npm run lint
+```
+
+## Project Structure
+
+```
+worktree-manager/
+├── plugin/                      # Claude Code plugin
+│   ├── .claude-plugin/
+│   │   └── plugin.json          # Plugin manifest
+│   └── commands/
+│       ├── start.md            # Create worktree
+│       ├── list.md             # List worktrees
+│       ├── status.md           # Check status
+│       └── cleanup.md          # Remove worktree
+│
+├── mcp-server/                  # TypeScript MCP server
+│   ├── src/
+│   │   ├── index.ts            # Server entry point
+│   │   ├── tools/              # MCP tools
+│   │   │   ├── worktree-start.ts
+│   │   │   ├── worktree-list.ts
+│   │   │   ├── worktree-status.ts
+│   │   │   └── worktree-cleanup.ts
+│   │   ├── utils/              # Utilities
+│   │   │   ├── git-helpers.ts
+│   │   │   ├── project-detector.ts
+│   │   │   ├── setup-runner.ts
+│   │   │   ├── config-reader.ts
+│   │   │   └── command-builder.ts
+│   │   └── types.ts
+│   ├── tests/                  # 99% coverage
+│   │   └── unit/
+│   ├── package.json
+│   └── tsconfig.json
+│
+├── CLAUDE.md                    # Development guidance
+├── README.md                    # This file
+└── index.html                   # Marketing page
+```
 
 ## Evolution Story
 
 This project evolved through several iterations:
 
-1. **v1**: Pure bash scripts in a Claude Code plugin
-2. **v2**: TypeScript implementation with 45 tests (99% coverage)
-3. **v3**: Recognized architectural mismatch - TypeScript was MCP server, not plugin
-4. **v4 (current)**: Proper two-layer architecture with plugin calling MCP server
+1. **v1**: Bash scripts in Claude Code plugin
+2. **v2**: TypeScript with 45 tests (99% coverage)
+3. **v2.1**: Added 4 automated workflows (plan-only, implement-only, etc.)
+4. **v3 (current)**: Split workflows to **Chainer** plugin
+   - Worktree Manager = Pure worktree operations
+   - Chainer = Universal plugin orchestration
+   - Clean separation of concerns
 
-## Features
+## Related Projects
 
-### 4 Workflows
-
-1. **Simple** (default) - Manual development
-   - Creates worktree with auto-setup
-   - Ready for manual coding
-
-2. **Plan-only** - Feature planning
-   - Creates worktree
-   - Runs `feature-dev` to generate spec
-
-3. **Implement-only** - Automated implementation
-   - Creates worktree
-   - Runs `ralph-wiggum` with template automation
-
-4. **Plan-and-implement** - Full automation
-   - Creates worktree
-   - Plans with `feature-dev`
-   - Implements with `ralph-wiggum`
-   - Fully automated end-to-end
-
-### Auto-Detection
-
-- Detects web projects (package.json) → runs `npm install`
-- Detects iOS projects (Package.swift) → runs `swift build`
-- Extensible for other project types
-
-### Template Automation
-
-Auto-fills 50-line ralph prompts from simple config:
-```bash
---work-on="P0 items" --skip="P2 features"
-```
-
-Becomes a complete ralph prompt with:
-- Spec file reference
-- Work priorities
-- Skip instructions
-- Context preservation
-- Git commit instructions
-
-## Installation
-
-### Prerequisites
-
-- [Claude Code](https://claude.ai/code) installed
-- Node.js 18+ (for MCP server)
-- Git repository
-
-### Step 1: Clone and Build
-
-```bash
-# Clone the repo
-git clone https://github.com/danielraffel/worktree-manager ~/worktree-manager
-cd ~/worktree-manager
-
-# Build the MCP server
-cd mcp-server && npm install && npm run build && cd ..
-```
-
-Verify build:
-```bash
-cd mcp-server && npm test  # Should show 45 passing tests
-```
-
-### Step 2: Run Claude Code with the Plugin
-
-```bash
-cd /your/project
-claude --plugin-dir ~/worktree-manager/plugin
-```
-
-**Tip**: Add a shell alias for convenience:
-```bash
-# Add to ~/.zshrc or ~/.bashrc
-alias claude-wt='claude --plugin-dir ~/worktree-manager/plugin'
-```
-
-### Step 3: Verify Installation
-
-In Claude Code:
-```bash
-/help
-```
-
-You should see `worktree-manager:*` commands listed.
-
-## Command Reference
-
-| What you want | Command | You provide | What happens |
-|--------------|---------|-------------|--------------|
-| Create worktree (manual) | `/worktree-manager:start <name>` | name | Creates isolated workspace. No AI automation. |
-| Create + plan | `/worktree-manager:start <name> plan-only "<idea>"` | name, idea | Creates workspace + generates spec with feature-dev. |
-| Create + implement | `/worktree-manager:start <name> implement-only <spec>` | name, spec path | Creates workspace + implements spec with ralph-wiggum. |
-| Create + plan + implement | `/worktree-manager:start <name> plan-and-implement "<idea>"` | name, idea | Full automation: workspace → plan → implement. |
-| List worktrees | `/worktree-manager:list` | nothing | Shows all worktrees with paths and branches. |
-| Check status | `/worktree-manager:status <path>` | worktree path | Shows git status and branch info. |
-| Cleanup | `/worktree-manager:cleanup <path> [--merge]` | path, optional --merge | Removes worktree. --merge merges to main first. |
-
-## Quick Start
-
-### Basic Usage
-
-**Create a simple worktree**:
-```
-/worktree-manager:start bug-fix
-```
-
-**List all worktrees**:
-```
-/worktree-manager:list
-```
-
-**Check status**:
-```
-/worktree-manager:status ~/worktrees/bug-fix
-```
-
-**Cleanup (merge and remove)**:
-```
-/worktree-manager:cleanup ~/worktrees/bug-fix --merge
-```
-
-### Automated Workflows
-
-**Plan a feature** (generates spec):
-```
-/worktree-manager:start password-reset plan-only "Design password reset with email verification"
-```
-
-**Implement from spec** (automated coding):
-```
-/worktree-manager:start build-auth implement-only audit/auth-spec.md
-```
-
-**Full automation** (plan + implement):
-```
-/worktree-manager:start comments plan-and-implement "Add comment system with threading"
-```
-
-## Configuration
-
-Customize behavior with a config file. Settings can be global or per-project.
-
-**Global:** `~/.claude/worktree-manager.local.md`
-**Project:** `.claude/worktree-manager.local.md` (overrides global)
-
-```yaml
----
-worktree_base_path: ~/my-worktrees
-branch_prefix: feature/
-default_workflow: simple
-auto_commit: false
-auto_push: false
-create_learnings_file: true
-spec_directory: audit
-default_max_iterations: 50
----
-```
-
-See [plugin/README.md](plugin/README.md) for full configuration options.
-
-## Documentation
-
-- **Plugin Layer**: See [plugin/README.md](plugin/README.md)
-- **MCP Server Layer**: See [mcp-server/MCP-SERVER-README.md](mcp-server/MCP-SERVER-README.md)
-- **Command Reference**: See [plugin/commands/](plugin/commands/)
-
-## Development
-
-### Running Tests
-
-```bash
-cd mcp-server
-npm test              # Run all tests
-npm run test:watch    # Watch mode
-npm run test:coverage # Coverage report
-```
-
-**Current test coverage**: 99%+ (45 tests)
-
-### Project Structure
-
-```
-worktree-manager/
-├── README.md                  # This file
-├── mcp-server/                # TypeScript MCP server
-│   ├── src/
-│   │   ├── index.ts           # MCP server entry point
-│   │   ├── tools/             # Worktree tools
-│   │   ├── workflows/         # Workflow implementations
-│   │   ├── templates/         # Ralph template system
-│   │   └── utils/             # Shared utilities
-│   ├── tests/                 # Jest tests (99% coverage)
-│   ├── package.json
-│   ├── tsconfig.json
-│   └── MCP-SERVER-README.md
-└── plugin/                    # Claude Code plugin
-    ├── .claude-plugin/
-    │   └── plugin.json        # Plugin manifest
-    ├── commands/              # Slash commands
-    │   ├── start.md
-    │   ├── list.md
-    │   ├── status.md
-    │   └── cleanup.md
-    └── README.md
-```
-
-### Adding New Features
-
-1. **Add to MCP server** (`mcp-server/src/tools/`)
-   - Implement TypeScript tool
-   - Add comprehensive tests
-   - Export from `index.ts`
-
-2. **Add to plugin** (`plugin/commands/`)
-   - Create command markdown file
-   - Document usage and examples
-   - Add to allowed-tools in frontmatter
-
-3. **Update documentation**
-   - Update READMEs
-   - Add examples
-   - Update architecture diagrams
-
-## Troubleshooting
-
-### Plugin not showing up
-
-Make sure you're using `--plugin-dir` with the correct path:
-```bash
-claude --plugin-dir ~/worktree-manager/plugin
-```
-
-Verify the plugin directory exists:
-```bash
-ls ~/worktree-manager/plugin/.claude-plugin/plugin.json
-```
-
-### MCP server not responding
-
-```bash
-# Rebuild MCP server
-cd ~/worktree-manager/mcp-server
-npm run build
-
-# Check for errors in build output
-```
-
-### Worktree creation fails
-
-Check that:
-- You're in a git repository
-- Branch name doesn't already exist
-- Worktree directory doesn't exist
+- **[Chainer](https://github.com/danielraffel/Chainer)** - Universal plugin orchestration for Claude Code
+- **[feature-dev](https://github.com/anthropics/claude-plugins-official/tree/main/feature-dev)** - Feature planning plugin
+- **[ralph-wiggum](https://github.com/anthropics/claude-plugins-official/tree/main/ralph-wiggum)** - Iterative implementation plugin
 
 ## Contributing
 
 Contributions welcome! Please:
 
-1. Fork the repository
-2. Create a feature branch
-3. Add tests for new features
-4. Ensure all tests pass (`npm test`)
-5. Submit a pull request
+1. Run tests: `cd mcp-server && npm test`
+2. Ensure coverage stays at 99%+
+3. Update README if adding features
+4. Follow existing code style
 
-## Roadmap
+## Troubleshooting
 
-- [ ] Support for additional project types (Python, Ruby, etc.)
-- [ ] Worktree templates for common workflows
-- [ ] Integration with additional Claude Code plugins
-- [ ] PR creation workflow
+### Worktree already exists
 
-## Author
+```
+❌ Worktree already exists with uncommitted changes
+```
 
-**Daniel Raffel**
-http://danielraffel.me
+**Fix**: Commit or stash changes, or use `/worktree-manager:cleanup` to remove it.
+
+### Not in a git repository
+
+```
+❌ Current directory is not a git repository
+```
+
+**Fix**: Navigate to a git repository first.
+
+### Setup failed
+
+```
+⚠️ Worktree created but setup incomplete
+```
+
+**Fix**: Run setup manually:
+```bash
+cd ~/worktrees/my-feature
+npm install  # or appropriate setup command
+```
 
 ## License
 
-MIT License - See LICENSE file for details
+MIT License - see LICENSE file for details
 
-## Acknowledgments
+## Credits
 
-- Built for [Claude Code](https://claude.ai/code)
-- Uses [Model Context Protocol (MCP)](https://github.com/anthropics/mcp)
-- Inspired by the need for parallel feature development workflows
+Built by [Daniel Raffel](https://github.com/danielraffel) for the Claude Code community.
+
+## Links
+
+- [GitHub](https://github.com/danielraffel/worktree-manager)
+- [Chainer Plugin](https://github.com/danielraffel/Chainer)
+- [Feature Plan](FEATURE-PLAN-CHAINER-SPLIT.md)

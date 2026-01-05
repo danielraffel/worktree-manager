@@ -5,20 +5,15 @@ import { WorktreeStartParams, WorktreeStartResult, WorkflowMode } from '../types
 import { GitHelpers } from '../utils/git-helpers';
 import { ProjectDetector } from '../utils/project-detector';
 import { SetupRunner } from '../utils/setup-runner';
-import { CommandBuilder } from '../utils/command-builder';
 import { ConfigReader, WorktreeConfig } from '../utils/config-reader';
-import { exec } from 'child_process';
-import { promisify } from 'util';
-
-const execAsync = promisify(exec);
 
 /**
- * Main tool for creating git worktrees with auto-setup and plugin integration
- * Supports all workflow modes: simple, plan-only, implement-only, plan-and-implement
+ * Main tool for creating git worktrees with auto-setup
+ * Refactored to be worktree-only - workflows delegated to Chainer plugin
  */
 export class WorktreeStartTool {
   /**
-   * Create a new worktree with optional automation
+   * Create a new worktree with auto-setup
    */
   static async execute(params: WorktreeStartParams): Promise<WorktreeStartResult> {
     // Load configuration
@@ -177,18 +172,14 @@ This file captures insights, decisions, and learnings during development.
         }
       }
 
-      // Step 5: Execute workflow-specific logic
-      const result = await this.executeWorkflow({
-        workflow,
+      // Step 5: Return success with Chainer suggestion
+      return this.buildSuccessResult({
         worktreePath,
         branchName,
-        params,
+        workflow,
         setupMessages,
         setupComplete,
-        config,
       });
-
-      return result;
     } catch (error: any) {
       return {
         success: false,
@@ -204,537 +195,85 @@ This file captures insights, decisions, and learnings during development.
   }
 
   /**
-   * Execute workflow-specific logic
+   * Build success result with Chainer detection and suggestions
    */
-  private static async executeWorkflow(options: {
+  private static buildSuccessResult(options: {
+    worktreePath: string;
+    branchName: string;
     workflow: WorkflowMode | string;
-    worktreePath: string;
-    branchName: string;
-    params: WorktreeStartParams;
     setupMessages: string[];
     setupComplete: boolean;
-    config: WorktreeConfig;
-  }): Promise<WorktreeStartResult> {
-    const { workflow, worktreePath, branchName, params, setupMessages, setupComplete, config } = options;
+  }): WorktreeStartResult {
+    const { worktreePath, branchName, workflow, setupMessages, setupComplete } = options;
 
-    switch (workflow) {
-      case 'simple':
-        return this.executeSimpleWorkflow({
-          worktreePath,
-          branchName,
-          params,
-          setupMessages,
-          setupComplete,
-        });
-
-      case 'plan-only':
-        return this.executePlanOnlyWorkflow({
-          worktreePath,
-          branchName,
-          params,
-          setupMessages,
-          setupComplete,
-          config,
-        });
-
-      case 'implement-only':
-        return this.executeImplementOnlyWorkflow({
-          worktreePath,
-          branchName,
-          params,
-          setupMessages,
-          setupComplete,
-          config,
-        });
-
-      case 'plan-and-implement':
-        return this.executePlanAndImplementWorkflow({
-          worktreePath,
-          branchName,
-          params,
-          config,
-          setupMessages,
-          setupComplete,
-        });
-
-      default:
-        return {
-          success: false,
-          worktree_path: worktreePath,
-          branch: branchName,
-          workflow: workflow as WorkflowMode,
-          setup_complete: setupComplete,
-          setup_messages: setupMessages,
-          error: `Unknown workflow: ${workflow}`,
-          next_steps: ['Use one of: simple, plan-only, implement-only, plan-and-implement'],
-        };
-    }
-  }
-
-  /**
-   * Simple workflow: Just create worktree, no plugins
-   */
-  private static async executeSimpleWorkflow(options: {
-    worktreePath: string;
-    branchName: string;
-    params: WorktreeStartParams;
-    setupMessages: string[];
-    setupComplete: boolean;
-  }): Promise<WorktreeStartResult> {
-    const { worktreePath, branchName, params, setupMessages, setupComplete } = options;
-
-    const nextSteps: string[] = [];
-    if (setupComplete) {
-      nextSteps.push('Worktree is ready to use!');
-      nextSteps.push('Open new terminal and navigate:');
-      nextSteps.push(`  cd ${worktreePath}`);
-      nextSteps.push('  claude');
-      if (params.task_description) {
-        nextSteps.push('');
-        nextSteps.push(`Task: ${params.task_description}`);
-      }
-    } else {
-      nextSteps.push('Worktree created but setup incomplete');
-      nextSteps.push('Fix setup issues manually:');
-      nextSteps.push(`  cd ${worktreePath}`);
-      nextSteps.push('  npm install (or appropriate setup command)');
-    }
-
-    return {
-      success: true,
-      worktree_path: worktreePath,
-      branch: branchName,
-      workflow: 'simple',
-      setup_complete: setupComplete,
-      setup_messages: setupMessages,
-      next_steps: nextSteps,
-    };
-  }
-
-  /**
-   * Plan-only workflow: Create + run feature-dev
-   */
-  private static async executePlanOnlyWorkflow(options: {
-    worktreePath: string;
-    branchName: string;
-    params: WorktreeStartParams;
-    setupMessages: string[];
-    setupComplete: boolean;
-    config: WorktreeConfig;
-  }): Promise<WorktreeStartResult> {
-    const { worktreePath, branchName, params, setupMessages, setupComplete, config } = options;
-
-    if (!params.plan_config) {
-      return {
-        success: false,
-        worktree_path: worktreePath,
-        branch: branchName,
-        workflow: 'plan-only',
-        setup_complete: setupComplete,
-        setup_messages: setupMessages,
-        error: 'plan-only workflow requires plan_config parameter',
-        next_steps: ['Provide plan_config with prompt field'],
-      };
-    }
-
-    // Build feature-dev command
-    const featureDevCmd = CommandBuilder.buildFeatureDevCommand(params.plan_config);
-
-    // Default spec file location (uses config.spec_directory)
-    const specFile =
-      params.plan_config.save_to || path.join(config.spec_directory, `${params.feature_name}.md`);
-    const specFilePath = path.join(worktreePath, specFile);
-
-    // Build full command to run in worktree
-    const fullCommand = CommandBuilder.buildWorktreeCommand({
-      worktree_path: worktreePath,
-      command: `${featureDevCmd} > "${specFile}"`,
-      background: false,
-    });
-
-    setupMessages.push('');
-    setupMessages.push('Phase: Planning with feature-dev');
-    setupMessages.push(`Running: ${featureDevCmd}`);
-    setupMessages.push(`Saving to: ${specFile}`);
-
-    // Execute feature-dev (synchronously)
-    try {
-      await execAsync(fullCommand, { cwd: worktreePath });
-      setupMessages.push('✅ feature-dev completed successfully');
-    } catch (error: any) {
-      return {
-        success: false,
-        worktree_path: worktreePath,
-        branch: branchName,
-        workflow: 'plan-only',
-        setup_complete: setupComplete,
-        setup_messages: [...setupMessages, `❌ feature-dev failed: ${error.message}`],
-        error: `feature-dev execution failed: ${error.message}`,
-        next_steps: ['Check feature-dev plugin is installed', 'Try running manually'],
-      };
-    }
-
-    const nextSteps = [
-      'Planning complete!',
-      `Spec saved to: ${specFile}`,
-      '',
-      'Next options:',
-      'A) Implement manually:',
-      `   cd ${worktreePath} && claude`,
-      '',
-      'B) Have ralph implement:',
-      `   worktree_start({`,
-      `     feature_name: "${params.feature_name}",`,
-      `     workflow: "implement-only",`,
-      `     ralph_config: { source_file: "${specFile}" }`,
-      `   })`,
+    // Check if Chainer is installed
+    const homeDir = os.homedir();
+    const chainerPaths = [
+      path.join(homeDir, '.claude', 'plugins', 'chainer'),
+      path.join(homeDir, 'Code', 'Chainer'),
     ];
 
+    let chainerInstalled = false;
+    for (const chainerPath of chainerPaths) {
+      if (fs.existsSync(path.join(chainerPath, 'plugin', '.claude-plugin', 'plugin.json'))) {
+        chainerInstalled = true;
+        break;
+      }
+    }
+
+    setupMessages.push('');
+
+    const nextSteps: string[] = [];
+
+    if (setupComplete) {
+      nextSteps.push('✅ Worktree created successfully!');
+      nextSteps.push(`📁 Path: ${worktreePath}`);
+      nextSteps.push(`🌿 Branch: ${branchName}`);
+      nextSteps.push('');
+
+      if (chainerInstalled) {
+        // Chainer detected - suggest using it for automated workflows
+        nextSteps.push('🔗 Chainer detected! For automated development:');
+        nextSteps.push('');
+        nextSteps.push('  # Full workflow (plan + implement)');
+        nextSteps.push(`  /chainer:run plan-and-implement \\`);
+        nextSteps.push(`    --cwd="${worktreePath}" \\`);
+        nextSteps.push(`    --prompt="Your feature idea" \\`);
+        nextSteps.push(`    --feature_name="${path.basename(worktreePath)}"`);
+        nextSteps.push('');
+        nextSteps.push('  # Or just planning');
+        nextSteps.push(`  /chainer:run plan-only --cwd="${worktreePath}" --prompt="Your idea"`);
+        nextSteps.push('');
+        nextSteps.push('  # Or manual development');
+        nextSteps.push(`  cd ${worktreePath} && claude`);
+      } else {
+        // Chainer not installed - suggest manual workflow
+        nextSteps.push('Next steps:');
+        nextSteps.push(`  cd ${worktreePath}`);
+        nextSteps.push('  claude');
+        nextSteps.push('');
+        nextSteps.push('💡 For automated workflows, install Chainer:');
+        nextSteps.push('   git clone https://github.com/danielraffel/Chainer ~/.claude/plugins/chainer');
+        nextSteps.push('');
+        nextSteps.push('   Then use:');
+        nextSteps.push('   /chainer:run plan-and-implement --prompt="Your idea" --feature_name="name"');
+      }
+    } else {
+      nextSteps.push('⚠️ Worktree created but setup incomplete');
+      nextSteps.push('');
+      nextSteps.push('Fix setup issues:');
+      nextSteps.push(`  cd ${worktreePath}`);
+      nextSteps.push('  npm install  # or appropriate setup command');
+    }
+
     return {
       success: true,
       worktree_path: worktreePath,
       branch: branchName,
-      workflow: 'plan-only',
+      workflow: workflow as WorkflowMode,
       setup_complete: setupComplete,
       setup_messages: setupMessages,
-      spec_file: specFilePath,
       next_steps: nextSteps,
     };
-  }
-
-  /**
-   * Implement-only workflow: Create + run ralph
-   */
-  private static async executeImplementOnlyWorkflow(options: {
-    worktreePath: string;
-    branchName: string;
-    params: WorktreeStartParams;
-    setupMessages: string[];
-    setupComplete: boolean;
-    config: WorktreeConfig;
-  }): Promise<WorktreeStartResult> {
-    const { worktreePath, branchName, params, setupMessages, setupComplete, config } = options;
-
-    if (!params.ralph_config) {
-      return {
-        success: false,
-        worktree_path: worktreePath,
-        branch: branchName,
-        workflow: 'implement-only',
-        setup_complete: setupComplete,
-        setup_messages: setupMessages,
-        error: 'implement-only workflow requires ralph_config parameter',
-        next_steps: ['Provide ralph_config with source_file field'],
-      };
-    }
-
-    if (!params.ralph_config.source_file) {
-      return {
-        success: false,
-        worktree_path: worktreePath,
-        branch: branchName,
-        workflow: 'implement-only',
-        setup_complete: setupComplete,
-        setup_messages: setupMessages,
-        error: 'ralph_config must include source_file',
-        next_steps: ['Provide ralph_config.source_file (e.g., "audit/feature.md")'],
-      };
-    }
-
-    // Apply config defaults to ralph_config
-    const ralphConfigWithDefaults = {
-      ...params.ralph_config,
-      max_iterations: params.ralph_config.max_iterations || config.default_max_iterations,
-    };
-
-    // Build ralph command
-    const ralphCmd = CommandBuilder.buildRalphCommand(ralphConfigWithDefaults);
-
-    // Determine execution mode - default to manual since background doesn't work reliably
-    // (claude is an interactive terminal app that can't be fully backgrounded)
-    const executionMode = ralphConfigWithDefaults.execution_mode || 'manual';
-    const isBackground = executionMode === 'background';
-
-    setupMessages.push('');
-    setupMessages.push('Phase: Implementation with ralph-wiggum');
-    setupMessages.push(`Source: ${ralphConfigWithDefaults.source_file}`);
-    if (ralphConfigWithDefaults.work_on) {
-      setupMessages.push(`Working on: ${ralphConfigWithDefaults.work_on.join(', ')}`);
-    }
-    if (ralphConfigWithDefaults.skip_items) {
-      setupMessages.push(`Skipping: ${ralphConfigWithDefaults.skip_items.join(', ')}`);
-    }
-    setupMessages.push(`Max iterations: ${ralphConfigWithDefaults.max_iterations}`);
-    setupMessages.push(`Execution mode: ${executionMode}`);
-
-    if (isBackground) {
-      // Build background command
-      const fullCommand = CommandBuilder.buildWorktreeCommand({
-        worktree_path: worktreePath,
-        command: ralphCmd,
-        background: true,
-      });
-
-      try {
-        const { stdout } = await execAsync(fullCommand, { cwd: worktreePath });
-        const taskId = `ralph_${Date.now()}`;
-
-        setupMessages.push(`🤖 ralph-wiggum started in background (${taskId})`);
-
-        const nextSteps = [
-          'Implementation running in background!',
-          '',
-          `Monitor with: tail -f /tmp/claude-worktree-*.log`,
-          `Or cd ${worktreePath} && git log`,
-          '',
-          'Ralph is implementing features from spec.',
-          'This may take several hours depending on scope.',
-          '',
-          'You can continue working elsewhere!',
-        ];
-
-        return {
-          success: true,
-          worktree_path: worktreePath,
-          branch: branchName,
-          workflow: 'implement-only',
-          setup_complete: setupComplete,
-          setup_messages: setupMessages,
-          task_id: taskId,
-          next_steps: nextSteps,
-        };
-      } catch (error: any) {
-        return {
-          success: false,
-          worktree_path: worktreePath,
-          branch: branchName,
-          workflow: 'implement-only',
-          setup_complete: setupComplete,
-          setup_messages: [...setupMessages, `❌ ralph failed to start: ${error.message}`],
-          error: `ralph execution failed: ${error.message}`,
-          next_steps: ['Check ralph-wiggum plugin is installed', 'Try running manually'],
-        };
-      }
-    } else {
-      // Manual execution - provide clear terminal commands
-      const nextSteps = [
-        '🎯 Worktree ready for implementation!',
-        '',
-        'Open a NEW terminal and run:',
-        `  cd ${worktreePath} && claude`,
-        '',
-        'Then start ralph with:',
-        `  /ralph-wiggum:ralph-loop`,
-        '',
-        `Spec file: ${ralphConfigWithDefaults.source_file}`,
-      ];
-
-      return {
-        success: true,
-        worktree_path: worktreePath,
-        branch: branchName,
-        workflow: 'implement-only',
-        setup_complete: setupComplete,
-        setup_messages: setupMessages,
-        spec_file: ralphConfigWithDefaults.source_file,
-        ralph_command: '/ralph-wiggum:ralph-loop',
-        next_steps: nextSteps,
-      };
-    }
-  }
-
-  /**
-   * Plan-and-implement workflow: Create + feature-dev + ralph
-   */
-  private static async executePlanAndImplementWorkflow(options: {
-    worktreePath: string;
-    branchName: string;
-    params: WorktreeStartParams;
-    setupMessages: string[];
-    setupComplete: boolean;
-    config: WorktreeConfig;
-  }): Promise<WorktreeStartResult> {
-    const { worktreePath, branchName, params, setupMessages, setupComplete, config } = options;
-
-    if (!params.plan_config) {
-      return {
-        success: false,
-        worktree_path: worktreePath,
-        branch: branchName,
-        workflow: 'plan-and-implement',
-        setup_complete: setupComplete,
-        setup_messages: setupMessages,
-        error: 'plan-and-implement workflow requires plan_config parameter',
-        next_steps: ['Provide plan_config with prompt field'],
-      };
-    }
-
-    if (!params.ralph_config) {
-      return {
-        success: false,
-        worktree_path: worktreePath,
-        branch: branchName,
-        workflow: 'plan-and-implement',
-        setup_complete: setupComplete,
-        setup_messages: setupMessages,
-        error: 'plan-and-implement workflow requires ralph_config parameter',
-        next_steps: ['Provide ralph_config (source_file will be auto-filled from plan)'],
-      };
-    }
-
-    // Phase 1: Run feature-dev
-    setupMessages.push('');
-    setupMessages.push('=== Phase 1: Planning with feature-dev ===');
-
-    const specFile =
-      params.plan_config.save_to || path.join(config.spec_directory, `${params.feature_name}.md`);
-    const specFilePath = path.join(worktreePath, specFile);
-
-    // Ensure spec directory exists
-    const specDir = path.join(worktreePath, config.spec_directory);
-    if (!fs.existsSync(specDir)) {
-      fs.mkdirSync(specDir, { recursive: true });
-    }
-
-    const featureDevCmd = CommandBuilder.buildFeatureDevCommand(params.plan_config);
-    const fullFeatureDevCommand = CommandBuilder.buildWorktreeCommand({
-      worktree_path: worktreePath,
-      command: `${featureDevCmd} > "${specFile}"`,
-      background: false,
-    });
-
-    setupMessages.push(`Running: ${featureDevCmd}`);
-    setupMessages.push(`Saving to: ${specFile}`);
-
-    try {
-      await execAsync(fullFeatureDevCommand, { cwd: worktreePath });
-      setupMessages.push('✅ feature-dev completed successfully');
-      setupMessages.push(`✅ Spec saved to: ${specFile}`);
-    } catch (error: any) {
-      return {
-        success: false,
-        worktree_path: worktreePath,
-        branch: branchName,
-        workflow: 'plan-and-implement',
-        setup_complete: setupComplete,
-        setup_messages: [...setupMessages, `❌ feature-dev failed: ${error.message}`],
-        spec_file: specFilePath,
-        error: `feature-dev execution failed: ${error.message}`,
-        next_steps: ['Check feature-dev plugin is installed', 'Try plan-only workflow instead'],
-      };
-    }
-
-    // Phase 2: Run ralph
-    setupMessages.push('');
-    setupMessages.push('=== Phase 2: Implementation with ralph-wiggum ===');
-
-    // Auto-fill source_file from plan and apply config defaults
-    const ralphConfig = {
-      ...params.ralph_config,
-      source_file: params.ralph_config.source_file || specFile,
-      max_iterations: params.ralph_config.max_iterations || config.default_max_iterations,
-    };
-
-    const ralphCmd = CommandBuilder.buildRalphCommand(ralphConfig);
-    // Default to manual since background doesn't work reliably
-    const executionMode = ralphConfig.execution_mode || 'manual';
-    const isBackground = executionMode === 'background';
-
-    setupMessages.push(`Source: ${ralphConfig.source_file}`);
-    if (ralphConfig.work_on) {
-      setupMessages.push(`Working on: ${ralphConfig.work_on.join(', ')}`);
-    }
-    if (ralphConfig.skip_items) {
-      setupMessages.push(`Skipping: ${ralphConfig.skip_items.join(', ')}`);
-    }
-    setupMessages.push(`Max iterations: ${ralphConfig.max_iterations || 50}`);
-    setupMessages.push(`Execution mode: ${executionMode}`);
-
-    if (isBackground) {
-      const fullRalphCommand = CommandBuilder.buildWorktreeCommand({
-        worktree_path: worktreePath,
-        command: ralphCmd,
-        background: true,
-      });
-
-      try {
-        await execAsync(fullRalphCommand, { cwd: worktreePath });
-        const taskId = `ralph_${Date.now()}`;
-
-        setupMessages.push(`🤖 ralph-wiggum started in background (${taskId})`);
-
-        const nextSteps = [
-          '🎉 Full automation complete!',
-          '',
-          'Phase 1: Planning ✅',
-          `  - Spec created: ${specFile}`,
-          '',
-          'Phase 2: Implementation 🚀',
-          `  - ralph is running in background (${taskId})`,
-          `  - Monitor: tail -f /tmp/claude-worktree-*.log`,
-          `  - Or: cd ${worktreePath} && git log`,
-          '',
-          'Ralph is implementing features from spec.',
-          'This may take several hours depending on scope.',
-          '',
-          'You can continue working elsewhere!',
-        ];
-
-        return {
-          success: true,
-          worktree_path: worktreePath,
-          branch: branchName,
-          workflow: 'plan-and-implement',
-          setup_complete: setupComplete,
-          setup_messages: setupMessages,
-          spec_file: specFilePath,
-          task_id: taskId,
-          next_steps: nextSteps,
-        };
-      } catch (error: any) {
-        return {
-          success: true, // Planning succeeded
-          worktree_path: worktreePath,
-          branch: branchName,
-          workflow: 'plan-and-implement',
-          setup_complete: setupComplete,
-          setup_messages: [...setupMessages, `❌ ralph failed to start: ${error.message}`],
-          spec_file: specFilePath,
-          error: `ralph execution failed (planning succeeded): ${error.message}`,
-          next_steps: [
-            `Spec created successfully: ${specFile}`,
-            'Ralph failed to start - run manually:',
-            `  cd ${worktreePath}`,
-            `  ${ralphCmd}`,
-          ],
-        };
-      }
-    } else {
-      const nextSteps = [
-        '🎯 Planning complete! Worktree ready for implementation.',
-        '',
-        `Spec saved to: ${specFile}`,
-        '',
-        'Open a NEW terminal and run:',
-        `  cd ${worktreePath} && claude`,
-        '',
-        'Then start ralph with:',
-        `  /ralph-wiggum:ralph-loop`,
-        '',
-        'Ralph will implement from the generated spec.',
-      ];
-
-      return {
-        success: true,
-        worktree_path: worktreePath,
-        branch: branchName,
-        workflow: 'plan-and-implement',
-        setup_complete: setupComplete,
-        setup_messages: setupMessages,
-        spec_file: specFilePath,
-        ralph_command: '/ralph-wiggum:ralph-loop',
-        next_steps: nextSteps,
-      };
-    }
   }
 }

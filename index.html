@@ -447,25 +447,25 @@
             <h1>Parallel universes<br>for your code.</h1>
             <div class="grid">
                 <div class="col-left">
-                    <p><b>Worktree Manager</b> chains Claude Code plugins like <a href="https://github.com/anthropics/claude-code/tree/main/plugins/feature-dev">feature-dev</a> and <a href="https://github.com/anthropics/claude-code/tree/main/plugins/ralph-wiggum">ralph-wiggum</a> to explore and build features in parallel&mdash;each in a clean workspace.</p>
+                    <p><b>Worktree Manager</b> creates isolated git worktrees for parallel feature development. Pairs with <a href="https://github.com/danielraffel/Chainer">Chainer</a> for automated planning and implementation workflows.</p>
                 </div>
                 <div class="col-right">
                     <div class="code-block-wrapper">
                         <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-                        <div class="code-block"><span class="code-prompt">/</span>worktree-manager:start payments plan-and-implement "Add Stripe subscriptions with usage-based billing"</div>
+                        <div class="code-block"><span class="code-prompt">/</span>worktree-manager:start payments</div>
                     </div>
                     <div class="workflow-desc" style="margin-top: 1rem;">
-                        One command: creates worktree, plans with feature-dev, builds with ralph-wiggum.
+                        Creates worktree with auto-setup. Use with Chainer for automation.
                         <span class="learn-more" onclick="toggleDetails(this)">What happens</span>
                     </div>
                     <div class="details">
-                        <strong>Behind that one command:</strong><br>
+                        <strong>Behind that command:</strong><br>
                         1. Creates <code>~/worktrees/payments/</code> with new branch<br>
                         2. Runs <code>npm install</code> automatically<br>
-                        3. <code>feature-dev</code> generates detailed spec<br>
-                        4. <code>ralph-wiggum</code> implements iteratively until done<br>
-                        5. Spin up additional worktrees to parallelize multiple features.<br><br>
-                        When done: review, merge to main.
+                        3. Suggests next steps<br><br>
+                        <strong>For automation, use Chainer:</strong><br>
+                        <code>/chainer:run plan-and-implement --prompt="Add Stripe" --feature_name="payments"</code><br><br>
+                        This plans with feature-dev and implements with ralph-wiggum.
                     </div>
                 </div>
             </div>
@@ -496,7 +496,7 @@
                     <ul class="feature-list">
                         <li>Creates isolated Git Worktrees automatically</li>
                         <li>Auto-detects project type & installs dependencies</li>
-                        <li>Chains <a href="https://github.com/anthropics/claude-code/tree/main/plugins/feature-dev">feature-dev</a> and <a href="https://github.com/anthropics/claude-code/tree/main/plugins/ralph-wiggum">ralph-wiggum</a> for automated planning and implementation</li>
+                        <li>Pairs with <a href="https://github.com/danielraffel/Chainer">Chainer</a> for automated planning and implementation workflows</li>
                         <li>Safe experimentation without contaminating main</li>
                         <li>Zero bookkeeping required</li>
                     </ul>
@@ -510,7 +510,7 @@
                 <div class="col-full">
                     <h3>Installation</h3>
                     <h2>One minute setup.</h2>
-                    <p style="max-width: 60ch;">Requires <a href="https://claude.ai/code">Claude Code</a>. For automated workflows, also install <a href="https://github.com/anthropics/claude-code/tree/main/plugins/feature-dev">feature-dev</a> and <a href="https://github.com/anthropics/claude-code/tree/main/plugins/ralph-wiggum">ralph-wiggum</a>.</p>
+                    <p style="max-width: 60ch;">Requires <a href="https://claude.ai/code">Claude Code</a>. For automated workflows, also install <a href="https://github.com/danielraffel/Chainer">Chainer</a> plugin.</p>
                 </div>
                 <div class="col-full">
                     <div class="code-block-wrapper">

@@ -12,8 +12,8 @@ export interface WorktreeConfig {
   /** Prefix for feature branches (default: feature/) */
   branch_prefix: string;
 
-  /** Default workflow when not specified (default: simple) */
-  default_workflow: 'simple' | 'plan-only' | 'implement-only' | 'plan-and-implement';
+  /** Default workflow when not specified (always 'simple' now) */
+  default_workflow: 'simple';
 
   /** Auto-commit changes periodically (default: false) */
   auto_commit: boolean;

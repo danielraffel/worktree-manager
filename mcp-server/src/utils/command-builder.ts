@@ -1,8 +1,5 @@
-import { PlanConfig, RalphConfig } from '../types';
-import { TemplateFiller } from './template-filler';
-
 /**
- * Build Claude commands for plugin execution
+ * Build commands for worktree operations
  */
 export class CommandBuilder {
   /**
@@ -21,31 +18,6 @@ export class CommandBuilder {
       .replace(/\n/g, '\\n')      // newline
       .replace(/\r/g, '\\r')      // carriage return
       .replace(/\t/g, '\\t');     // tab
-  }
-
-  /**
-   * Build feature-dev command for planning
-   */
-  static buildFeatureDevCommand(config: PlanConfig): string {
-    const escapedPrompt = this.escapeForShell(config.prompt);
-    return `claude skill feature-dev:feature-dev $'${escapedPrompt}'`;
-  }
-
-  /**
-   * Build ralph command for implementation
-   */
-  static buildRalphCommand(config: RalphConfig): string {
-    if (!config.source_file) {
-      throw new Error('Ralph config must include source_file');
-    }
-
-    return TemplateFiller.buildRalphCommand({
-      template_name: config.template,
-      source_file: config.source_file,
-      work_on: config.work_on,
-      skip_items: config.skip_items,
-      max_iterations: config.max_iterations,
-    });
   }
 
   /**
