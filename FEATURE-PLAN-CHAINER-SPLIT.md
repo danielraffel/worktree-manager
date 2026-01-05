@@ -846,6 +846,48 @@ Always preview chains before importing:
 - Warning for scripts
 
 ---
+
+## Ralph-Wiggum Execution Notes
+
+### Repository Locations
+
+| Project | Path |
+|---------|------|
+| Worktree Manager | `/Users/danielraffel/Code/worktree-manager` |
+| Chainer | `/Users/danielraffel/Code/Chainer` |
+
+### Key Files
+
+| File | Purpose |
+|------|---------|
+| `FEATURE-PLAN-CHAINER-SPLIT.md` | This file - master plan with all phases |
+| `Chainer/ai/PROJECT.md` | Chainer project context |
+| `worktree-manager/ai/PROJECT.md` | Worktree Manager project context |
+| `*/ai/learnings.txt` | Running log of discoveries per repo |
+
+### Status Markers
+
+When updating task tables in this document:
+- ⬜ Not Started
+- 🔄 In Progress
+- ✅ Complete
+- ⚠️ Blocked
+
+### Phase → Repository Mapping
+
+| Phase | Primary Repository |
+|-------|-------------------|
+| 0 | Manual testing (no ralph) |
+| 1 | Chainer |
+| 2 | Worktree Manager |
+| 3 | Both (integration) |
+| 4 | Both (Chainer primary) |
+| 5 | Chainer |
+| 6 | Both (documentation) |
+
+**Note**: The ralph execution command is maintained separately from this document to avoid self-reference issues.
+
+---
 ## Claude Collaboration Guidelines
 
 ### Operating Mode
