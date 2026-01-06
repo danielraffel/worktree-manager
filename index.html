@@ -674,14 +674,28 @@ auto_push: false
                 </div>
                 <div class="col-full">
                     <div class="faq-item">
-                        <div class="faq-question" onclick="toggleFaq(this)">What's the status of this project?</div>
+                        <div class="faq-question" onclick="toggleFaq(this)" id="faq-simple-explanation">Can you explain this without all the jargon?</div>
+                        <div class="faq-answer">
+                            <p>Worktree Manager lets you safely ask AI to try ideas and make changes to a project without messing up what you're currently working on.</p>
+                            <p><strong>The simple mental model:</strong> it creates a separate "workspace" for each task—like making a duplicate of your project dedicated to "try Feature A" or "fix Bug B." You keep working in your normal workspace while the AI works in the separate one.</p>
+                            <p><strong>How it works:</strong></p>
+                            <p>1. You tell Worktree Manager to create a workspace for a task.<br>
+                            2. It spins up a fresh, isolated directory with your project code.<br>
+                            3. You open Claude Code in that directory and work on the feature.<br>
+                            4. Your main project stays clean and stable while experiments happen elsewhere.<br>
+                            5. When done, you review the results and decide what to merge back.</p>
+                            <p><strong>For automation:</strong> Pair it with <a href="https://github.com/danielraffel/Chainer">Chainer</a> to automatically chain planning (feature-dev) and implementation (ralph-wiggum) inside isolated worktrees.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)" id="faq-status">What's the status of this project?</div>
                         <div class="faq-answer">
                             <p><strong>Very early beta.</strong> This project was cobbled together on December 31, 2025 and should be considered experimental. Only a handful of people have tried it so far.</p>
                             <p>Expect rough edges, breaking changes, and incomplete features. Use at your own risk. This notice will be updated if/when the project matures.</p>
                         </div>
                     </div>
                     <div class="faq-item">
-                        <div class="faq-question" onclick="toggleFaq(this)">How do I install plugins in Claude Code?</div>
+                        <div class="faq-question" onclick="toggleFaq(this)" id="faq-install-plugins">How do I install plugins in Claude Code?</div>
                         <div class="faq-answer">
                             <p><strong>For official marketplace plugins</strong> (like feature-dev and ralph-wiggum): Launch Claude Code and type <code>/plugins</code>. Search for the plugin you want, select it, and install. After installing marketplace plugins, you must quit and restart Claude Code for them to take effect. See the <a href="https://code.claude.com/docs/en/discover-plugins">official plugin documentation</a> for more details.</p>
                             <p><strong>For Worktree Manager:</strong> This plugin isn't in the marketplace yet (but will be). For now, clone the repository and use the <code>--plugin-dir</code> flag:</p>
@@ -692,28 +706,28 @@ auto_push: false
                         </div>
                     </div>
                     <div class="faq-item">
-                        <div class="faq-question" onclick="toggleFaq(this)">Why would I need a plugin like this? What's the alternative?</div>
+                        <div class="faq-question" onclick="toggleFaq(this)" id="faq-why-needed">Why would I need a plugin like this? What's the alternative?</div>
                         <div class="faq-answer">
                             <p>Without worktrees, the typical process is: stash your current changes, create a new branch, work on the feature, commit, switch back to your original branch, pop your stash. If you want AI help, it monopolizes your terminal while it works.</p>
                             <p>With Worktree Manager, you skip all that context-switching. The AI works in a completely separate directory on a separate branch. You can spin up multiple worktrees and have several Claude agents working in parallel—each isolated, each on its own feature.</p>
                         </div>
                     </div>
                     <div class="faq-item">
-                        <div class="faq-question" onclick="toggleFaq(this)">What can I do with just the worktree-manager plugin?</div>
+                        <div class="faq-question" onclick="toggleFaq(this)" id="faq-standalone">What can I do with just the worktree-manager plugin?</div>
                         <div class="faq-answer">
                             <p>Even without the optional plugins, Worktree Manager handles the tedious parts: creating the worktree directory, checking out a new branch, detecting your project type, and running setup commands like <code>npm install</code>.</p>
                             <p>You can spin up multiple worktrees and open separate Claude Code sessions in each—giving you parallel AI agents working on different features simultaneously. When you're done, use <code>/worktree-manager:cleanup --merge</code> to merge changes back to main and clean up. Push to git manually or let Claude do it.</p>
                         </div>
                     </div>
                     <div class="faq-item">
-                        <div class="faq-question" onclick="toggleFaq(this)">Do I need to install feature-dev and ralph-wiggum?</div>
+                        <div class="faq-question" onclick="toggleFaq(this)" id="faq-other-plugins">Do I need to install feature-dev and ralph-wiggum?</div>
                         <div class="faq-answer">
                             <p>No, they're optional. Worktree Manager works standalone—it just creates isolated workspaces.</p>
                             <p>But the real power comes from pairing Worktree Manager with <a href="https://github.com/danielraffel/Chainer">Chainer</a> for workflow automation. Chainer chains together <a href="https://github.com/anthropics/claude-code/tree/main/plugins/feature-dev">feature-dev</a> (planning) and <a href="https://github.com/anthropics/claude-code/tree/main/plugins/ralph-wiggum">ralph-wiggum</a> (implementation) so you can describe what you want in plain English and come back to a completed feature in an isolated worktree.</p>
                         </div>
                     </div>
                     <div class="faq-item">
-                        <div class="faq-question" onclick="toggleFaq(this)">Why does it say "no git repo detected" when I have one?</div>
+                        <div class="faq-question" onclick="toggleFaq(this)" id="faq-no-repo">Why does it say "no git repo detected" when I have one?</div>
                         <div class="faq-answer">
                             <p>Git worktrees require an existing repository with at least one commit. If you just ran <code>git init</code> but haven't committed anything yet, worktrees won't work.</p>
                             <p>Fix: make an initial commit first (<code>git add . && git commit -m "Initial commit"</code>), then try again.</p>
@@ -734,7 +748,7 @@ auto_push: false
                         </div>
                     </div>
                     <div class="faq-item">
-                        <div class="faq-question" onclick="toggleFaq(this)">Why does ralph-wiggum keep looping after the work is done?</div>
+                        <div class="faq-question" onclick="toggleFaq(this)" id="faq-ralph-looping">Why does ralph-wiggum keep looping after the work is done?</div>
                         <div class="faq-answer">
                             <p>This is a known quirk of ralph-wiggum's design. To exit the loop, Claude must output the literal text <code>&lt;promise&gt;DONE&lt;/promise&gt;</code>. Sometimes Claude completes the work but says things like "Done", "Complete", or "Finished" instead of outputting the exact escape tag.</p>
                             <p>When this happens, you'll see iterations increment (e.g., "Ralph iteration 25... 26... 27...") with Claude repeatedly confirming completion but not exiting. The loop will run until it hits the max iterations limit (default: 50).</p>
@@ -746,7 +760,7 @@ auto_push: false
                         </div>
                     </div>
                     <div class="faq-item">
-                        <div class="faq-question" onclick="toggleFaq(this)">Can I run multiple ralph-wiggum loops in parallel worktrees?</div>
+                        <div class="faq-question" onclick="toggleFaq(this)" id="faq-parallel-ralph">Can I run multiple ralph-wiggum loops in parallel worktrees?</div>
                         <div class="faq-answer">
                             <p><strong>Not from the same directory.</strong> Ralph-wiggum's state file (<code>.claude/ralph-loop.local.md</code>) is tied to your Claude session's current working directory, not the worktree. If you run multiple Claude sessions from the same parent directory, they'll all see the same state file and interfere with each other.</p>
                             <p><strong>Workaround:</strong> Run each Claude session <strong>from within the worktree directory</strong> instead of your main project directory:</p>
@@ -804,6 +818,15 @@ auto_push: false
 
         function toggleFaq(el) {
             el.parentElement.classList.toggle('open');
+        }
+
+        // Open FAQ if hash matches
+        if (window.location.hash) {
+            const target = document.getElementById(window.location.hash.substring(1));
+            if (target && target.classList.contains('faq-question')) {
+                target.parentElement.classList.add('open');
+                target.scrollIntoView({ behavior: 'smooth' });
+            }
         }
     </script>
 </body>
