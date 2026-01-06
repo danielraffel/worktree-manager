@@ -15,7 +15,7 @@
 | Phase 6: Documentation | ✅ Complete |
 | Phase 7: Complete Split & Dependency Detection | ✅ Complete |
 | Phase 8: Smart Plugin Suggestions | ✅ Complete (MVP - Phase 8a) |
-| Phase 9: Worktree + Chainer Integration | ⬜ Not Started |
+| Phase 9: Worktree + Chainer Integration | ⬜ Deferred (optional) |
 
 **Legend**: ✅ Complete | 🔄 In Progress | ⬜ Not Started | ⚠️ Blocked
 
@@ -1430,7 +1430,13 @@ Note: Using experimental AI matching (--smart flag)
 
 ## Phase 9: Worktree Manager + Chainer Integration
 
-### Status: ⬜ Not Started
+### Status: ⬜ Deferred (Optional)
+
+**Rationale for deferring**:
+- Core functionality already exists via two commands or Chainer's `worktree-plan-implement` chain
+- Would add complexity back to Worktree Manager (against Phase 7's goal of purity)
+- Current UX is acceptable: users can run `/worktree-manager:start` then `/chainer:run`
+- Can be reconsidered based on user feedback
 
 ### Goal
 Add optional --chain parameter to Worktree Manager that delegates to Chainer after creating worktree. Hybrid approach: Worktree Manager stays pure, but offers convenience integration.
