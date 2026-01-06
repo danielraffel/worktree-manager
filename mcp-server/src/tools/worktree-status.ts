@@ -5,6 +5,7 @@ export interface WorktreeStatusResult {
   success: boolean;
   worktree_path?: string;
   branch?: string;
+  is_main?: boolean;
   exists?: boolean;
   status?: {
     uncommitted_changes: number;
@@ -53,6 +54,11 @@ export class WorktreeStatusTool {
       // Get current branch
       const branch = await GitHelpers.getCurrentBranch(worktree_path);
 
+      // Determine if this is the main worktree
+      const allWorktrees = await GitHelpers.listWorktrees(worktree_path);
+      const mainWorktree = allWorktrees.find((w) => w.is_main);
+      const isMain = mainWorktree?.path === worktree_path;
+
       // Get status
       const status = await GitHelpers.getStatus(worktree_path);
 
@@ -86,6 +92,7 @@ export class WorktreeStatusTool {
         success: true,
         worktree_path,
         branch: branch || undefined,
+        is_main: isMain,
         exists: true,
         status,
         summary,

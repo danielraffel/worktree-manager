@@ -28,6 +28,9 @@ When user invokes this command:
    - Pass `{ worktree_path: "<path>" }`
 
 3. **Display results**:
+   - Show worktree type using Git's official terminology:
+     - "Main worktree" for the original checkout
+     - "Linked worktree" for additional worktrees
    - Show worktree path and branch
    - Display status metrics:
      - Uncommitted changes count
@@ -41,8 +44,9 @@ When user invokes this command:
 
 4. **Format example**:
    ```
-   Worktree: ~/worktrees/admin-messaging
-   Branch: feature/admin-messaging
+   Linked worktree: /Users/username/worktrees/admin-messaging
+   - Branch: feature/admin-messaging
+   - Commit: abc1234
 
    Status:
      Uncommitted changes: 3

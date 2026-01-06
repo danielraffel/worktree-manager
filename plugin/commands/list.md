@@ -30,9 +30,11 @@ When user invokes this command:
 3. **Display results**:
    - Format as a numbered list
    - For each worktree show:
+     - Label using Git's official terminology:
+       - "Main worktree" for the original checkout (when `is_main: true`)
+       - "Linked worktree" for additional worktrees (when `is_main: false`)
      - Path
-     - Branch name
-     - Is it the main worktree?
+     - Branch name (shown separately to avoid confusion with worktree type)
      - If `--status` was requested:
        - Uncommitted changes count
        - Untracked files count
@@ -40,15 +42,21 @@ When user invokes this command:
 
 4. **Format example**:
    ```
-   Active worktrees:
+   Active Worktrees:
 
-   1. ~/worktrees/admin-messaging
-      Branch: feature/admin-messaging
-      Status: 3 uncommitted, 1 untracked, 2 ahead, 0 behind
+   1. Main worktree: /Users/username/project
+      - Branch: split-apart
+      - Commit: abc1234
 
-   2. ~/worktrees/bug-fix
-      Branch: feature/bug-fix
-      Status: Clean ✅
+   2. Linked worktree: /Users/username/worktrees/admin-messaging
+      - Branch: feature/admin-messaging
+      - Commit: def5678
+      - Status: 3 uncommitted, 1 untracked, 2 ahead, 0 behind
+
+   3. Linked worktree: /Users/username/worktrees/bug-fix
+      - Branch: feature/bug-fix
+      - Commit: 789abcd
+      - Status: Clean ✅
    ```
 
 5. **If no worktrees**:
