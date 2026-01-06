@@ -719,22 +719,22 @@ Complete the architectural split by removing ALL workflow code from Worktree Man
 | Task | Status | Notes |
 |------|--------|-------|
 | **Worktree Manager Cleanup** | | |
-| Remove workflow types from types.ts | ⬜ | Keep only 'simple' |
-| Remove workflow logic from worktree-start.ts | ⬜ | Lines ~206-739 |
-| Remove workflow from MCP schema in index.ts | ⬜ | Lines ~44-95 |
-| Remove workflow config from config-reader.ts | ⬜ | Lines ~156-160 |
-| Simplify start.md command | ⬜ | Remove workflow docs |
-| Update tests | ⬜ | Remove workflow tests |
-| Rebuild and verify | ⬜ | npm run build && npm test |
+| Remove workflow types from types.ts | ✅ | Removed WorkflowMode type completely |
+| Remove workflow logic from worktree-start.ts | ✅ | Removed all workflow handling |
+| Remove workflow from MCP schema in index.ts | ✅ | Simplified to 4 params only |
+| Remove workflow config from config-reader.ts | ✅ | Removed default_workflow |
+| Simplify start.md command | ✅ | Already clean (from Phase 6) |
+| Update tests | ✅ | Removed workflow assertions |
+| Rebuild and verify | ✅ | All tests pass (42 tests) |
 | **Chainer Registry** | | |
-| Create plugin/registry/plugins.yaml | ⬜ | All official Anthropic plugins |
-| Define chain dependencies | ⬜ | Map chains → required plugins |
-| Add plugin descriptions | ⬜ | For error messages |
+| Create plugin/registry/plugins.yaml | ✅ | Added all official Anthropic plugins |
+| Define chain dependencies | ✅ | Mapped 4 built-in chains |
+| Add plugin descriptions | ✅ | With marketplace and docs links |
 | **Chainer Dependency Detection** | | |
-| Update run.md with Step 2.5 | ⬜ | Check dependencies before execution |
-| Implement --skip-deps-check flag | ⬜ | Override for power users |
-| Create check-deps.md command | ⬜ | Standalone dependency checker |
-| Add error messages with install commands | ⬜ | `/plugin install <name>@<marketplace>` |
+| Update run.md with Step 2.5 | ✅ | Pre-flight dependency check |
+| Implement --skip-deps-check flag | ✅ | Override for power users |
+| Create check-deps.md command | ✅ | Standalone dependency checker |
+| Add error messages with install commands | ✅ | Exact /plugin install commands |
 | **Testing & Documentation** | | |
 | Update worktree-manager TESTING.md | ⬜ | Remove workflow tests |
 | Update Chainer TESTING.md | ⬜ | Add dependency detection tests |
