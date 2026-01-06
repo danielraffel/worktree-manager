@@ -2,7 +2,6 @@
  * Core types for worktree-manager plugin
  */
 
-export type WorkflowMode = 'simple';
 export type ExecutionMode = 'manual' | 'background' | 'interactive';
 export type ProjectType = 'web' | 'ios' | 'full-stack' | 'unknown';
 
@@ -15,8 +14,6 @@ export interface WorktreeStartParams {
   task_description?: string;
   /** Custom worktree location (default: ~/worktrees/<feature_name>) */
   worktree_path?: string;
-  /** Workflow mode (always 'simple' now - use Chainer for workflows) */
-  workflow?: WorkflowMode;
 }
 
 export interface WorktreeInfo {
@@ -37,8 +34,6 @@ export interface WorktreeStartResult {
   worktree_path: string;
   /** Branch name */
   branch: string;
-  /** Workflow mode used */
-  workflow: WorkflowMode;
   /** Setup status */
   setup_complete: boolean;
   /** Setup messages */

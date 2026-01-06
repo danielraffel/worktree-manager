@@ -1,7 +1,7 @@
 import * as path from 'path';
 import * as os from 'os';
 import * as fs from 'fs';
-import { WorktreeStartParams, WorktreeStartResult, WorkflowMode } from '../types';
+import { WorktreeStartParams, WorktreeStartResult } from '../types';
 import { GitHelpers } from '../utils/git-helpers';
 import { ProjectDetector } from '../utils/project-detector';
 import { SetupRunner } from '../utils/setup-runner';
@@ -22,7 +22,6 @@ export class WorktreeStartTool {
 
     // Set defaults from config
     const baseBranch = params.base_branch || 'main';
-    const workflow = params.workflow || config.default_workflow;
     const defaultWorktreePath = path.join(
       config.worktree_base_path,
       params.feature_name
@@ -38,7 +37,6 @@ export class WorktreeStartTool {
           success: false,
           worktree_path: worktreePath,
           branch: branchName,
-          workflow,
           setup_complete: false,
           setup_messages: [],
           error: 'Current directory is not a git repository',
@@ -72,7 +70,6 @@ export class WorktreeStartTool {
                 success: false,
                 worktree_path: worktreePath,
                 branch: branchName,
-                workflow,
                 setup_complete: false,
                 setup_messages: [],
                 error: `Worktree already exists with uncommitted changes: ${worktreePath}`,
@@ -92,7 +89,6 @@ export class WorktreeStartTool {
             success: false,
             worktree_path: worktreePath,
             branch: branchName,
-            workflow,
             setup_complete: false,
             setup_messages: [],
             error: createResult.error,
@@ -176,7 +172,6 @@ This file captures insights, decisions, and learnings during development.
       return this.buildSuccessResult({
         worktreePath,
         branchName,
-        workflow,
         setupMessages,
         setupComplete,
       });
@@ -185,7 +180,6 @@ This file captures insights, decisions, and learnings during development.
         success: false,
         worktree_path: worktreePath,
         branch: branchName,
-        workflow,
         setup_complete: false,
         setup_messages: [],
         error: error.message || 'Unknown error creating worktree',
@@ -200,11 +194,10 @@ This file captures insights, decisions, and learnings during development.
   private static buildSuccessResult(options: {
     worktreePath: string;
     branchName: string;
-    workflow: WorkflowMode | string;
     setupMessages: string[];
     setupComplete: boolean;
   }): WorktreeStartResult {
-    const { worktreePath, branchName, workflow, setupMessages, setupComplete } = options;
+    const { worktreePath, branchName, setupMessages, setupComplete } = options;
 
     // Check if Chainer is installed
     const homeDir = os.homedir();
@@ -270,7 +263,6 @@ This file captures insights, decisions, and learnings during development.
       success: true,
       worktree_path: worktreePath,
       branch: branchName,
-      workflow: workflow as WorkflowMode,
       setup_complete: setupComplete,
       setup_messages: setupMessages,
       next_steps: nextSteps,

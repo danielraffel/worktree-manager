@@ -12,9 +12,6 @@ export interface WorktreeConfig {
   /** Prefix for feature branches (default: feature/) */
   branch_prefix: string;
 
-  /** Default workflow when not specified (always 'simple' now) */
-  default_workflow: 'simple';
-
   /** Auto-commit changes periodically (default: false) */
   auto_commit: boolean;
 
@@ -37,7 +34,6 @@ export interface WorktreeConfig {
 const DEFAULT_CONFIG: WorktreeConfig = {
   worktree_base_path: path.join(os.homedir(), 'worktrees'),
   branch_prefix: 'feature/',
-  default_workflow: 'simple',
   auto_commit: false,
   auto_push: false,
   create_learnings_file: false,
@@ -153,11 +149,6 @@ export class ConfigReader {
         case 'branch_prefix':
           config.branch_prefix = value;
           break;
-        case 'default_workflow':
-          if (['simple', 'plan-only', 'implement-only', 'plan-and-implement'].includes(value)) {
-            config.default_workflow = value as WorktreeConfig['default_workflow'];
-          }
-          break;
         case 'auto_commit':
           config.auto_commit = value === 'true';
           break;
@@ -196,9 +187,6 @@ worktree_base_path: ~/worktrees
 # Branch prefix (default: feature/)
 branch_prefix: feature/
 
-# Default workflow: simple | plan-only | implement-only | plan-and-implement
-default_workflow: simple
-
 # Auto-commit changes during ralph execution (default: false)
 auto_commit: false
 
@@ -219,6 +207,9 @@ default_max_iterations: 50
 
 Add any project-specific context, conventions, or instructions here.
 This content will be available to Claude during worktree operations.
+
+# For automated workflows, use Chainer plugin:
+# /chainer:run plan-and-implement --prompt="Your feature idea"
 `;
   }
 }

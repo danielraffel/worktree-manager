@@ -22,7 +22,7 @@ const TOOLS: Tool[] = [
   {
     name: 'worktree_start',
     description:
-      'Create git worktree with auto-setup and optional plugin integration. Supports 4 workflows: simple (manual), plan-only (feature-dev), implement-only (ralph), plan-and-implement (full automation). Auto-runs npm install, detects web/iOS projects, supports background execution.',
+      'Create git worktree with auto-setup. Pure worktree operations - creates isolated workspace with automatic project detection and setup (npm install for web, swift build for iOS). For automated workflows, use Chainer plugin.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -41,58 +41,6 @@ const TOOLS: Tool[] = [
         worktree_path: {
           type: 'string',
           description: 'Custom worktree path (default: ~/worktrees/<feature-name>)',
-        },
-        workflow: {
-          type: 'string',
-          enum: ['simple', 'plan-only', 'implement-only', 'plan-and-implement'],
-          description: 'Workflow type (default: simple)',
-        },
-        plan_config: {
-          type: 'object',
-          description: 'Configuration for feature-dev plugin (required for plan-only and plan-and-implement)',
-          properties: {
-            prompt: {
-              type: 'string',
-              description: 'What to plan with feature-dev',
-            },
-            save_to: {
-              type: 'string',
-              description: 'Where to save spec (default: audit/<feature-name>.md)',
-            },
-          },
-        },
-        ralph_config: {
-          type: 'object',
-          description: 'Configuration for ralph-wiggum plugin (required for implement-only and plan-and-implement)',
-          properties: {
-            source_file: {
-              type: 'string',
-              description: 'Spec file to implement from',
-            },
-            work_on: {
-              type: 'array',
-              items: { type: 'string' },
-              description: 'What to work on (e.g., ["Phase 6", "P0 items"])',
-            },
-            skip_items: {
-              type: 'array',
-              items: { type: 'string' },
-              description: 'What to skip (e.g., ["Phase 7", "P2 items"])',
-            },
-            max_iterations: {
-              type: 'number',
-              description: 'Max iterations for ralph (default: 50)',
-            },
-            template: {
-              type: 'string',
-              description: 'Ralph template to use (default: "default")',
-            },
-            execution_mode: {
-              type: 'string',
-              enum: ['manual', 'background', 'interactive'],
-              description: 'How to run ralph (default: background)',
-            },
-          },
         },
       },
       required: ['feature_name'],

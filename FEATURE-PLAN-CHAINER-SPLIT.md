@@ -13,6 +13,9 @@
 | Phase 4: tmux in Chainer | ✅ Complete |
 | Phase 5: Expand Chainer | ✅ Complete |
 | Phase 6: Documentation | ✅ Complete |
+| Phase 7: Complete Split & Dependency Detection | ⬜ Not Started |
+| Phase 8: Smart Plugin Suggestions | ⬜ Not Started |
+| Phase 9: Worktree + Chainer Integration | ⬜ Not Started |
 
 **Legend**: ✅ Complete | 🔄 In Progress | ⬜ Not Started | ⚠️ Blocked
 
@@ -699,22 +702,943 @@ Ship production-ready v1.0 of both plugins.
 
 ---
 
+## Phase 7: Complete Plugin Split & Dependency Detection
+
+### Status: ⬜ Not Started
+
+### Goal
+Complete the architectural split by removing ALL workflow code from Worktree Manager and adding intelligent plugin dependency detection to Chainer.
+
+### What This Enables
+- Worktree Manager becomes a pure git worktree tool (zero orchestration)
+- Chainer detects missing plugin dependencies before execution
+- Users get helpful installation instructions with `/plugin install` commands
+- Clean Unix philosophy: each tool does one thing well
+
+### Tasks
+| Task | Status | Notes |
+|------|--------|-------|
+| **Worktree Manager Cleanup** | | |
+| Remove workflow types from types.ts | ⬜ | Keep only 'simple' |
+| Remove workflow logic from worktree-start.ts | ⬜ | Lines ~206-739 |
+| Remove workflow from MCP schema in index.ts | ⬜ | Lines ~44-95 |
+| Remove workflow config from config-reader.ts | ⬜ | Lines ~156-160 |
+| Simplify start.md command | ⬜ | Remove workflow docs |
+| Update tests | ⬜ | Remove workflow tests |
+| Rebuild and verify | ⬜ | npm run build && npm test |
+| **Chainer Registry** | | |
+| Create plugin/registry/plugins.yaml | ⬜ | All official Anthropic plugins |
+| Define chain dependencies | ⬜ | Map chains → required plugins |
+| Add plugin descriptions | ⬜ | For error messages |
+| **Chainer Dependency Detection** | | |
+| Update run.md with Step 2.5 | ⬜ | Check dependencies before execution |
+| Implement --skip-deps-check flag | ⬜ | Override for power users |
+| Create check-deps.md command | ⬜ | Standalone dependency checker |
+| Add error messages with install commands | ⬜ | `/plugin install <name>@<marketplace>` |
+| **Testing & Documentation** | | |
+| Update worktree-manager TESTING.md | ⬜ | Remove workflow tests |
+| Update Chainer TESTING.md | ⬜ | Add dependency detection tests |
+| Update both index.html files | ⬜ | Reflect new architecture |
+| Version bump | ⬜ | WM 3.0.0, Chainer 0.2.0 |
+
+### Implementation Details
+
+#### A. Worktree Manager Cleanup
+
+**File: mcp-server/src/types.ts**
+```typescript
+// REMOVE entire WorkflowMode type union
+// BEFORE:
+export type WorkflowMode = 'simple' | 'plan-only' | 'implement-only' | 'plan-and-implement';
+
+// AFTER:
+// Remove completely - no workflow concept
+```
+
+**File: mcp-server/src/tools/worktree-start.ts**
+```typescript
+// Remove workflow parameter handling
+// Remove lines ~206-739 (workflow execution logic)
+// Keep only: create worktree → run auto-setup → done
+```
+
+**File: mcp-server/src/index.ts**
+```typescript
+// Remove workflow from MCP schema
+// REMOVE from inputSchema (lines ~44-95):
+workflow: {
+  type: "string",
+  enum: ["simple", "plan-only", "implement-only", "plan-and-implement"],
+  description: "..."
+}
+```
+
+**File: plugin/commands/start.md**
+```markdown
+# SIMPLIFY - remove all workflow documentation
+# ADD suggestion:
+💡 For automated workflows, use Chainer:
+   /chainer:run worktree-plan-implement --task "your feature"
+```
+
+#### B. Create Chainer Registry
+
+**File: plugin/registry/plugins.yaml** (NEW)
+```yaml
+# Claude Code Plugin Registry
+# Source of truth for plugin metadata and dependencies
+
+plugins:
+  # Core development
+  worktree-manager:
+    marketplace: inline
+    description: "Git worktree creation and management"
+
+  feature-dev:
+    marketplace: claude-plugins-official
+    description: "Feature planning with architecture focus"
+    docs: "https://docs.anthropic.com"
+
+  ralph-wiggum:
+    marketplace: claude-plugins-official
+    description: "Autonomous implementation loops"
+    docs: "https://awesomeclaude.ai/ralph-wiggum"
+
+  frontend-design:
+    marketplace: claude-plugins-official
+    description: "Production-grade frontend design"
+
+  # All official Anthropic plugins
+  agent-sdk-dev:
+    marketplace: claude-plugins-official
+    description: "Claude Agent SDK development tools"
+
+  code-review:
+    marketplace: claude-plugins-official
+    description: "Code review and quality analysis"
+
+  commit-commands:
+    marketplace: claude-plugins-official
+    description: "Git commit workflow automation"
+
+  plugin-dev:
+    marketplace: claude-plugins-official
+    description: "Plugin development tools"
+
+  pr-review-toolkit:
+    marketplace: claude-plugins-official
+    description: "Pull request review toolkit"
+
+  security-guidance:
+    marketplace: claude-plugins-official
+    description: "Security best practices and guidance"
+
+  # LSP servers (for reference)
+  clangd-lsp:
+    marketplace: claude-plugins-official
+    description: "C/C++ language server"
+
+  csharp-lsp:
+    marketplace: claude-plugins-official
+    description: "C# language server"
+
+  gopls-lsp:
+    marketplace: claude-plugins-official
+    description: "Go language server"
+
+  hookify:
+    marketplace: claude-plugins-official
+    description: "Git hook management"
+
+  jdtls-lsp:
+    marketplace: claude-plugins-official
+    description: "Java language server"
+
+  lua-lsp:
+    marketplace: claude-plugins-official
+    description: "Lua language server"
+
+  php-lsp:
+    marketplace: claude-plugins-official
+    description: "PHP language server"
+
+  pyright-lsp:
+    marketplace: claude-plugins-official
+    description: "Python language server"
+
+  rust-analyzer-lsp:
+    marketplace: claude-plugins-official
+    description: "Rust language server"
+
+  swift-lsp:
+    marketplace: claude-plugins-official
+    description: "Swift language server"
+
+# Chain dependency mapping
+chains:
+  plan-only:
+    requires: [feature-dev]
+
+  implement-only:
+    requires: [ralph-wiggum]
+
+  plan-and-implement:
+    requires: [feature-dev, ralph-wiggum]
+
+  worktree-plan-implement:
+    requires: [worktree-manager, feature-dev, ralph-wiggum]
+```
+
+#### C. Add Dependency Detection to Chainer
+
+**File: plugin/commands/run.md** (UPDATE - Add Step 2.5)
+```markdown
+## Step 2.5: Check Plugin Dependencies
+
+**Only for built-in chains (skip user-defined chains):**
+
+1. **Parse --skip-deps-check flag**
+   - If present: Show warning, skip to Step 3
+
+2. **Load registry**
+   ```
+   Read ${CLAUDE_PLUGIN_ROOT}/registry/plugins.yaml
+   Parse YAML to get plugin metadata
+   ```
+
+3. **Get required plugins for this chain**
+   ```javascript
+   const registry = parseYaml(registryContent);
+   const requiredPlugins = registry.chains[chainName]?.requires || [];
+
+   // If chain not in registry, skip check (user-defined)
+   if (!registry.chains[chainName]) continue to Step 3;
+   ```
+
+4. **Check installation status**
+   ```javascript
+   // Read Claude's plugin registry
+   const installedPath = '~/.claude/plugins/installed_plugins.json';
+   const installedData = JSON.parse(Read(installedPath));
+
+   const missing = [];
+   const installed = [];
+
+   for (const pluginName of requiredPlugins) {
+     const plugin = registry.plugins[pluginName];
+     const key = `${pluginName}@${plugin.marketplace}`;
+
+     if (installedData.plugins[key]) {
+       installed.push(pluginName);
+     } else {
+       missing.push({
+         name: pluginName,
+         marketplace: plugin.marketplace,
+         description: plugin.description,
+         docs: plugin.docs
+       });
+     }
+   }
+   ```
+
+5. **Handle results**
+   - If missing.length === 0: Proceed to Step 3
+   - If missing.length > 0: Show error and ABORT
+
+6. **Error message format**
+   ```
+   ❌ Cannot run '{chainName}' - missing required plugin(s)
+
+   Missing plugins:
+     • {name} - {description}
+       Install: /plugin install {name}@{marketplace}
+       {docs ? `Docs: ${docs}` : ''}
+
+   Dependency status for '{chainName}':
+     ✅ {installedPlugin}
+     ❌ {missingPlugin}
+
+   To skip: /chainer:run {chainName} --skip-deps-check [args]
+   ```
+
+7. **Edge cases**
+   - If installed_plugins.json missing: Treat as no plugins
+   - If JSON parse fails: Show warning, skip check
+   - If registry.yaml missing: Skip with warning
+```
+
+**File: plugin/commands/check-deps.md** (NEW)
+```markdown
+---
+description: Check plugin dependencies for a chain
+argument-hint: "[chain-name]"
+---
+
+# Check Dependencies Command
+
+Verify plugin installation status for Chainer chains.
+
+## Usage
+
+```bash
+/chainer:check-deps [chain-name]
+```
+
+## Instructions for Claude
+
+1. **Parse arguments**: Optional chain name
+
+2. **Load files**:
+   - Read ${CLAUDE_PLUGIN_ROOT}/registry/plugins.yaml
+   - Read ~/.claude/plugins/installed_plugins.json
+
+3. **If chain name provided**:
+   - Show dependency status for that chain
+   - List required plugins with ✅/❌
+   - Provide installation commands for missing
+
+4. **If no chain name**:
+   - List all built-in chains
+   - Show dependency status for each
+   - Highlight ready vs blocked chains
+
+5. **Format example**:
+   ```
+   Dependency Check: plan-and-implement
+
+   Required plugins:
+     ✅ feature-dev (installed)
+     ❌ ralph-wiggum (not installed)
+
+   Missing plugins:
+     • ralph-wiggum - Autonomous implementation loops
+       Install: /plugin install ralph-wiggum@claude-plugins-official
+       Docs: https://awesomeclaude.ai/ralph-wiggum
+
+   Status: ❌ Cannot run (missing 1 plugin)
+   ```
+```
+
+### Test Plan
+
+```bash
+# === WORKTREE MANAGER TESTS ===
+
+# Test 1: Simple worktree creation (only thing it should do)
+cd /Users/danielraffel/Code/worktree-manager
+/worktree-manager:start test-feature
+# Expected: Creates worktree, runs auto-setup, done
+# Should NOT attempt any workflow execution
+
+# Test 2: Workflow parameter removed
+/worktree-manager:start test-feature --workflow plan-only
+# Expected: Error - parameter not recognized
+
+# Test 3: Unit tests still pass
+cd mcp-server
+npm test
+# Expected: All tests pass (99% coverage maintained)
+
+# === CHAINER DEPENDENCY TESTS ===
+
+# Test 4: All dependencies satisfied
+cd /Users/danielraffel/Code/Chainer
+/chainer:run plan-and-implement --prompt "test" --feature_name "test"
+# Expected: No errors, executes normally
+
+# Test 5: Missing single dependency
+# Temporarily move ralph-wiggum out of plugins/
+/chainer:run plan-and-implement --prompt "test" --feature_name "test"
+# Expected: Error message with install command for ralph-wiggum
+
+# Test 6: Missing multiple dependencies
+# Move feature-dev and ralph-wiggum out
+/chainer:run plan-and-implement --prompt "test" --feature_name "test"
+# Expected: Shows BOTH missing, with install commands
+
+# Test 7: Skip dependency check
+/chainer:run plan-and-implement --skip-deps-check --prompt "test" --feature_name "test"
+# Expected: Warning shown, attempts execution (will fail at skill invocation)
+
+# Test 8: Check dependencies command
+/chainer:check-deps plan-and-implement
+# Expected: Shows status for plan-and-implement chain
+
+# Test 9: Check all dependencies
+/chainer:check-deps
+# Expected: Shows status for all built-in chains
+
+# Test 10: User-defined chain (no check)
+# Add custom chain to ~/.claude/chainer.local.md
+/chainer:run my-custom-chain --arg "value"
+# Expected: No dependency check (proceeds directly)
+```
+
+### Verification Checklist
+
+**Worktree Manager:**
+- [ ] Zero workflow code remains
+- [ ] No workflow parameters in MCP schema
+- [ ] All tests pass
+- [ ] start.md mentions Chainer for automation
+- [ ] Version bumped to 3.0.0
+
+**Chainer:**
+- [ ] Registry created with all official plugins
+- [ ] Dependency detection works (Step 2.5 in run.md)
+- [ ] Error messages include install commands
+- [ ] --skip-deps-check flag works
+- [ ] /chainer:check-deps command works
+- [ ] User-defined chains skip dependency check
+- [ ] Version bumped to 0.2.0
+
+**Integration:**
+- [ ] Worktree Manager works standalone
+- [ ] Chainer works standalone
+- [ ] Clear migration path for existing users
+- [ ] Documentation cross-references updated
+
+### Deliverable
+- Worktree Manager v3.0.0 (pure git tool, breaking change)
+- Chainer v0.2.0 (with dependency detection)
+- Updated documentation for both plugins
+
+---
+
+## Phase 8: Smart Plugin Suggestions
+
+### Status: ⬜ Not Started
+
+### Goal
+Add intelligent plugin suggestion system that helps users discover the right plugins and chains for their tasks.
+
+### What This Enables
+- `/chainer:suggest "natural language description"` → recommends plugins/chains
+- Keyword-based matching (Phase 8a)
+- Smart AI-powered matching (Phase 8b - beta)
+- Better plugin discoverability
+
+### Tasks
+| Task | Status | Notes |
+|------|--------|-------|
+| **Phase 8a: Keyword Matching (MVP)** | | |
+| Add keywords to registry plugins | ⬜ | e.g., "plan" → feature-dev |
+| Create /chainer:suggest command | ⬜ | Parse natural language, match keywords |
+| Implement keyword matching logic | ⬜ | Score plugins by keyword matches |
+| Show top 3 suggestions | ⬜ | With runnable command examples |
+| Add suggest tests | ⬜ | Keyword matching accuracy |
+| **Phase 8b: Smart Matching (Beta)** | | |
+| Add --smart flag to suggest | ⬜ | Opt-in beta feature |
+| Use Claude to analyze intent | ⬜ | LLM-powered matching |
+| Scan installed plugin descriptions | ⬜ | Dynamic capability discovery |
+| Calculate similarity scores | ⬜ | Rank by relevance |
+| Add confidence indicators | ⬜ | 🟢 High / 🟡 Medium / 🔴 Low |
+| **Documentation** | | |
+| Document suggest command | ⬜ | In Chainer README |
+| Add examples to index.html | ⬜ | Show suggestion UX |
+| Create community contribution guide | ⬜ | How to add keywords |
+
+### Implementation Details
+
+#### Phase 8a: Keyword Matching (MVP)
+
+**File: plugin/registry/plugins.yaml** (UPDATE)
+```yaml
+plugins:
+  feature-dev:
+    marketplace: claude-plugins-official
+    description: "Feature planning with architecture focus"
+    docs: "https://docs.anthropic.com"
+    keywords:
+      - plan
+      - planning
+      - architecture
+      - spec
+      - specification
+      - design document
+      - requirements
+
+  ralph-wiggum:
+    marketplace: claude-plugins-official
+    description: "Autonomous implementation loops"
+    docs: "https://awesomeclaude.ai/ralph-wiggum"
+    keywords:
+      - implement
+      - implementation
+      - code
+      - build
+      - create
+      - develop
+      - feature
+      - autonomous
+
+  frontend-design:
+    marketplace: claude-plugins-official
+    description: "Production-grade frontend design"
+    keywords:
+      - design
+      - UI
+      - frontend
+      - component
+      - styling
+      - interface
+      - visual
+      - CSS
+
+  worktree-manager:
+    marketplace: inline
+    description: "Git worktree creation and management"
+    keywords:
+      - worktree
+      - isolation
+      - parallel
+      - branch
+      - separate
+      - workspace
+```
+
+**File: plugin/commands/suggest.md** (NEW)
+```markdown
+---
+description: Get plugin and chain suggestions based on natural language
+argument-hint: "<description> [--smart]"
+---
+
+# Suggest Command
+
+Intelligently suggest plugins and chains based on what you want to do.
+
+## Usage
+
+```bash
+/chainer:suggest "<what you want to do>" [--smart]
+```
+
+## Instructions for Claude
+
+### Step 1: Parse Input
+
+1. Extract description text (required)
+2. Check for --smart flag (optional, enables AI-powered matching)
+
+### Step 2: Load Registry
+
+```javascript
+const registry = parseYaml(Read('${CLAUDE_PLUGIN_ROOT}/registry/plugins.yaml'));
+```
+
+### Step 3a: Keyword Matching (Default)
+
+1. **Tokenize description**:
+   - Convert to lowercase
+   - Split on spaces
+   - Extract meaningful words (filter "the", "and", "a", etc.)
+
+2. **Score each plugin**:
+   ```javascript
+   const scores = {};
+   for (const [pluginName, plugin] of Object.entries(registry.plugins)) {
+     let score = 0;
+     for (const keyword of plugin.keywords || []) {
+       if (descriptionTokens.includes(keyword.toLowerCase())) {
+         score += 10; // Direct match
+       } else if (descriptionTokens.some(t => t.includes(keyword) || keyword.includes(t))) {
+         score += 5; // Partial match
+       }
+     }
+     if (score > 0) scores[pluginName] = score;
+   }
+   ```
+
+3. **Sort by score**, take top 3
+
+4. **Match to chains**:
+   - Check which chains use suggested plugins
+   - Recommend relevant chains
+
+### Step 3b: Smart Matching (--smart flag)
+
+1. **Scan installed plugins**:
+   ```javascript
+   const installedPath = '~/.claude/plugins/installed_plugins.json';
+   const installed = JSON.parse(Read(installedPath));
+   ```
+
+2. **Gather plugin capabilities**:
+   - Read description from registry
+   - For installed plugins, could check plugin.json for more details
+
+3. **Use Claude to analyze**:
+   ```
+   Analyze this user request: "{description}"
+
+   Available plugins:
+   - feature-dev: Feature planning with architecture focus
+   - ralph-wiggum: Autonomous implementation loops
+   - frontend-design: Production-grade frontend design
+   [... more plugins ...]
+
+   Rank the top 3 plugins by relevance (0-100 score).
+   Consider: keywords, capability match, typical workflows.
+
+   Return JSON: [{"plugin": "name", "score": 87, "reason": "..."}]
+   ```
+
+4. **Show confidence levels**:
+   - 80-100: 🟢 High confidence
+   - 50-79: 🟡 Medium confidence
+   - 0-49: 🔴 Low confidence
+
+### Step 4: Format Response
+
+**Keyword matching format**:
+```
+Suggestions for: "plan and implement a login feature"
+
+Recommended chain:
+  ✨ plan-and-implement
+     Steps: feature-dev → ralph-wiggum
+     Run: /chainer:run plan-and-implement --prompt "login feature"
+
+Matched plugins:
+  • feature-dev (matched: "plan")
+  • ralph-wiggum (matched: "implement", "feature")
+
+Other options:
+  • /chainer:run plan-only --prompt "..." (just planning)
+  • /chainer:run implement-only --spec_file "..." (just implementation)
+```
+
+**Smart matching format** (--smart):
+```
+🧠 Smart Suggestions for: "make the app look better"
+
+Recommended:
+  1. frontend-design (🟢 92% match)
+     → Production-grade frontend design
+     Reason: Direct match for visual/UI improvements
+     Run: /chainer:run frontend-design --task "improve app appearance"
+
+  2. code-review (🟡 56% match)
+     → Code quality and best practices
+     Reason: Code quality affects perceived polish
+     Run: /plugin install code-review@claude-plugins-official
+
+  3. worktree-manager (🟡 45% match)
+     → Isolate UI changes in separate workspace
+     Reason: Safe experimentation with design changes
+     Run: /worktree-manager:start ui-improvements
+
+Note: Using experimental AI matching (--smart flag)
+```
+
+### Example Usage
+
+```bash
+# Basic keyword matching
+/chainer:suggest "I want to add a new feature to my app"
+# → Suggests: plan-and-implement chain
+
+# Smart matching
+/chainer:suggest "make my code faster" --smart
+# → Suggests: code-review (performance analysis)
+
+# Design task
+/chainer:suggest "create a pricing page"
+# → Suggests: frontend-design plugin
+
+# Complex workflow
+/chainer:suggest "I need to test multiple ideas in parallel"
+# → Suggests: worktree-manager + Chainer chains
+```
+```
+
+### Test Plan
+
+```bash
+# === KEYWORD MATCHING TESTS ===
+
+# Test 1: Plan + implement keywords
+/chainer:suggest "I want to plan and implement a login feature"
+# Expected: Suggests plan-and-implement chain
+
+# Test 2: Design keywords
+/chainer:suggest "create a beautiful landing page"
+# Expected: Suggests frontend-design plugin
+
+# Test 3: Worktree keywords
+/chainer:suggest "I want to work on two features at the same time"
+# Expected: Suggests worktree-manager + parallel chains
+
+# Test 4: Partial match
+/chainer:suggest "implementing user authentication"
+# Expected: Matches ralph-wiggum (implement keyword)
+
+# Test 5: No match
+/chainer:suggest "do something random"
+# Expected: Shows all available chains, no specific suggestion
+
+# === SMART MATCHING TESTS (--smart) ===
+
+# Test 6: Vague request
+/chainer:suggest "make my app better" --smart
+# Expected: Analyzes intent, suggests code-review or frontend-design
+
+# Test 7: Performance request
+/chainer:suggest "my app is slow" --smart
+# Expected: Suggests code-review with performance focus
+
+# Test 8: Confidence scoring
+/chainer:suggest "I need help" --smart
+# Expected: Low confidence scores, shows options
+
+# Test 9: Installed vs not installed
+/chainer:suggest "analyze my code" --smart
+# Expected: Suggests installed plugins first
+```
+
+### Verification Checklist
+
+**Phase 8a (Keyword Matching):**
+- [ ] Keywords added to all plugins in registry
+- [ ] /chainer:suggest command works
+- [ ] Keyword matching scores correctly
+- [ ] Top 3 suggestions shown
+- [ ] Recommended chains included
+- [ ] Runnable command examples provided
+
+**Phase 8b (Smart Matching):**
+- [ ] --smart flag enables AI matching
+- [ ] Claude analyzes user intent
+- [ ] Confidence scores calculated
+- [ ] Installed plugins prioritized
+- [ ] Reasons for suggestions shown
+- [ ] Beta flag clearly indicated
+
+**Documentation:**
+- [ ] suggest command documented in README
+- [ ] Examples in index.html
+- [ ] Contribution guide for keywords
+
+### Deliverable
+- Chainer v0.3.0 (with smart suggestions)
+- Keyword-based matching (production)
+- AI-powered matching (beta)
+- Enhanced plugin discoverability
+
+---
+
+## Phase 9: Worktree Manager + Chainer Integration
+
+### Status: ⬜ Not Started
+
+### Goal
+Add optional --chain parameter to Worktree Manager that delegates to Chainer after creating worktree. Hybrid approach: Worktree Manager stays pure, but offers convenience integration.
+
+### What This Enables
+- One command: `/worktree-manager:start feature-name --chain plan-and-implement`
+- Worktree Manager code remains clean (no workflow logic)
+- Best UX: create worktree + automate in one step
+- Graceful fallback if Chainer not installed
+
+### Tasks
+| Task | Status | Notes |
+|------|--------|-------|
+| Add --chain parameter to start.md | ⬜ | Optional parameter |
+| Add Chainer detection logic | ⬜ | Check if plugin installed |
+| Implement chain delegation | ⬜ | Invoke /chainer:run after worktree creation |
+| Handle missing Chainer gracefully | ⬜ | Show install instructions |
+| Update documentation | ⬜ | start.md, README, index.html |
+| Add integration tests | ⬜ | With and without Chainer |
+| Update TESTING.md | ⬜ | Add --chain parameter tests |
+
+### Implementation Details
+
+**File: plugin/commands/start.md** (UPDATE)
+```markdown
+## Step 4: Optional Chainer Integration
+
+If `--chain` parameter is provided:
+
+1. **Verify worktree was created successfully**
+   - Only proceed if Step 1-3 succeeded
+
+2. **Check if Chainer is installed**:
+   ```javascript
+   // Check for Chainer plugin
+   const chainsAvailable = checkSkillExists('chainer:run');
+
+   if (!chainsAvailable) {
+     show error: `
+     ❌ --chain parameter requires Chainer plugin
+
+     Install Chainer:
+       git clone https://github.com/danielraffel/Chainer ~/Code/Chainer
+       # Add to ~/.claude/settings.json:
+       "pluginDirs": ["~/Code/Chainer/plugin"]
+
+     Then run:
+       /chainer:run ${chainName} --cwd="${worktreePath}" ...
+     `;
+     return;
+   }
+   ```
+
+3. **Validate chain exists**:
+   ```javascript
+   // List available chains
+   const chains = invoke('/chainer:list');
+
+   if (!chains.includes(chainName)) {
+     show error: `
+     ❌ Chain '${chainName}' not found
+
+     Available chains:
+       ${chains.join('\n       ')}
+
+     Check: /chainer:list
+     `;
+     return;
+   }
+   ```
+
+4. **Invoke Chainer chain**:
+   ```javascript
+   // Delegate to Chainer
+   invoke(`/chainer:run ${chainName} --cwd="${worktreePath}" ...`);
+
+   // Pass through any additional arguments
+   // Example: /worktree-manager:start my-feature --chain plan-and-implement --prompt="..."
+   // Becomes: /chainer:run plan-and-implement --cwd="~/worktrees/my-feature" --prompt="..."
+   ```
+
+### Usage Examples
+
+**Basic usage (no change)**:
+```bash
+/worktree-manager:start dark-mode
+# Creates worktree, done
+```
+
+**With Chainer integration**:
+```bash
+/worktree-manager:start dark-mode --chain plan-and-implement --prompt="Add dark mode toggle"
+# Creates worktree at ~/worktrees/dark-mode
+# Then runs: /chainer:run plan-and-implement --cwd="~/worktrees/dark-mode" --prompt="Add dark mode toggle"
+```
+
+**With specific chain**:
+```bash
+/worktree-manager:start feature-x --chain plan-only --prompt="Design feature X"
+# Creates worktree
+# Runs planning only (no implementation)
+```
+
+**Chainer not installed**:
+```bash
+/worktree-manager:start test --chain plan-only
+# Error: Chainer required, shows install instructions
+```
+
+**Chain doesn't exist**:
+```bash
+/worktree-manager:start test --chain nonexistent
+# Error: Chain not found, lists available chains
+```
+
+### Argument Forwarding
+
+All arguments after `--chain <name>` are forwarded to Chainer:
+
+```bash
+/worktree-manager:start my-feature \
+  --chain plan-and-implement \
+  --prompt "Build login system" \
+  --feature_name "login" \
+  --max_iterations 30
+
+# Becomes:
+# 1. Create worktree: /worktree-manager:start my-feature
+# 2. Run chain: /chainer:run plan-and-implement \
+#      --cwd "~/worktrees/my-feature" \
+#      --prompt "Build login system" \
+#      --feature_name "login" \
+#      --max_iterations 30
+```
+
+### Test Plan
+
+```bash
+# Test 1: Basic worktree creation (no --chain)
+/worktree-manager:start test-basic
+# Expected: Creates worktree, no Chainer invocation
+
+# Test 2: With Chainer integration
+/worktree-manager:start test-chain --chain plan-and-implement --prompt "test feature"
+# Expected: Creates worktree, then runs Chainer chain
+
+# Test 3: Chain parameter with Chainer not installed
+# Uninstall Chainer temporarily
+/worktree-manager:start test-missing --chain plan-only
+# Expected: Error with Chainer install instructions
+
+# Test 4: Invalid chain name
+/worktree-manager:start test-invalid --chain nonexistent-chain
+# Expected: Error listing available chains
+
+# Test 5: Argument forwarding
+/worktree-manager:start test-args \
+  --chain plan-only \
+  --prompt "test" \
+  --feature_name "test" \
+  --extra-arg "value"
+# Expected: All args forwarded to Chainer
+
+# Test 6: Chain fails (worktree should still exist)
+/worktree-manager:start test-fail --chain plan-and-implement
+# Simulate Chainer failure
+# Expected: Worktree exists, Chainer error shown
+
+# Test 7: List chains from worktree-manager
+/worktree-manager:start test --chain help
+# Expected: Shows available chains (or error suggesting /chainer:list)
+```
+
+### Verification Checklist
+
+- [ ] --chain parameter added to start.md
+- [ ] Chainer detection works
+- [ ] Chain validation works
+- [ ] Argument forwarding works
+- [ ] Error messages helpful
+- [ ] Worktree created even if chain fails
+- [ ] Documentation updated
+- [ ] Tests pass
+
+### Deliverable
+- Worktree Manager v3.1.0 (with optional Chainer integration)
+- Clean code (no workflow logic, only delegation)
+- Best UX (one command for everything)
+- Graceful fallback (works without Chainer)
+
+---
+
 ## Future Phases (Post v1.0)
 
-### Phase 7: Advanced Chainer Features
+### Phase 10: Advanced Chainer Features
 - Conditionals (if/else)
 - Loops (for/each)
 - Error handling (on_failure)
 - Parallel step execution
 - Nested chains (chain calls chain)
 
-### Phase 8: Ecosystem Integration
-- More community chains
-- Natural language → plugin mapping
-- Chain marketplace
-- Popularity/rating system
+### Phase 11: Plugin Marketplace & Discovery
+- Community plugin registry
+- Plugin ratings and reviews
+- Automatic update notifications
+- Plugin compatibility matrix
 
-### Phase 9: IDE Integration
+### Phase 12: IDE Integration
 - VS Code extension (status panel)
 - Cursor integration
 - Real-time progress visualization

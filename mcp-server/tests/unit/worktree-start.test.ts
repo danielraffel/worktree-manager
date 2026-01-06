@@ -14,7 +14,7 @@ describe('WorktreeStartTool', () => {
     jest.clearAllMocks();
   });
 
-  describe('execute - simple workflow', () => {
+  describe('execute', () => {
     it('should create worktree successfully with default parameters', async () => {
       (GitHelpers.isGitRepo as jest.Mock).mockResolvedValue(true);
       (GitHelpers.createWorktree as jest.Mock).mockResolvedValue({ success: true });
@@ -41,7 +41,6 @@ describe('WorktreeStartTool', () => {
 
       expect(result.success).toBe(true);
       expect(result.branch).toBe('feature/test-feature');
-      expect(result.workflow).toBe('simple');
       expect(result.setup_complete).toBe(true);
       expect(result.worktree_path).toBe(
         path.join(os.homedir(), 'worktrees', 'test-feature')
