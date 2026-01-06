@@ -2,21 +2,21 @@
 
 **Effortless git worktrees for parallel development**
 
-A two-layer system combining a Claude Code plugin with an MCP server for creating and managing git worktrees with automatic environment setup.
+A Claude Code plugin that creates and manages git worktrees with automatic environment setup. Built with a two-layer architecture: user-friendly plugin commands backed by a robust TypeScript MCP server.
 
 ## What This Does
 
-Create isolated git worktrees for parallel feature development with automatic environment setup. Works standalone or pairs with **Chainer** plugin for automated workflows.
+Create isolated git worktrees for parallel feature development with one command. Automatically detects your project type and runs setup (npm install, swift build, etc.).
 
 **Quick example**:
 ```bash
-# Create worktree
-/worktree-manager:start oauth-flow
+# Create worktree with auto-setup
+/worktree-manager:start bug-fix
 
-# For automated workflows, use Chainer
-/chainer:run plan-and-implement \
-  --prompt="Build OAuth2 authentication" \
-  --feature_name="oauth-flow"
+# Creates:
+# - ~/worktrees/bug-fix/ directory
+# - feature/bug-fix branch
+# - Runs npm install (or appropriate setup)
 ```
 
 ## Key Features
@@ -25,7 +25,7 @@ Create isolated git worktrees for parallel feature development with automatic en
 - **Auto-detects** project type (web, iOS, full-stack)
 - **Auto-runs** setup (npm install, swift build, etc.)
 - **99% test coverage** - reliable and well-tested
-- **Pairs with Chainer** for automated planning & implementation
+- **Parallel development** - work on multiple features simultaneously
 
 ## Architecture
 
@@ -64,32 +64,37 @@ This project consists of two layers:
 
 ## Installation
 
-### 1. Install the MCP Server
+### 1. Clone and Build
 
 ```bash
-cd ~/.claude/plugins
-git clone https://github.com/danielraffel/worktree-manager
-cd worktree-manager/mcp-server
-npm install
-npm run build
+# Clone the repo
+git clone https://github.com/danielraffel/worktree-manager ~/worktree-manager
+cd ~/worktree-manager
+
+# Build the MCP server
+cd mcp-server && npm install && npm run build && cd ..
 ```
 
-### 2. Configure Claude Code
-
-The plugin is automatically detected. Verify with:
+### 2. Use with Claude Code
 
 ```bash
-claude
+# Run Claude Code with the plugin
+cd /your/project
+claude --plugin-dir ~/worktree-manager/plugin
+```
+
+**Tip**: Add a shell alias for convenience:
+```bash
+# Add to ~/.zshrc or ~/.bashrc
+alias claude-wt='claude --plugin-dir ~/worktree-manager/plugin'
+```
+
+### 3. Verify Installation
+
+```bash
+claude --plugin-dir ~/worktree-manager/plugin
 /help
 # Should show worktree-manager commands
-```
-
-### 3. Optional: Install Chainer
-
-For automated workflows (planning + implementation):
-
-```bash
-git clone https://github.com/danielraffel/Chainer ~/.claude/plugins/chainer
 ```
 
 ## Usage
@@ -152,36 +157,38 @@ Shows git status for all worktrees.
 
 Safely removes worktree after checking for uncommitted changes.
 
-## Automated Workflows with Chainer
+## Parallel Development
 
-Worktree Manager creates the environment. **Chainer** handles automated workflows.
+Worktree Manager enables true parallel development. You can:
 
-### Full Workflow (Plan + Implement)
+1. **Create multiple worktrees** for different features
+2. **Open separate Claude Code sessions** in each worktree
+3. **Work on multiple features simultaneously** without conflicts
+
+```bash
+# Terminal 1: Work on feature A
+/worktree-manager:start feature-a
+cd ~/worktrees/feature-a
+claude
+
+# Terminal 2: Work on feature B
+/worktree-manager:start feature-b
+cd ~/worktrees/feature-b
+claude
+```
+
+### Pairs with Chainer
+
+For automated workflows (planning + implementation), pair with [Chainer](https://www.generouscorp.com/Chainer):
 
 ```bash
 # Create worktree
-/worktree-manager:start oauth
+/worktree-manager:start payments
 
-# Run automated workflow
+# Use Chainer for automated development
 /chainer:run plan-and-implement \
-  --cwd="~/worktrees/oauth" \
-  --prompt="Build OAuth2 authentication" \
-  --feature_name="oauth"
-```
-
-This will:
-1. Plan feature with `feature-dev` plugin
-2. Implement with `ralph-wiggum` plugin
-3. Iterate until complete
-
-### Or Combine in One Step
-
-With Chainer's `worktree-plan-implement` chain (Phase 3):
-
-```bash
-/chainer:run worktree-plan-implement \
-  --feature_name="oauth" \
-  --prompt="Build OAuth2 authentication"
+  --cwd="~/worktrees/payments" \
+  --prompt="Add Stripe integration"
 ```
 
 ## Configuration
@@ -190,22 +197,47 @@ Create `~/.claude/worktree-manager.local.md` (global) or `.claude/worktree-manag
 
 ```yaml
 ---
-worktree_base_path: ~/my-worktrees
-branch_prefix: feat/
-create_learnings_file: true
+# Where to create worktrees (default: ~/worktrees)
+worktree_base_path: ~/worktrees
+
+# Branch prefix (default: feature/)
+branch_prefix: feature/
+
+# Create LEARNINGS.md in worktree to capture insights
+create_learnings_file: false
+
+# Auto-commit changes during AI agent execution
+auto_commit: false
+
+# Auto-push to remote after commits
+auto_push: false
+
+# Default workflow type (always 'simple' for worktree-only)
+default_workflow: simple
+
+# Directory for spec files (default: audit)
+spec_directory: audit
+
+# Max iterations for automated workflows (default: 50)
+default_max_iterations: 50
 ---
 
-# Notes
-Project-specific configuration notes here.
+# Project-Specific Notes
+Add any project-specific context or conventions here.
 ```
 
 ### Configuration Options
 
 | Option | Default | Description |
 |--------|---------|-------------|
-| `worktree_base_path` | `~/worktrees` | Where to create worktrees |
-| `branch_prefix` | `feature/` | Prefix for feature branches |
-| `create_learnings_file` | `false` | Auto-create LEARNINGS.md |
+| `worktree_base_path` | `~/worktrees` | Base directory where all worktrees are created |
+| `branch_prefix` | `feature/` | Prefix for new branches (e.g., `feature/my-task`) |
+| `create_learnings_file` | `false` | Create `LEARNINGS.md` in worktree to capture insights |
+| `auto_commit` | `false` | Auto-commit changes during AI agent execution |
+| `auto_push` | `false` | Auto-push to remote after commits |
+| `default_workflow` | `simple` | Default workflow when not specified |
+| `spec_directory` | `audit` | Directory for specification files |
+| `default_max_iterations` | `50` | Maximum iterations for automated workflows |
 
 ## Development
 
@@ -281,23 +313,19 @@ worktree-manager/
 └── index.html                   # Marketing page
 ```
 
-## Evolution Story
+## Design Philosophy
 
-This project evolved through several iterations:
+Worktree Manager follows a focused, single-responsibility approach:
 
-1. **v1**: Bash scripts in Claude Code plugin
-2. **v2**: TypeScript with 45 tests (99% coverage)
-3. **v2.1**: Added 4 automated workflows (plan-only, implement-only, etc.)
-4. **v3 (current)**: Split workflows to **Chainer** plugin
-   - Worktree Manager = Pure worktree operations
-   - Chainer = Universal plugin orchestration
-   - Clean separation of concerns
+- **Do one thing well**: Create and manage git worktrees with automatic setup
+- **Two-layer architecture**: User-friendly plugin commands + robust TypeScript backend
+- **99% test coverage**: Reliable, well-tested codebase
+- **Composable**: Works standalone or pairs with other plugins (like Chainer) for workflows
+- **Clean separation**: Worktree operations here, workflow orchestration elsewhere
 
 ## Related Projects
 
-- **[Chainer](https://github.com/danielraffel/Chainer)** - Universal plugin orchestration for Claude Code
-- **[feature-dev](https://github.com/anthropics/claude-plugins-official/tree/main/feature-dev)** - Feature planning plugin
-- **[ralph-wiggum](https://github.com/anthropics/claude-plugins-official/tree/main/ralph-wiggum)** - Iterative implementation plugin
+- **[Chainer](https://www.generouscorp.com/Chainer)** - Universal plugin orchestration for Claude Code (pairs well with Worktree Manager for automated workflows)
 
 ## Contributing
 
@@ -348,6 +376,6 @@ Built by [Daniel Raffel](https://github.com/danielraffel) for the Claude Code co
 
 ## Links
 
-- [GitHub](https://github.com/danielraffel/worktree-manager)
-- [Chainer Plugin](https://github.com/danielraffel/Chainer)
-- [Feature Plan](FEATURE-PLAN-CHAINER-SPLIT.md)
+- [GitHub Repository](https://github.com/danielraffel/worktree-manager)
+- [Chainer Plugin](https://www.generouscorp.com/Chainer)
+- [Documentation Site](https://danielraffel.github.io/worktree-manager/)
