@@ -13,7 +13,7 @@
 | Phase 4: tmux in Chainer | ✅ Complete |
 | Phase 5: Expand Chainer | ✅ Complete |
 | Phase 6: Documentation | ✅ Complete |
-| Phase 7: Complete Split & Dependency Detection | ⬜ Not Started |
+| Phase 7: Complete Split & Dependency Detection | ✅ Complete |
 | Phase 8: Smart Plugin Suggestions | ⬜ Not Started |
 | Phase 9: Worktree + Chainer Integration | ⬜ Not Started |
 
@@ -704,7 +704,7 @@ Ship production-ready v1.0 of both plugins.
 
 ## Phase 7: Complete Plugin Split & Dependency Detection
 
-### Status: ⬜ Not Started
+### Status: ✅ Complete
 
 ### Goal
 Complete the architectural split by removing ALL workflow code from Worktree Manager and adding intelligent plugin dependency detection to Chainer.
@@ -736,10 +736,10 @@ Complete the architectural split by removing ALL workflow code from Worktree Man
 | Create check-deps.md command | ✅ | Standalone dependency checker |
 | Add error messages with install commands | ✅ | Exact /plugin install commands |
 | **Testing & Documentation** | | |
-| Update worktree-manager TESTING.md | ⬜ | Remove workflow tests |
-| Update Chainer TESTING.md | ⬜ | Add dependency detection tests |
-| Update both index.html files | ⬜ | Reflect new architecture |
-| Version bump | ⬜ | WM 3.0.0, Chainer 0.2.0 |
+| Update worktree-manager TESTING.md | ✅ | Removed workflow tests, renumbered 1-14 |
+| Update Chainer TESTING.md | ✅ | Added dependency detection tests 9-15 |
+| Update both index.html files | ✅ | Chainer FAQ updated with dep detection |
+| Version bump | ✅ | WM 3.0.0, Chainer 0.2.0 |
 
 ### Implementation Details
 
