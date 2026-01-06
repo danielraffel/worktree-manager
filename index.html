@@ -439,15 +439,14 @@
                 <a href="#concept">Concept</a>
                 <a href="#capabilities">Capabilities</a>
                 <a href="#installation">Installation</a>
-                <a href="#workflows">Workflows</a>
                 <a href="#commands">Commands</a>
                 <a href="#config">Config</a>
                 <a href="#faq">FAQ</a>
             </nav>
-            <h1>Parallel universes<br>for your code.</h1>
+            <h1>Parallel workspaces<br>for your code.</h1>
             <div class="grid">
                 <div class="col-left">
-                    <p><b>Worktree Manager</b> creates isolated git worktrees for parallel feature development. Pairs with <a href="https://github.com/danielraffel/Chainer">Chainer</a> for automated planning and implementation workflows.</p>
+                    <p><b>Worktree Manager</b> creates isolated git worktrees for parallel feature development. Handles the tedious setup so you can focus on building. Pairs with <a href="https://github.com/danielraffel/Chainer">Chainer</a> for workflow automation.</p>
                 </div>
                 <div class="col-right">
                     <div class="code-block-wrapper">
@@ -455,17 +454,18 @@
                         <div class="code-block"><span class="code-prompt">/</span>worktree-manager:start payments</div>
                     </div>
                     <div class="workflow-desc" style="margin-top: 1rem;">
-                        Creates worktree with auto-setup. Use with Chainer for automation.
+                        Creates isolated worktree with automatic setup.
                         <span class="learn-more" onclick="toggleDetails(this)">What happens</span>
                     </div>
                     <div class="details">
                         <strong>Behind that command:</strong><br>
-                        1. Creates <code>~/worktrees/payments/</code> with new branch<br>
-                        2. Runs <code>npm install</code> automatically<br>
-                        3. Suggests next steps<br><br>
-                        <strong>For automation, use Chainer:</strong><br>
-                        <code>/chainer:run plan-and-implement --prompt="Add Stripe" --feature_name="payments"</code><br><br>
-                        This plans with feature-dev and implements with ralph-wiggum.
+                        1. Creates <code>~/worktrees/payments/</code> directory<br>
+                        2. Creates <code>feature/payments</code> branch<br>
+                        3. Auto-detects project type (Node, Swift, etc.)<br>
+                        4. Runs setup (npm install, swift build, etc.)<br><br>
+                        <strong>For automated workflows:</strong><br>
+                        Pair with <a href="https://github.com/danielraffel/Chainer">Chainer</a> to chain planning, implementation, testing:<br>
+                        <code>/chainer:run worktree-plan-implement --feature_name="payments" --prompt="Add Stripe"</code>
                     </div>
                 </div>
             </div>
@@ -476,11 +476,11 @@
             <div class="grid">
                 <div class="col-left">
                     <h3>The Concept</h3>
-                    <h2>Don't let the AI <br>block your terminal.</h2>
+                    <h2>Work on multiple features<br>in parallel.</h2>
                 </div>
                 <div class="col-right">
                     <p>When you ask an AI to build a feature, it usually monopolizes your environment. You wait. You watch text stream.</p>
-                    <p><strong>Worktree Manager changes the topology.</strong> It spins up a clean, separate copy of your project (a git <a href="https://git-scm.com/docs/git-worktree">worktree</a>), installs dependencies, and assigns an AI worker to that specific directory.</p>
+                    <p><strong>Worktree Manager sets you up to collaborate in parallel with agents.</strong> It spins up a clean, separate copy of your project (a git <a href="https://git-scm.com/docs/git-worktree">worktree</a>) and installs dependencies, so you can assign an AI worker to that directory.</p>
                 </div>
             </div>
         </section>
@@ -490,13 +490,13 @@
             <div class="grid">
                 <div class="col-left">
                     <h3>Capabilities</h3>
-                    <p>It turns "a single assistant you chat with" into a coordinated mini-team.</p>
+                    <p>Designed for workflows that go beyond a single assistant and into multi-agent collaboration.</p>
                 </div>
                 <div class="col-right">
                     <ul class="feature-list">
                         <li>Creates isolated Git Worktrees automatically</li>
                         <li>Auto-detects project type & installs dependencies</li>
-                        <li>Pairs with <a href="https://github.com/danielraffel/Chainer">Chainer</a> for automated planning and implementation workflows</li>
+                        <li>Pairs with <a href="https://github.com/danielraffel/Chainer">Chainer</a> for workflow automation</li>
                         <li>Safe experimentation without contaminating main</li>
                         <li>Zero bookkeeping required</li>
                     </ul>
@@ -538,100 +538,6 @@ claude --plugin-dir ~/worktree-manager/plugin
             </div>
         </section>
 
-        <!-- Workflow Examples -->
-        <section id="workflows">
-            <div class="grid">
-                <div class="col-full">
-                    <h3>Workflows</h3>
-                    <h2>Choose your automation level.</h2>
-                </div>
-
-                <div class="col-left">
-                    <div class="workflow-card">
-                        <div class="workflow-title">Simple</div>
-                        <div class="code-block-wrapper">
-                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-                            <div class="code-block">/worktree-manager:start bug-fix</div>
-                        </div>
-                        <div class="workflow-desc">
-                            Creates isolated worktree for manual work.
-                            <span class="learn-more" onclick="toggleDetails(this)">Learn more</span>
-                        </div>
-                        <div class="details">
-                            <strong>What happens:</strong><br>
-                            1. Creates <code>~/worktrees/bug-fix/</code> directory<br>
-                            2. Creates <code>feature/bug-fix</code> branch<br>
-                            3. Auto-detects project type (Node, Swift, etc.)<br>
-                            4. Runs setup commands (npm install, etc.)<br><br>
-                            <strong>Use when:</strong> You want a clean workspace to work in manually.
-                        </div>
-                    </div>
-                </div>
-                <div class="col-right">
-                    <div class="workflow-card">
-                        <div class="workflow-title">Plan-only</div>
-                        <div class="code-block-wrapper">
-                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-                            <div class="code-block">/worktree-manager:start auth plan-only "OAuth2 login"</div>
-                        </div>
-                        <div class="workflow-desc">
-                            Creates worktree + generates spec with feature-dev.
-                            <span class="learn-more" onclick="toggleDetails(this)">Learn more</span>
-                        </div>
-                        <div class="details">
-                            <strong>What happens:</strong><br>
-                            1. Creates worktree and branch<br>
-                            2. Runs <a href="https://github.com/anthropics/claude-code/tree/main/plugins/feature-dev">feature-dev</a> plugin with your prompt<br>
-                            3. Saves detailed spec to <code>audit/auth.md</code><br><br>
-                            <strong>Use when:</strong> You want AI to plan the feature, then implement yourself or review before building.
-                        </div>
-                    </div>
-                </div>
-                <div class="col-left">
-                    <div class="workflow-card">
-                        <div class="workflow-title">Implement-only</div>
-                        <div class="code-block-wrapper">
-                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-                            <div class="code-block">/worktree-manager:start auth implement-only audit/auth.md</div>
-                        </div>
-                        <div class="workflow-desc">
-                            Creates worktree + Ralph builds from existing spec.
-                            <span class="learn-more" onclick="toggleDetails(this)">Learn more</span>
-                        </div>
-                        <div class="details">
-                            <strong>What happens:</strong><br>
-                            1. Creates worktree and branch<br>
-                            2. Activates <a href="https://github.com/anthropics/claude-code/tree/main/plugins/ralph-wiggum">ralph-wiggum</a> loop<br>
-                            3. Ralph reads your spec and implements iteratively<br>
-                            4. Loops until completion promise is met<br><br>
-                            <strong>Use when:</strong> You have a spec already and want autonomous implementation.
-                        </div>
-                    </div>
-                </div>
-                <div class="col-right">
-                    <div class="workflow-card">
-                        <div class="workflow-title">Full Automation</div>
-                        <div class="code-block-wrapper">
-                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-                            <div class="code-block">/worktree-manager:start comments plan-and-implement "Add threading"</div>
-                        </div>
-                        <div class="workflow-desc">
-                            Plans with feature-dev, then implements with Ralph.
-                            <span class="learn-more" onclick="toggleDetails(this)">Learn more</span>
-                        </div>
-                        <div class="details">
-                            <strong>What happens:</strong><br>
-                            1. Creates worktree and branch<br>
-                            2. Runs feature-dev → generates spec<br>
-                            3. Activates ralph-wiggum loop with the spec<br>
-                            4. Ralph implements iteratively until done<br>
-                            5. Entire feature developed autonomously<br><br>
-                            <strong>Use when:</strong> You want end-to-end automation. Just describe what you want.
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
 
         <!-- Command Reference -->
         <section id="commands">
@@ -639,6 +545,7 @@ claude --plugin-dir ~/worktree-manager/plugin
                 <div class="col-full">
                     <h3>Command Reference</h3>
                     <h2>Quick lookup.</h2>
+                    <p style="max-width: 60ch; margin-bottom: 2rem;">Worktree Manager creates isolated worktrees. For automated workflows (planning + implementation), use <a href="https://github.com/danielraffel/Chainer">Chainer</a>.</p>
                     <table class="cmd-table">
                         <thead>
                             <tr>
@@ -650,46 +557,28 @@ claude --plugin-dir ~/worktree-manager/plugin
                         </thead>
                         <tbody>
                             <tr>
-                                <td>Create a worktree<br>(manual work)</td>
+                                <td>Create a worktree</td>
                                 <td><code>/worktree-manager:start &lt;name&gt;</code></td>
                                 <td>name (e.g. <code>bug-fix</code>)</td>
-                                <td>Creates an isolated workspace for that task. No AI planning/building kicked off.<br><span class="uses">Uses: Worktrees only</span></td>
-                            </tr>
-                            <tr>
-                                <td>Create + plan<br>(feature exploration)</td>
-                                <td><code>/worktree-manager:start &lt;name&gt; plan-only "&lt;idea&gt;"</code></td>
-                                <td>name, a short idea/goal string</td>
-                                <td>Creates a fresh workspace and generates a structured plan/spec for the feature.<br><span class="uses">Uses: Worktrees + <a href="https://github.com/anthropics/claude-code/tree/main/plugins/feature-dev">feature-dev</a></span></td>
-                            </tr>
-                            <tr>
-                                <td>Create + implement<br>(from existing spec)</td>
-                                <td><code>/worktree-manager:start &lt;name&gt; implement-only &lt;spec&gt;</code></td>
-                                <td>name, path to spec file (e.g. <code>audit/auth.md</code>)</td>
-                                <td>Creates a fresh workspace and implements what's described in the spec.<br><span class="uses">Uses: Worktrees + <a href="https://github.com/anthropics/claude-code/tree/main/plugins/ralph-wiggum">ralph-wiggum</a></span></td>
-                            </tr>
-                            <tr>
-                                <td>Create + plan + implement<br>(full automation)</td>
-                                <td><code>/worktree-manager:start &lt;name&gt; plan-and-implement "&lt;idea&gt;"</code></td>
-                                <td>name, a short idea/goal string</td>
-                                <td>Creates a fresh workspace, plans the work, then implements it—iterating until done.<br><span class="uses">Uses: Worktrees + <a href="https://github.com/anthropics/claude-code/tree/main/plugins/feature-dev">feature-dev</a> + <a href="https://github.com/anthropics/claude-code/tree/main/plugins/ralph-wiggum">ralph-wiggum</a></span></td>
+                                <td>Creates an isolated workspace with auto-setup (npm install, etc.)</td>
                             </tr>
                             <tr>
                                 <td>List all worktrees</td>
                                 <td><code>/worktree-manager:list</code></td>
                                 <td>nothing</td>
-                                <td>Shows all active worktrees with their paths and branches.<br><span class="uses">Uses: Worktrees only</span></td>
+                                <td>Shows all active worktrees with their paths and branches</td>
                             </tr>
                             <tr>
                                 <td>Check worktree status</td>
                                 <td><code>/worktree-manager:status &lt;path&gt;</code></td>
                                 <td>worktree path</td>
-                                <td>Shows git status, uncommitted changes, and branch info for a worktree.<br><span class="uses">Uses: Worktrees only</span></td>
+                                <td>Shows git status, uncommitted changes, and branch info</td>
                             </tr>
                             <tr>
                                 <td>Cleanup worktree</td>
                                 <td><code>/worktree-manager:cleanup &lt;path&gt; [--merge]</code></td>
                                 <td>worktree path, optional --merge flag</td>
-                                <td>Removes worktree. With --merge, merges branch to main first.<br><span class="uses">Uses: Worktrees only</span></td>
+                                <td>Removes worktree. With --merge, merges branch to main first</td>
                             </tr>
                         </tbody>
                     </table>
@@ -723,17 +612,14 @@ worktree_base_path: ~/worktrees
 <span class="code-comment"># Branch prefix (default: feature/)</span>
 branch_prefix: feature/
 
-<span class="code-comment"># Default workflow when not specified</span>
-default_workflow: simple
-
-<span class="code-comment"># Directory for spec files</span>
-spec_directory: audit
-
-<span class="code-comment"># Max iterations for ralph</span>
-default_max_iterations: 50
-
 <span class="code-comment"># Create LEARNINGS.md in worktree</span>
 create_learnings_file: false
+
+<span class="code-comment"># Auto-commit changes</span>
+auto_commit: false
+
+<span class="code-comment"># Auto-push to remote</span>
+auto_push: false
 ---</div>
                     </div>
                 </div>
@@ -758,21 +644,6 @@ create_learnings_file: false
                                 <td>Prefix for new branches (e.g., <code>feature/my-task</code>)</td>
                             </tr>
                             <tr>
-                                <td><code>default_workflow</code></td>
-                                <td><code>simple</code></td>
-                                <td>Workflow when not specified: <code>simple</code>, <code>plan-only</code>, <code>implement-only</code>, <code>plan-and-implement</code></td>
-                            </tr>
-                            <tr>
-                                <td><code>spec_directory</code></td>
-                                <td><code>audit</code></td>
-                                <td>Where spec files are saved (relative to project root)</td>
-                            </tr>
-                            <tr>
-                                <td><code>default_max_iterations</code></td>
-                                <td><code>50</code></td>
-                                <td>Maximum ralph-wiggum iterations before auto-stop</td>
-                            </tr>
-                            <tr>
                                 <td><code>create_learnings_file</code></td>
                                 <td><code>false</code></td>
                                 <td>Create <code>LEARNINGS.md</code> in worktree to capture insights</td>
@@ -780,7 +651,7 @@ create_learnings_file: false
                             <tr>
                                 <td><code>auto_commit</code></td>
                                 <td><code>false</code></td>
-                                <td>Auto-commit changes during ralph execution</td>
+                                <td>Auto-commit changes during AI agent execution</td>
                             </tr>
                             <tr>
                                 <td><code>auto_push</code></td>
@@ -789,6 +660,7 @@ create_learnings_file: false
                             </tr>
                         </tbody>
                     </table>
+                    <p style="margin-top: 1.5rem; color: var(--gray);">For workflow automation settings (spec_directory, max_iterations), see <a href="https://github.com/danielraffel/Chainer">Chainer configuration</a>.</p>
                 </div>
             </div>
         </section>
@@ -836,8 +708,8 @@ create_learnings_file: false
                     <div class="faq-item">
                         <div class="faq-question" onclick="toggleFaq(this)">Do I need to install feature-dev and ralph-wiggum?</div>
                         <div class="faq-answer">
-                            <p>No, they're optional. The "simple" workflow works without them.</p>
-                            <p>But the real power comes from chaining them together. <a href="https://github.com/anthropics/claude-code/tree/main/plugins/feature-dev">feature-dev</a> analyzes your codebase and generates detailed implementation specs. <a href="https://github.com/anthropics/claude-code/tree/main/plugins/ralph-wiggum">ralph-wiggum</a> takes those specs and implements them autonomously, iterating until done. Together, you describe what you want in plain English and come back to a completed feature.</p>
+                            <p>No, they're optional. Worktree Manager works standalone—it just creates isolated workspaces.</p>
+                            <p>But the real power comes from pairing Worktree Manager with <a href="https://github.com/danielraffel/Chainer">Chainer</a> for workflow automation. Chainer chains together <a href="https://github.com/anthropics/claude-code/tree/main/plugins/feature-dev">feature-dev</a> (planning) and <a href="https://github.com/anthropics/claude-code/tree/main/plugins/ralph-wiggum">ralph-wiggum</a> (implementation) so you can describe what you want in plain English and come back to a completed feature in an isolated worktree.</p>
                         </div>
                     </div>
                     <div class="faq-item">
@@ -852,24 +724,13 @@ create_learnings_file: false
                         <div class="faq-answer">
                             <p>Worktree Manager lets you safely ask AI to try ideas and make changes to a project without messing up what you're currently working on.</p>
                             <p><strong>The simple mental model:</strong> it creates a separate "workspace" for each task—like making a duplicate of your project dedicated to "try Feature A" or "fix Bug B." You keep working in your normal workspace while the AI works in the separate one.</p>
-                            <p><strong>It pairs well with two other plugins:</strong></p>
-                            <p>• <strong>feature-dev</strong> helps you explore a feature: it asks the right questions, proposes approaches, and turns a vague idea into a clear plan.<br>
-                            • <strong>ralph-wiggum</strong> takes that plan and does the work: it makes changes, checks things, and keeps iterating until the feature is done.</p>
-                            <p><strong>Worktree Manager coordinates the whole thing:</strong></p>
-                            <p>1. You tell it what you want ("try a new onboarding flow").<br>
-                            2. It spins up a fresh, isolated workspace for that task.<br>
-                            3. It can automatically run the planning helper, then the implementation helper.<br>
-                            4. The AI loops—plan, implement, adjust—inside that isolated workspace until it reaches a good stopping point.<br>
-                            5. You review the results and decide what to bring back into your main project.</p>
-                            <p><strong>Why this matters:</strong> You can run multiple tasks in parallel, each in its own isolated workspace. Your main project stays clean and stable while experiments happen elsewhere. The AI only works inside the workspace you created for it, and you only merge changes you've reviewed.</p>
-                        </div>
-                    </div>
-                    <div class="faq-item">
-                        <div class="faq-question" onclick="toggleFaq(this)">How does ralph-wiggum know to work in the worktree?</div>
-                        <div class="faq-answer">
-                            <p><strong>Technical detail:</strong> When you use <code>implement-only</code> or <code>plan-and-implement</code>, Worktree Manager activates ralph-wiggum with explicit instructions to work only in the worktree directory using absolute paths.</p>
-                            <p>The ralph-wiggum "loop" works by having a Stop hook that prevents Claude from exiting and feeds the same task back. This hook looks for a state file in your current Claude session directory. Worktree Manager creates this state file with instructions like: "CRITICAL: Work ONLY in ~/worktrees/my-feature/ using absolute paths."</p>
-                            <p>This means all file reads, writes, and git operations happen in the isolated worktree—not your main project. If an existing clean worktree is found, it's reused automatically.</p>
+                            <p><strong>How it works:</strong></p>
+                            <p>1. You tell Worktree Manager to create a workspace for a task.<br>
+                            2. It spins up a fresh, isolated directory with your project code.<br>
+                            3. You open Claude Code in that directory and work on the feature.<br>
+                            4. Your main project stays clean and stable while experiments happen elsewhere.<br>
+                            5. When done, you review the results and decide what to merge back.</p>
+                            <p><strong>For automation:</strong> Pair it with <a href="https://github.com/danielraffel/Chainer">Chainer</a> to automatically chain planning (feature-dev) and implementation (ralph-wiggum) inside isolated worktrees.</p>
                         </div>
                     </div>
                     <div class="faq-item">
