@@ -1,7 +1,7 @@
 {
   "name": "worktree-manager-mcp",
-  "version": "2.0.0",
-  "description": "MCP Server for git worktree management with automated feature development workflows",
+  "version": "3.0.0",
+  "description": "MCP Server for git worktree management with automatic project setup",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
