@@ -471,10 +471,7 @@
                         1. Creates <code>~/worktrees/payments/</code> directory<br>
                         2. Creates <code>feature/payments</code> branch<br>
                         3. Auto-detects project type (Node, Swift, etc.)<br>
-                        4. Runs setup (npm install, swift build, etc.)<br><br>
-                        <strong>For automated workflows:</strong><br>
-                        Pair with <a href="https://github.com/danielraffel/Chainer">Chainer</a> to chain planning, implementation, testing:<br>
-                        <code>/chainer:run worktree-plan-implement --feature_name="payments" --prompt="Add Stripe"</code>
+                        4. Runs setup (npm install, swift build, etc.)
                     </div>
                 </div>
             </div>
@@ -567,9 +564,9 @@ claude --plugin-dir ~/worktree-manager/plugin
                         <tbody>
                             <tr>
                                 <td>Create a worktree</td>
-                                <td><code>/worktree-manager:start &lt;name&gt;</code></td>
-                                <td>name (e.g. <code>bug-fix</code>)</td>
-                                <td>Creates an isolated workspace with auto-setup (npm install, etc.)</td>
+                                <td><code>/worktree-manager:start bug-fix</code></td>
+                                <td>feature name (<code>bug-fix</code>)</td>
+                                <td>Creates worktree at <code>~/worktrees/bug-fix</code> on branch <code>feature/bug-fix</code> with auto-setup (npm install, etc.)</td>
                             </tr>
                             <tr>
                                 <td>List all worktrees</td>
@@ -669,7 +666,6 @@ auto_push: false
                             </tr>
                         </tbody>
                     </table>
-                    <p style="margin-top: 1.5rem; color: var(--gray);">For workflow automation settings (spec_directory, max_iterations), see <a href="https://github.com/danielraffel/Chainer">Chainer configuration</a>.</p>
                 </div>
             </div>
         </section>
