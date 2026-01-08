@@ -123,5 +123,85 @@ describe('ProjectDetector', () => {
       expect(result.setup_commands).toHaveLength(1);
       expect(result.setup_commands[0].description).toBe('Install web dependencies');
     });
+
+    it('should detect pnpm based on pnpm-lock.yaml', () => {
+      (fs.existsSync as jest.Mock).mockImplementation((filePath: string) => {
+        if (filePath.endsWith('package.json') && !filePath.includes('web')) return true;
+        if (filePath.endsWith('pnpm-lock.yaml')) return true;
+        return false;
+      });
+
+      const result = ProjectDetector.detect('/path/to/worktree');
+
+      expect(result.setup_commands).toHaveLength(1);
+      expect(result.setup_commands[0].command).toBe('pnpm install');
+    });
+
+    it('should detect yarn based on yarn.lock', () => {
+      (fs.existsSync as jest.Mock).mockImplementation((filePath: string) => {
+        if (filePath.endsWith('package.json') && !filePath.includes('web')) return true;
+        if (filePath.endsWith('yarn.lock')) return true;
+        return false;
+      });
+
+      const result = ProjectDetector.detect('/path/to/worktree');
+
+      expect(result.setup_commands).toHaveLength(1);
+      expect(result.setup_commands[0].command).toBe('yarn install');
+    });
+
+    it('should detect bun based on bun.lockb', () => {
+      (fs.existsSync as jest.Mock).mockImplementation((filePath: string) => {
+        if (filePath.endsWith('package.json') && !filePath.includes('web')) return true;
+        if (filePath.endsWith('bun.lockb')) return true;
+        return false;
+      });
+
+      const result = ProjectDetector.detect('/path/to/worktree');
+
+      expect(result.setup_commands).toHaveLength(1);
+      expect(result.setup_commands[0].command).toBe('bun install');
+    });
+
+    it('should detect npm based on package-lock.json', () => {
+      (fs.existsSync as jest.Mock).mockImplementation((filePath: string) => {
+        if (filePath.endsWith('package.json') && !filePath.includes('web')) return true;
+        if (filePath.endsWith('package-lock.json')) return true;
+        return false;
+      });
+
+      const result = ProjectDetector.detect('/path/to/worktree');
+
+      expect(result.setup_commands).toHaveLength(1);
+      expect(result.setup_commands[0].command).toBe('npm install');
+    });
+
+    it('should prioritize pnpm over yarn when both lockfiles exist', () => {
+      (fs.existsSync as jest.Mock).mockImplementation((filePath: string) => {
+        if (filePath.endsWith('package.json') && !filePath.includes('web')) return true;
+        if (filePath.endsWith('pnpm-lock.yaml')) return true;
+        if (filePath.endsWith('yarn.lock')) return true;
+        return false;
+      });
+
+      const result = ProjectDetector.detect('/path/to/worktree');
+
+      expect(result.setup_commands).toHaveLength(1);
+      expect(result.setup_commands[0].command).toBe('pnpm install');
+    });
+
+    it('should detect package manager for web/ subdirectory', () => {
+      (fs.existsSync as jest.Mock).mockImplementation((filePath: string) => {
+        if (filePath.endsWith('web/package.json')) return true;
+        if (filePath.endsWith('web/pnpm-lock.yaml')) return true;
+        return false;
+      });
+
+      const result = ProjectDetector.detect('/path/to/worktree');
+
+      expect(result.setup_commands).toHaveLength(1);
+      expect(result.setup_commands[0].command).toBe('pnpm install');
+      expect(result.setup_commands[0].directory).toContain('web');
+    });
   });
 });

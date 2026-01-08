@@ -299,11 +299,13 @@ This file captures insights, decisions, and learnings during development.
 
   /**
    * Get install command for a detected ecosystem
+   * Note: For Node.js, this returns npm by default, but the actual detection
+   * logic in ProjectDetector will use the correct package manager based on lockfiles
    */
   private static getInstallCommandForEcosystem(ecosystem: string): string | null {
     const commandMap: { [key: string]: string } = {
-      'Node.js (web)': 'cd web && npm install',
-      'Node.js': 'npm install',
+      'Node.js (web)': 'cd web && npm install  # or pnpm/yarn/bun based on lockfile',
+      'Node.js': 'npm install  # or pnpm/yarn/bun based on lockfile',
       'Python (Poetry)': 'poetry install',
       'Python (pip)': 'pip install -r requirements.txt',
       'Python': 'pip install -e .',

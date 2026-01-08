@@ -20,6 +20,31 @@ interface EcosystemDetector {
  */
 export class ProjectDetector {
   /**
+   * Detect package manager for Node.js projects
+   * Checks lockfiles to determine the correct package manager
+   */
+  private static detectPackageManager(worktreePath: string, subdir?: string): string {
+    const checkPath = subdir ? path.join(worktreePath, subdir) : worktreePath;
+
+    // Priority order based on lockfile presence
+    if (fs.existsSync(path.join(checkPath, 'pnpm-lock.yaml'))) {
+      return 'pnpm install';
+    }
+    if (fs.existsSync(path.join(checkPath, 'bun.lockb'))) {
+      return 'bun install';
+    }
+    if (fs.existsSync(path.join(checkPath, 'yarn.lock'))) {
+      return 'yarn install';
+    }
+    if (fs.existsSync(path.join(checkPath, 'package-lock.json'))) {
+      return 'npm install';
+    }
+
+    // Default to npm if only package.json exists
+    return 'npm install';
+  }
+
+  /**
    * Ecosystem detectors - checked in priority order
    */
   private static ecosystems: EcosystemDetector[] = [
@@ -27,13 +52,13 @@ export class ProjectDetector {
     {
       name: 'Node.js (web)',
       markers: ['web/package.json'],
-      command: 'npm install',
+      command: 'npm install', // Will be overridden by detectPackageManager
       description: 'Install web dependencies'
     },
     {
       name: 'Node.js',
       markers: ['package.json'],
-      command: 'npm install',
+      command: 'npm install', // Will be overridden by detectPackageManager
       description: 'Install dependencies'
     },
 
@@ -219,9 +244,16 @@ export class ProjectDetector {
           ? path.join(worktreePath, 'web')
           : worktreePath;
 
+        // For Node.js projects, detect the actual package manager
+        let command = ecosystem.command;
+        if (ecosystem.name.includes('Node.js')) {
+          const subdir = ecosystem.name === 'Node.js (web)' ? 'web' : undefined;
+          command = this.detectPackageManager(worktreePath, subdir);
+        }
+
         setupCommands.push({
           directory: commandDirectory,
-          command: ecosystem.command,
+          command: command,
           description: ecosystem.description,
         });
 

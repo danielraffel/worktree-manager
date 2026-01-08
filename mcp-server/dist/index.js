@@ -8502,6 +8502,26 @@ var GitHelpers = class {
 var fs2 = __toESM(require("fs"));
 var path2 = __toESM(require("path"));
 var ProjectDetector = class {
+  /**
+   * Detect package manager for Node.js projects
+   * Checks lockfiles to determine the correct package manager
+   */
+  static detectPackageManager(worktreePath, subdir) {
+    const checkPath = subdir ? path2.join(worktreePath, subdir) : worktreePath;
+    if (fs2.existsSync(path2.join(checkPath, "pnpm-lock.yaml"))) {
+      return "pnpm install";
+    }
+    if (fs2.existsSync(path2.join(checkPath, "bun.lockb"))) {
+      return "bun install";
+    }
+    if (fs2.existsSync(path2.join(checkPath, "yarn.lock"))) {
+      return "yarn install";
+    }
+    if (fs2.existsSync(path2.join(checkPath, "package-lock.json"))) {
+      return "npm install";
+    }
+    return "npm install";
+  }
   static {
     /**
      * Ecosystem detectors - checked in priority order
@@ -8512,12 +8532,14 @@ var ProjectDetector = class {
         name: "Node.js (web)",
         markers: ["web/package.json"],
         command: "npm install",
+        // Will be overridden by detectPackageManager
         description: "Install web dependencies"
       },
       {
         name: "Node.js",
         markers: ["package.json"],
         command: "npm install",
+        // Will be overridden by detectPackageManager
         description: "Install dependencies"
       },
       // Python
@@ -8674,9 +8696,14 @@ var ProjectDetector = class {
         }
         detectedEcosystems.push(ecosystem.name);
         const commandDirectory = ecosystem.name === "Node.js (web)" ? path2.join(worktreePath, "web") : worktreePath;
+        let command = ecosystem.command;
+        if (ecosystem.name.includes("Node.js")) {
+          const subdir = ecosystem.name === "Node.js (web)" ? "web" : void 0;
+          command = this.detectPackageManager(worktreePath, subdir);
+        }
         setupCommands.push({
           directory: commandDirectory,
-          command: ecosystem.command,
+          command,
           description: ecosystem.description
         });
         if (ecosystem.name.includes("Node.js (web)")) {
@@ -9346,11 +9373,13 @@ This file captures insights, decisions, and learnings during development.
   }
   /**
    * Get install command for a detected ecosystem
+   * Note: For Node.js, this returns npm by default, but the actual detection
+   * logic in ProjectDetector will use the correct package manager based on lockfiles
    */
   static getInstallCommandForEcosystem(ecosystem) {
     const commandMap = {
-      "Node.js (web)": "cd web && npm install",
-      "Node.js": "npm install",
+      "Node.js (web)": "cd web && npm install  # or pnpm/yarn/bun based on lockfile",
+      "Node.js": "npm install  # or pnpm/yarn/bun based on lockfile",
       "Python (Poetry)": "poetry install",
       "Python (pip)": "pip install -r requirements.txt",
       "Python": "pip install -e .",
