@@ -503,6 +503,9 @@
                         <li>Creates isolated Git Worktrees automatically</li>
                         <li>Auto-detects project type & installs dependencies</li>
                         <li>Auto-copies development environment files (.env, .vscode)</li>
+                        <li>Move, lock, repair, and prune worktrees for lifecycle management</li>
+                        <li>Rename and delete branches with safety checks</li>
+                        <li>Create worktrees from existing branches</li>
                         <li>Automatically initializes git submodules</li>
                         <li>Pairs with <a href="https://www.generouscorp.com/Chainer">Chainer</a> for workflow automation</li>
                         <li>Safe experimentation without contaminating main</li>
@@ -572,7 +575,7 @@
                                 <td>List all worktrees</td>
                                 <td><code>/worktree-manager:list</code></td>
                                 <td>nothing</td>
-                                <td>Shows all active worktrees with their paths and branches</td>
+                                <td>Shows all active worktrees with their paths, branches, and lock status</td>
                             </tr>
                             <tr>
                                 <td>Check worktree status</td>
@@ -585,6 +588,48 @@
                                 <td><code>/worktree-manager:cleanup &lt;path&gt; [--merge]</code></td>
                                 <td>worktree path, optional --merge flag</td>
                                 <td>Removes worktree. With --merge, merges branch to main first</td>
+                            </tr>
+                            <tr>
+                                <td>Move worktree</td>
+                                <td><code>/worktree-manager:move &lt;current&gt; &lt;new&gt;</code></td>
+                                <td>current path, new path</td>
+                                <td>Moves worktree to new location. Git updates all references automatically</td>
+                            </tr>
+                            <tr>
+                                <td>Lock worktree</td>
+                                <td><code>/worktree-manager:lock &lt;path&gt; [--reason="text"]</code></td>
+                                <td>worktree path, optional reason</td>
+                                <td>Prevents accidental removal. Useful for protecting important worktrees</td>
+                            </tr>
+                            <tr>
+                                <td>Unlock worktree</td>
+                                <td><code>/worktree-manager:unlock &lt;path&gt;</code></td>
+                                <td>worktree path</td>
+                                <td>Allows removal again after locking</td>
+                            </tr>
+                            <tr>
+                                <td>Repair worktree</td>
+                                <td><code>/worktree-manager:repair &lt;path&gt;</code></td>
+                                <td>worktree path</td>
+                                <td>Fixes broken administrative files. Use when worktree was manually moved</td>
+                            </tr>
+                            <tr>
+                                <td>Prune orphaned worktrees</td>
+                                <td><code>/worktree-manager:prune</code></td>
+                                <td>nothing</td>
+                                <td>Removes references to worktrees that were manually deleted</td>
+                            </tr>
+                            <tr>
+                                <td>Rename branch</td>
+                                <td><code>/worktree-manager:rename-branch &lt;path&gt; &lt;old&gt; &lt;new&gt;</code></td>
+                                <td>worktree path, old name, new name</td>
+                                <td>Renames branch in worktree. Updates all git references automatically</td>
+                            </tr>
+                            <tr>
+                                <td>Delete branch</td>
+                                <td><code>/worktree-manager:delete-branch &lt;name&gt; [--force] [--delete-remote]</code></td>
+                                <td>branch name, optional flags</td>
+                                <td>Deletes branch with safety checks. Use --force for unmerged branches, --delete-remote to also delete from origin</td>
                             </tr>
                         </tbody>
                     </table>
