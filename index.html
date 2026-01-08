@@ -523,22 +523,24 @@
                     <div class="code-block-wrapper">
                         <button class="copy-btn" onclick="copyInstall(this)">Copy</button>
                         <div class="code-block" id="install-code">
-<span class="code-comment"># 1. Clone the repo</span>
-git clone https://github.com/danielraffel/worktree-manager ~/worktree-manager
-cd ~/worktree-manager
+<span class="code-comment"># 1. Add the marketplace (in Claude Code)</span>
+/plugin marketplace add danielraffel/worktree-manager
 
-<span class="code-comment"># 2. Build the MCP server</span>
-cd mcp-server && npm install && npm run build && cd ..
+<span class="code-comment"># 2. Install the plugin</span>
+/plugin install worktree-manager@worktree-manager-marketplace
 
-<span class="code-comment"># 3. Run Claude Code with the plugin</span>
-cd /your/project
-claude --plugin-dir ~/worktree-manager/plugin
+<span class="code-comment"># 3. Build the MCP server</span>
+cd ~/.claude/plugins/cache/worktree-manager-marketplace/worktree-manager/*/mcp-server
+npm install && npm run build
+
+<span class="code-comment"># 4. Restart Claude Code</span>
+<span class="code-comment"># Quit and reopen Claude Code to load the plugin</span>
                         </div>
                     </div>
                     <div style="display: flex; gap: 2rem; align-items: center; margin-top: 1.5rem; flex-wrap: wrap;">
                         <a href="https://github.com/danielraffel/worktree-manager" class="btn" style="margin: 0;">View on GitHub &rarr;</a>
                         <div style="color: var(--gray); font-size: 0.9rem;">
-                            Use <code style="background: var(--light-gray); padding: 0.3rem 0.6rem; border-radius: 4px; font-size: 0.85rem;">--plugin-dir</code> each time, or add to shell alias for convenience.
+                            After installation, verify with <code style="background: var(--light-gray); padding: 0.3rem 0.6rem; border-radius: 4px; font-size: 0.85rem;">/worktree-manager:list</code>
                         </div>
                     </div>
                 </div>

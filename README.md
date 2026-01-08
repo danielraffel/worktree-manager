@@ -64,37 +64,47 @@ This project consists of two layers:
 
 ## Installation
 
-### 1. Clone and Build
+### 1. Add the Marketplace
+
+In Claude Code, run:
 
 ```bash
-# Clone the repo
-git clone https://github.com/danielraffel/worktree-manager ~/worktree-manager
-cd ~/worktree-manager
-
-# Build the MCP server
-cd mcp-server && npm install && npm run build && cd ..
+/plugin marketplace add danielraffel/worktree-manager
 ```
 
-### 2. Use with Claude Code
+### 2. Install the Plugin
 
 ```bash
-# Run Claude Code with the plugin
-cd /your/project
-claude --plugin-dir ~/worktree-manager/plugin
+/plugin install worktree-manager@worktree-manager-marketplace
 ```
 
-**Tip**: Add a shell alias for convenience:
+Or use the interactive installer:
+1. Type `/plugin`
+2. Navigate to "worktree-manager-marketplace"
+3. Select "worktree-manager"
+4. Click "Install for you (user scope)"
+
+### 3. Build the MCP Server
+
+After installation, build the MCP server:
+
 ```bash
-# Add to ~/.zshrc or ~/.bashrc
-alias claude-wt='claude --plugin-dir ~/worktree-manager/plugin'
+cd ~/.claude/plugins/cache/worktree-manager-marketplace/worktree-manager/*/mcp-server
+npm install && npm run build
 ```
 
-### 3. Verify Installation
+### 4. Restart Claude Code
+
+Quit and reopen Claude Code to load the plugin.
+
+### 5. Verify Installation
 
 ```bash
-claude --plugin-dir ~/worktree-manager/plugin
-/help
-# Should show worktree-manager commands
+/plugin list
+# Should show worktree-manager
+
+/worktree-manager:list
+# Should display your worktrees
 ```
 
 ## Usage
