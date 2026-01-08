@@ -1,0 +1,32 @@
+{
+  "name": "worktree-manager-marketplace",
+  "owner": {
+    "name": "Generous Corp",
+    "email": "dev@generouscorp.com"
+  },
+  "metadata": {
+    "description": "Git worktree management tools for Claude Code",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "worktree-manager",
+      "source": {
+        "source": "github",
+        "repo": "danielraffel/worktree-manager",
+        "path": "plugin"
+      },
+      "description": "Effortless git worktrees for parallel development with automatic environment setup",
+      "version": "2.0.0",
+      "author": {
+        "name": "Daniel Raffel",
+        "url": "https://danielraffel.me"
+      },
+      "homepage": "https://www.generouscorp.com/worktree-manager/",
+      "repository": "https://github.com/danielraffel/worktree-manager",
+      "license": "MIT",
+      "keywords": ["git", "worktree", "version-control", "productivity", "parallel-development"],
+      "category": "version-control"
+    }
+  ]
+}
