@@ -255,4 +255,74 @@ branch refs/heads/feature/test2
       });
     });
   });
+
+  describe('hasSubmodules', () => {
+    it('should return true when .gitmodules exists', () => {
+      (fs.existsSync as jest.Mock).mockReturnValue(true);
+
+      const result = GitHelpers.hasSubmodules('/path/to/repo');
+
+      expect(result).toBe(true);
+      expect(fs.existsSync).toHaveBeenCalledWith('/path/to/repo/.gitmodules');
+    });
+
+    it('should return false when .gitmodules does not exist', () => {
+      (fs.existsSync as jest.Mock).mockReturnValue(false);
+
+      const result = GitHelpers.hasSubmodules('/path/to/repo');
+
+      expect(result).toBe(false);
+    });
+
+    it('should return false on filesystem error', () => {
+      (fs.existsSync as jest.Mock).mockImplementation(() => {
+        throw new Error('Permission denied');
+      });
+
+      const result = GitHelpers.hasSubmodules('/path/to/repo');
+
+      expect(result).toBe(false);
+    });
+  });
+
+  describe('initSubmodules', () => {
+    it('should initialize submodules successfully', async () => {
+      (exec as jest.Mock).mockResolvedValue({
+        stdout: 'Submodule path "lib/foo": checked out "abc123"\n',
+        stderr: '',
+      });
+
+      const result = await GitHelpers.initSubmodules('/path/to/worktree');
+
+      expect(result.success).toBe(true);
+      expect(result.error).toBeUndefined();
+      expect(exec).toHaveBeenCalledWith(
+        'git submodule update --init --recursive',
+        {
+          cwd: '/path/to/worktree',
+          timeout: 10 * 60 * 1000,
+        }
+      );
+    });
+
+    it('should handle submodule initialization errors', async () => {
+      (exec as jest.Mock).mockRejectedValue(
+        new Error('fatal: unable to access submodule repository')
+      );
+
+      const result = await GitHelpers.initSubmodules('/path/to/worktree');
+
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('unable to access submodule');
+    });
+
+    it('should use 10 minute timeout for slow clones', async () => {
+      (exec as jest.Mock).mockImplementation((cmd, options) => {
+        expect(options.timeout).toBe(10 * 60 * 1000);
+        return Promise.resolve({ stdout: '', stderr: '' });
+      });
+
+      await GitHelpers.initSubmodules('/path/to/worktree');
+    });
+  });
 });

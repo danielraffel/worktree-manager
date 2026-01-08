@@ -502,6 +502,7 @@
                     <ul class="feature-list">
                         <li>Creates isolated Git Worktrees automatically</li>
                         <li>Auto-detects project type & installs dependencies</li>
+                        <li>Automatically initializes git submodules</li>
                         <li>Pairs with <a href="https://www.generouscorp.com/Chainer">Chainer</a> for workflow automation</li>
                         <li>Safe experimentation without contaminating main</li>
                         <li>Zero bookkeeping required</li>
@@ -621,6 +622,9 @@ branch_prefix: feature/
 <span class="code-comment"># Create LEARNINGS.md in worktree</span>
 create_learnings_file: false
 
+<span class="code-comment"># Auto-initialize git submodules</span>
+auto_init_submodules: true
+
 <span class="code-comment"># Auto-commit changes</span>
 auto_commit: false
 
@@ -653,6 +657,11 @@ auto_push: false
                                 <td><code>create_learnings_file</code></td>
                                 <td><code>false</code></td>
                                 <td>Create <code>LEARNINGS.md</code> in worktree to capture insights</td>
+                            </tr>
+                            <tr>
+                                <td><code>auto_init_submodules</code></td>
+                                <td><code>true</code></td>
+                                <td>Auto-initialize git submodules recursively in new worktrees</td>
                             </tr>
                             <tr>
                                 <td><code>auto_commit</code></td>

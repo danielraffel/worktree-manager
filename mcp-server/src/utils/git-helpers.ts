@@ -195,4 +195,34 @@ export class GitHelpers {
       };
     }
   }
+
+  /**
+   * Check if a repository has git submodules
+   */
+  static hasSubmodules(dirPath: string): boolean {
+    try {
+      const gitmodulesPath = path.join(dirPath, '.gitmodules');
+      return fs.existsSync(gitmodulesPath);
+    } catch (error) {
+      return false;
+    }
+  }
+
+  /**
+   * Initialize git submodules recursively
+   */
+  static async initSubmodules(dirPath: string): Promise<{ success: boolean; error?: string }> {
+    try {
+      await execAsync('git submodule update --init --recursive', {
+        cwd: dirPath,
+        timeout: 10 * 60 * 1000, // 10 minutes
+      });
+      return { success: true };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message || 'Unknown error initializing submodules',
+      };
+    }
+  }
 }

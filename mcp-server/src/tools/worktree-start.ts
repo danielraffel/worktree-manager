@@ -104,6 +104,22 @@ export class WorktreeStartTool {
       // Step 3: Detect project type
       const projectInfo = ProjectDetector.detect(worktreePath);
 
+      // Step 3.5: Initialize submodules if present and configured
+      let submoduleSuccess: boolean | undefined;
+      let submoduleError: string | undefined;
+
+      if (config.auto_init_submodules && !reusingExisting) {
+        const hasSubmodules = GitHelpers.hasSubmodules(cwd);
+
+        if (hasSubmodules) {
+          // Note: We'll add this message to setupMessages below
+          const submoduleResult = await GitHelpers.initSubmodules(worktreePath);
+          // Store result to add to messages later
+          submoduleSuccess = submoduleResult.success;
+          submoduleError = submoduleResult.error;
+        }
+      }
+
       // Step 4: Run setup commands
       const setupMessages: string[] = reusingExisting
         ? [
@@ -121,18 +137,31 @@ export class WorktreeStartTool {
       if (reusingExisting) {
         // Skip setup when reusing - already done
         setupMessages.push('Skipping setup (already configured)');
-      } else if (projectInfo.setup_commands.length > 0) {
-        setupMessages.push('Running setup commands...');
-
-        const setupResult = await SetupRunner.runSetupCommands(projectInfo.setup_commands);
-        setupMessages.push(...setupResult.messages);
-
-        if (!setupResult.success) {
-          setupComplete = false;
-          setupMessages.push(...setupResult.errors);
-        }
       } else {
-        setupMessages.push('No setup commands needed');
+        // Add submodule initialization messages if applicable
+        if (config.auto_init_submodules && GitHelpers.hasSubmodules(cwd)) {
+          setupMessages.push('Detected git submodules, initializing...');
+          if (typeof submoduleSuccess !== 'undefined' && submoduleSuccess) {
+            setupMessages.push('✅ Git submodules initialized');
+          } else if (typeof submoduleError !== 'undefined') {
+            setupMessages.push(`⚠️  Submodule initialization failed: ${submoduleError}`);
+            setupMessages.push('You may need to run: git submodule update --init --recursive');
+          }
+        }
+
+        if (projectInfo.setup_commands.length > 0) {
+          setupMessages.push('Running setup commands...');
+
+          const setupResult = await SetupRunner.runSetupCommands(projectInfo.setup_commands);
+          setupMessages.push(...setupResult.messages);
+
+          if (!setupResult.success) {
+            setupComplete = false;
+            setupMessages.push(...setupResult.errors);
+          }
+        } else {
+          setupMessages.push('No setup commands needed');
+        }
       }
 
       // Step 4.5: Create learnings file if configured (skip if reusing and file exists)

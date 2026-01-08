@@ -206,6 +206,9 @@ branch_prefix: feature/
 # Create LEARNINGS.md in worktree to capture insights
 create_learnings_file: false
 
+# Auto-initialize git submodules (default: true)
+auto_init_submodules: true
+
 # Auto-commit changes during AI agent execution
 auto_commit: false
 
@@ -233,6 +236,7 @@ Add any project-specific context or conventions here.
 | `worktree_base_path` | `~/worktrees` | Base directory where all worktrees are created |
 | `branch_prefix` | `feature/` | Prefix for new branches (e.g., `feature/my-task`) |
 | `create_learnings_file` | `false` | Create `LEARNINGS.md` in worktree to capture insights |
+| `auto_init_submodules` | `true` | Auto-initialize git submodules recursively in new worktrees |
 | `auto_commit` | `false` | Auto-commit changes during AI agent execution |
 | `auto_push` | `false` | Auto-push to remote after commits |
 | `default_workflow` | `simple` | Default workflow when not specified |

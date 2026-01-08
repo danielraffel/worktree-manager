@@ -21,6 +21,9 @@ export interface WorktreeConfig {
   /** Create learnings.md file to capture insights (default: false) */
   create_learnings_file: boolean;
 
+  /** Auto-initialize git submodules (default: true) */
+  auto_init_submodules: boolean;
+
   /** Directory for spec files (default: audit) */
   spec_directory: string;
 
@@ -37,6 +40,7 @@ const DEFAULT_CONFIG: WorktreeConfig = {
   auto_commit: false,
   auto_push: false,
   create_learnings_file: false,
+  auto_init_submodules: true,
   spec_directory: 'audit',
   default_max_iterations: 50,
 };
@@ -158,6 +162,9 @@ export class ConfigReader {
         case 'create_learnings_file':
           config.create_learnings_file = value === 'true';
           break;
+        case 'auto_init_submodules':
+          config.auto_init_submodules = value === 'true';
+          break;
         case 'spec_directory':
           config.spec_directory = value;
           break;
@@ -195,6 +202,9 @@ auto_push: false
 
 # Create learnings.md to capture insights during development (default: false)
 create_learnings_file: false
+
+# Auto-initialize git submodules (default: true)
+auto_init_submodules: true
 
 # Directory for spec files (default: audit)
 spec_directory: audit
