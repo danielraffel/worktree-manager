@@ -1,1 +1,0 @@
-{"version":3,"file":"ralph-default.d.ts","sourceRoot":"","sources":["../../src/templates/ralph-default.ts"],"names":[],"mappings":"AAAA;;;GAGG;AAEH,eAAO,MAAM,sBAAsB,ihEAyDgC,CAAC;AAEpE,MAAM,WAAW,sBAAsB;IACrC,WAAW,EAAE,MAAM,CAAC;IACpB,aAAa,EAAE,MAAM,CAAC;CACvB;AAED;;;GAGG;AACH,eAAO,MAAM,eAAe,EAAE,MAAM,CAAC,MAAM,EAAE,MAAM,CAMlD,CAAC"}
