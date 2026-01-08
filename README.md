@@ -84,20 +84,11 @@ Or use the interactive installer:
 3. Select "worktree-manager"
 4. Click "Install for you (user scope)"
 
-### 3. Build the MCP Server
-
-After installation, build the MCP server:
-
-```bash
-cd ~/.claude/plugins/cache/worktree-manager-marketplace/worktree-manager/*/mcp-server
-npm install && npm run build
-```
-
-### 4. Restart Claude Code
+### 3. Restart Claude Code
 
 Quit and reopen Claude Code to load the plugin.
 
-### 5. Verify Installation
+### 4. Verify Installation
 
 ```bash
 /plugin list

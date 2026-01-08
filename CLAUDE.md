@@ -5,8 +5,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Project Overview
 
 Worktree Manager is a two-layer system for parallel feature development using git worktrees:
-- **Plugin layer** (`plugin/`): User-facing slash commands for Claude Code
+- **Plugin layer** (root directory): User-facing slash commands for Claude Code
 - **MCP server layer** (`mcp-server/`): TypeScript backend with git operations (99% test coverage)
+
+**Distribution**: Available via Claude Code marketplace at `worktree-manager-marketplace`
 
 ## Build & Development Commands
 
@@ -30,19 +32,21 @@ cd mcp-server && npm run lint
 ## Architecture
 
 ```
-plugin/                          # Claude Code plugin (frontend)
-├── .claude-plugin/plugin.json   # Plugin manifest - defines MCP server
-└── commands/                    # Slash command markdown files
-    ├── start.md                 # Main workflow entry point
-    ├── list.md, status.md, cleanup.md
-
-mcp-server/                      # TypeScript MCP server (backend)
-└── src/
-    ├── index.ts                 # MCP server entry, tool definitions
-    ├── tools/                   # worktree-start.ts, -list.ts, -status.ts, -cleanup.ts
-    ├── utils/                   # git-helpers, project-detector, setup-runner, config-reader
-    ├── templates/               # Ralph prompt templates
-    └── types.ts                 # TypeScript interfaces
+worktree-manager/                # Repository root (IS the plugin)
+├── .claude-plugin/
+│   ├── plugin.json              # Plugin manifest - defines MCP server
+│   └── marketplace.json         # Marketplace definition
+├── commands/                    # Slash command markdown files
+│   ├── start.md                 # Main workflow entry point
+│   └── list.md, status.md, cleanup.md
+└── mcp-server/                  # TypeScript MCP server (backend)
+    ├── src/
+    │   ├── index.ts             # MCP server entry, tool definitions
+    │   ├── tools/               # worktree-start.ts, -list.ts, -status.ts, -cleanup.ts
+    │   ├── utils/               # git-helpers, project-detector, setup-runner, config-reader
+    │   ├── templates/           # Ralph prompt templates
+    │   └── types.ts             # TypeScript interfaces
+    └── dist/                    # Pre-built (committed to repo for easy installation)
 ```
 
 ## Key Concepts
@@ -64,5 +68,17 @@ Users configure via `~/.claude/worktree-manager.local.md` (global) or `.claude/w
 1. Implement TypeScript tool in `mcp-server/src/tools/`
 2. Add tests in `mcp-server/tests/`
 3. Export from `mcp-server/src/index.ts`
-4. Create command markdown in `plugin/commands/`
+4. Create command markdown in `commands/`
 5. Run `npm run build` in mcp-server
+6. **Important**: Commit the built `mcp-server/dist/` files so users don't need to build
+
+## Installation (for Users)
+
+Users install via Claude Code marketplace:
+```bash
+/plugin marketplace add danielraffel/worktree-manager
+/plugin install worktree-manager@worktree-manager-marketplace
+# Restart Claude Code
+```
+
+No build step required - `dist/` folder is pre-built and committed to repository.

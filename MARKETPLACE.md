@@ -33,28 +33,9 @@ Or install directly via command:
 
 Before installing, ensure you have:
 
-1. **Node.js** (v16 or later)
-2. **Git** worktree support (Git 2.5+)
-3. **Claude Code** installed
-
-## Post-Installation Setup
-
-After installation, build the MCP server:
-
-```bash
-cd ~/.claude/plugins/worktree-manager
-cd ../mcp-server
-npm install
-npm run build
-```
-
-Or if installed in a project:
-
-```bash
-cd .claude-plugin/worktree-manager/mcp-server
-npm install
-npm run build
-```
+1. **Git** worktree support (Git 2.5+)
+2. **Claude Code** installed
+3. **Node.js** (v16 or later) - for project setup automation only
 
 ## Verification
 
