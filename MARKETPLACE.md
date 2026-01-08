@@ -2,30 +2,28 @@
 
 This repository serves as both a Claude Code plugin and a plugin marketplace.
 
-## Installation Methods
+## Installation
 
-### Method 1: Direct Plugin Installation (Recommended for Single Users)
-
-Install directly from GitHub:
-
-```bash
-/plugin install https://github.com/danielraffel/worktree-manager/tree/main/plugin
-```
-
-Or in Claude Code:
-1. Type `/plugin`
-2. Select "Install from URL"
-3. Enter: `https://github.com/danielraffel/worktree-manager/tree/main/plugin`
-
-### Method 2: Via Marketplace (For Teams/Multiple Installations)
-
-Add the marketplace:
+### Step 1: Add the Marketplace
 
 ```bash
 /plugin marketplace add danielraffel/worktree-manager
 ```
 
-Then install the plugin:
+### Step 2: Install the Plugin
+
+In Claude Code, type:
+
+```bash
+/plugin
+```
+
+Then:
+1. Navigate to "worktree-manager-marketplace"
+2. Select "worktree-manager"
+3. Click "Install for you (user scope)"
+
+Or install directly via command:
 
 ```bash
 /plugin install worktree-manager@worktree-manager-marketplace
