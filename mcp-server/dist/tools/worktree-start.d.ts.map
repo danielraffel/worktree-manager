@@ -1,0 +1,1 @@
+{"version":3,"file":"worktree-start.d.ts","sourceRoot":"","sources":["../../src/tools/worktree-start.ts"],"names":[],"mappings":"AAGA,OAAO,EAAE,mBAAmB,EAAE,mBAAmB,EAAE,MAAM,UAAU,CAAC;AAMpE;;;GAGG;AACH,qBAAa,iBAAiB;IAC5B;;OAEG;WACU,OAAO,CAAC,MAAM,EAAE,mBAAmB,GAAG,OAAO,CAAC,mBAAmB,CAAC;IA0M/E;;OAEG;IACH,OAAO,CAAC,MAAM,CAAC,kBAAkB;CA6ElC"}

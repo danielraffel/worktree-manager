@@ -7,7 +7,7 @@ package-lock.json
 yarn.lock
 
 # Build artifacts
-dist/
+# Note: mcp-server/dist/ is committed for easier plugin installation
 build/
 *.tsbuildinfo
 
