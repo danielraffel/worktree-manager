@@ -8813,6 +8813,7 @@ var DEFAULT_CONFIG = {
   auto_push: false,
   create_learnings_file: false,
   auto_init_submodules: true,
+  auto_run_setup: true,
   copy_files_enabled: true,
   copy_file_patterns: [".env", ".env.*", ".vscode/**", "*.local"],
   exclude_file_patterns: ["node_modules", "dist", "build", "coverage", ".git"],
@@ -8899,6 +8900,9 @@ var ConfigReader = class {
         case "auto_init_submodules":
           config.auto_init_submodules = value === "true";
           break;
+        case "auto_run_setup":
+          config.auto_run_setup = value === "true";
+          break;
         case "copy_files_enabled":
           config.copy_files_enabled = value === "true";
           break;
@@ -8958,6 +8962,9 @@ create_learnings_file: false
 
 # Auto-initialize git submodules (default: true)
 auto_init_submodules: true
+
+# Auto-run setup commands like npm install, poetry install, etc. (default: true)
+auto_run_setup: true
 
 # Auto-copy environment files to new worktrees (default: true)
 copy_files_enabled: true
@@ -9229,6 +9236,14 @@ var WorktreeStartTool = class {
       let setupComplete = true;
       if (reusingExisting) {
         setupMessages.push("Skipping setup (already configured)");
+      } else if (!config.auto_run_setup) {
+        setupMessages.push("\u2699\uFE0F  Auto-setup disabled (set auto_run_setup: true in config to enable)");
+        if (projectInfo.setup_commands.length > 0) {
+          setupMessages.push("\u{1F4A1} To set up manually, run:");
+          for (const cmd of projectInfo.setup_commands) {
+            setupMessages.push(`   cd ${cmd.directory} && ${cmd.command}`);
+          }
+        }
       } else {
         if (config.copy_files_enabled) {
           if (copyFilesCount > 0) {

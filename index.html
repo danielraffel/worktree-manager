@@ -811,6 +811,22 @@ auto_push: false
                             <p><strong>Why only one?</strong> Running all setups could take 2-5 minutes. By installing just the primary ecosystem (usually 30 seconds), you get started faster. If you need the others, the commands we show work—just run them manually.</p>
                             <p><strong>Example output:</strong> If your project has both <code>package.json</code> (Node.js) and <code>pyproject.toml</code> (Python), we'll run <code>npm install</code> first, then show you "<code>poetry install</code>" as an available option if you need Python dependencies too.</p>
                             <p><strong>What if I don't run the extras?</strong> Your primary ecosystem will work fine. Only run additional commands if you're actively working with that part of your codebase. For example, if you're only editing JavaScript, you don't need Python dependencies installed.</p>
+                            <p><strong>Don't want automatic setup?</strong> Set <code>auto_run_setup: false</code> in your config. See <a href="#faq-auto-setup-safety">Is it safe to auto-run setup commands?</a> for details.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)" id="faq-auto-setup-safety">Is it safe to auto-run setup commands?</div>
+                        <div class="faq-answer">
+                            <p><strong>For 99% of use cases: Yes, it's safe.</strong> You're already trusting Claude Code to write code in your repository, so running standard package manager commands is the same level of trust.</p>
+                            <p><strong>What we run:</strong> Standard dependency installation commands like <code>npm install</code>, <code>pip install</code>, <code>go mod download</code>, etc. These are the same commands you'd run manually to set up the project.</p>
+                            <p><strong>Theoretical risks:</strong></p>
+                            <p>• <strong>npm/pip postinstall scripts</strong> - Can execute arbitrary code from dependencies. But if your project's dependencies are malicious, you have bigger problems than auto-install.<br>
+                            • <strong>Resource usage</strong> - Large installs could use disk space or time. The plugin shows progress so you can cancel if needed.<br>
+                            • <strong>Corporate/security-conscious environments</strong> - Some organizations prefer manual approval for all installs.</p>
+                            <p><strong>How to disable:</strong> Add to your config file (<code>.claude/worktree-manager.local.md</code>):</p>
+                            <p><code>auto_run_setup: false</code></p>
+                            <p>When disabled, the plugin will show you the commands to run manually instead of executing them automatically.</p>
+                            <p><strong>Our recommendation:</strong> Keep it enabled (default) for personal projects and trusted repositories. Disable it for untrusted codebases or corporate environments with strict security policies.</p>
                         </div>
                     </div>
                 </div>

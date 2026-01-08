@@ -169,6 +169,15 @@ export class WorktreeStartTool {
       if (reusingExisting) {
         // Skip setup when reusing - already done
         setupMessages.push('Skipping setup (already configured)');
+      } else if (!config.auto_run_setup) {
+        // Skip setup when auto_run_setup is disabled
+        setupMessages.push('⚙️  Auto-setup disabled (set auto_run_setup: true in config to enable)');
+        if (projectInfo.setup_commands.length > 0) {
+          setupMessages.push('💡 To set up manually, run:');
+          for (const cmd of projectInfo.setup_commands) {
+            setupMessages.push(`   cd ${cmd.directory} && ${cmd.command}`);
+          }
+        }
       } else {
         // Add file copying messages if applicable
         if (config.copy_files_enabled) {

@@ -316,6 +316,9 @@ create_learnings_file: false
 # Auto-initialize git submodules (default: true)
 auto_init_submodules: true
 
+# Auto-run setup commands like npm install, poetry install, etc. (default: true)
+auto_run_setup: true
+
 # Auto-copy environment files to new worktrees (default: true)
 copy_files_enabled: true
 
@@ -353,6 +356,7 @@ Add any project-specific context or conventions here.
 | `branch_prefix` | `feature/` | Prefix for new branches (e.g., `feature/my-task`) |
 | `create_learnings_file` | `false` | Create `LEARNINGS.md` in worktree to capture insights |
 | `auto_init_submodules` | `true` | Auto-initialize git submodules recursively in new worktrees |
+| `auto_run_setup` | `true` | Auto-run setup commands (npm install, etc.) when creating worktrees |
 | `copy_files_enabled` | `true` | Auto-copy development environment files to new worktrees |
 | `copy_file_patterns` | `['.env', '.vscode/**', '*.local']` | Glob patterns for files to copy from main repo |
 | `exclude_file_patterns` | `['node_modules', 'dist', '.git']` | Glob patterns to exclude from copying |
