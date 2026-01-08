@@ -8556,6 +8556,12 @@ var ProjectDetector = class {
         description: "Install Python dependencies with Poetry"
       },
       {
+        name: "Python (pipenv)",
+        markers: ["Pipfile"],
+        command: "pipenv install",
+        description: "Install Python dependencies with pipenv"
+      },
+      {
         name: "Python (pip)",
         markers: ["requirements.txt"],
         command: "pip install -r requirements.txt",
@@ -9394,6 +9400,7 @@ This file captures insights, decisions, and learnings during development.
       "Node.js": "npm install  # or pnpm/yarn/bun based on lockfile",
       "Python (uv)": "uv sync",
       "Python (Poetry)": "poetry install",
+      "Python (pipenv)": "pipenv install",
       "Python (pip)": "pip install -r requirements.txt",
       "Python": "pip install -e .",
       "Ruby": "bundle install",

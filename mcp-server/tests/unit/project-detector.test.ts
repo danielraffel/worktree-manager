@@ -230,5 +230,32 @@ describe('ProjectDetector', () => {
       expect(result.setup_commands).toHaveLength(1);
       expect(result.setup_commands[0].command).toBe('uv sync');
     });
+
+    it('should detect Python (pipenv) based on Pipfile', () => {
+      (fs.existsSync as jest.Mock).mockImplementation((filePath: string) => {
+        if (filePath.endsWith('Pipfile')) return true;
+        return false;
+      });
+
+      const result = ProjectDetector.detect('/path/to/worktree');
+
+      expect(result.setup_commands).toHaveLength(1);
+      expect(result.setup_commands[0].command).toBe('pipenv install');
+      expect(result.setup_commands[0].description).toBe('Install Python dependencies with pipenv');
+    });
+
+    it('should prioritize Poetry over pipenv when both exist', () => {
+      (fs.existsSync as jest.Mock).mockImplementation((filePath: string) => {
+        if (filePath.endsWith('pyproject.toml')) return true;
+        if (filePath.endsWith('poetry.lock')) return true;
+        if (filePath.endsWith('Pipfile')) return true;
+        return false;
+      });
+
+      const result = ProjectDetector.detect('/path/to/worktree');
+
+      expect(result.setup_commands).toHaveLength(1);
+      expect(result.setup_commands[0].command).toBe('poetry install');
+    });
   });
 });

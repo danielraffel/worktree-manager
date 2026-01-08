@@ -148,6 +148,7 @@ Automatically detects project type and runs appropriate setup commands:
 | **Node.js** | `package.json` (root) | `npm install` (or pnpm/yarn/bun based on lockfile) |
 | **Python (uv)** | `uv.lock` | `uv sync` |
 | **Python (Poetry)** | `pyproject.toml` + `poetry.lock` | `poetry install` |
+| **Python (pipenv)** | `Pipfile` | `pipenv install` |
 | **Python (pip)** | `requirements.txt` | `pip install -r requirements.txt` |
 | **Python** | `setup.py` | `pip install -e .` |
 | **Ruby** | `Gemfile` | `bundle install` |

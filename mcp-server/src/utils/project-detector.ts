@@ -76,6 +76,12 @@ export class ProjectDetector {
       description: 'Install Python dependencies with Poetry'
     },
     {
+      name: 'Python (pipenv)',
+      markers: ['Pipfile'],
+      command: 'pipenv install',
+      description: 'Install Python dependencies with pipenv'
+    },
+    {
       name: 'Python (pip)',
       markers: ['requirements.txt'],
       command: 'pip install -r requirements.txt',

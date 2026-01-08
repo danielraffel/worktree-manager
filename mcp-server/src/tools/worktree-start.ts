@@ -308,6 +308,7 @@ This file captures insights, decisions, and learnings during development.
       'Node.js': 'npm install  # or pnpm/yarn/bun based on lockfile',
       'Python (uv)': 'uv sync',
       'Python (Poetry)': 'poetry install',
+      'Python (pipenv)': 'pipenv install',
       'Python (pip)': 'pip install -r requirements.txt',
       'Python': 'pip install -e .',
       'Ruby': 'bundle install',
