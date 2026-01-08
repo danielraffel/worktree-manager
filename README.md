@@ -75,12 +75,12 @@ In Claude Code, run:
 ### 2. Install the Plugin
 
 ```bash
-/plugin install worktree-manager@worktree-manager-marketplace
+/plugin install worktree-manager@generous-corp-marketplace
 ```
 
 Or use the interactive installer:
 1. Type `/plugin`
-2. Navigate to "worktree-manager-marketplace"
+2. Navigate to "generous-corp-marketplace"
 3. Select "worktree-manager"
 4. Click "Install for you (user scope)"
 

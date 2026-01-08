@@ -8,7 +8,7 @@ Worktree Manager is a two-layer system for parallel feature development using gi
 - **Plugin layer** (root directory): User-facing slash commands for Claude Code
 - **MCP server layer** (`mcp-server/`): TypeScript backend with git operations (99% test coverage)
 
-**Distribution**: Available via Claude Code marketplace at `worktree-manager-marketplace`
+**Distribution**: Available via Claude Code marketplace at `generous-corp-marketplace`
 
 ## Build & Development Commands
 
@@ -77,7 +77,7 @@ Users configure via `~/.claude/worktree-manager.local.md` (global) or `.claude/w
 Users install via Claude Code marketplace:
 ```bash
 /plugin marketplace add danielraffel/worktree-manager
-/plugin install worktree-manager@worktree-manager-marketplace
+/plugin install worktree-manager@generous-corp-marketplace
 # Restart Claude Code
 ```
 

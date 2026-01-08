@@ -19,14 +19,14 @@ In Claude Code, type:
 ```
 
 Then:
-1. Navigate to "worktree-manager-marketplace"
+1. Navigate to "generous-corp-marketplace"
 2. Select "worktree-manager"
 3. Click "Install for you (user scope)"
 
 Or install directly via command:
 
 ```bash
-/plugin install worktree-manager@worktree-manager-marketplace
+/plugin install worktree-manager@generous-corp-marketplace
 ```
 
 ## Prerequisites
