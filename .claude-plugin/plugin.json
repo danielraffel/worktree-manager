@@ -10,7 +10,6 @@
   "repository": "https://github.com/danielraffel/worktree-manager",
   "license": "MIT",
   "keywords": ["git", "worktree", "version-control", "productivity", "parallel-development"],
-  "category": "version-control",
   "commands": "./commands/",
   "mcpServers": {
     "worktree": {
