@@ -696,7 +696,7 @@ auto_push: false
                             3. You open Claude Code in that directory and work on the feature.<br>
                             4. Your main project stays clean and stable while experiments happen elsewhere.<br>
                             5. When done, you review the results and decide what to merge back.</p>
-                            <p><strong>For automation:</strong> Pair it with <a href="https://www.generouscorp.com/Chainer">Chainer</a> to automatically chain planning (feature-dev) and implementation (ralph-wiggum) inside isolated worktrees.</p>
+                            <p><strong>For automation:</strong> Pair it with <a href="https://www.generouscorp.com/Chainer">Chainer</a> to automatically chain planning (feature-dev) and implementation (ralph-loop) inside isolated worktrees.</p>
                         </div>
                     </div>
                     <div class="faq-item">
@@ -709,12 +709,11 @@ auto_push: false
                     <div class="faq-item">
                         <div class="faq-question" onclick="toggleFaq(this)" id="faq-install-plugins">How do I install plugins in Claude Code?</div>
                         <div class="faq-answer">
-                            <p><strong>For official marketplace plugins</strong> (like feature-dev and ralph-wiggum): Launch Claude Code and type <code>/plugins</code>. Search for the plugin you want, select it, and install. After installing marketplace plugins, you must quit and restart Claude Code for them to take effect. See the <a href="https://code.claude.com/docs/en/discover-plugins">official plugin documentation</a> for more details.</p>
-                            <p><strong>For Worktree Manager:</strong> This plugin isn't in the marketplace yet (but will be). For now, clone the repository and use the <code>--plugin-dir</code> flag:</p>
-                            <p><code>git clone https://github.com/danielraffel/worktree-manager ~/worktree-manager</code><br>
-                            <code>cd ~/worktree-manager/mcp-server && npm install && npm run build</code><br>
-                            <code>claude --plugin-dir ~/worktree-manager/plugin</code></p>
-                            <p>You'll need to include <code>--plugin-dir</code> each time you launch Claude, or add a shell alias for convenience.</p>
+                            <p><strong>For official marketplace plugins</strong> (like feature-dev and ralph-loop): Launch Claude Code and type <code>/plugins</code>. Search for the plugin you want, select it, and install. After installing marketplace plugins, you must quit and restart Claude Code for them to take effect. See the <a href="https://code.claude.com/docs/en/discover-plugins">official plugin documentation</a> for more details.</p>
+                            <p><strong>For Worktree Manager:</strong> Add the marketplace, then install:</p>
+                            <p><code>/plugin marketplace add danielraffel/worktree-manager</code><br>
+                            <code>/plugin install worktree-manager@worktree-manager-marketplace</code></p>
+                            <p>Then restart Claude Code to load the plugin.</p>
                         </div>
                     </div>
                     <div class="faq-item">
