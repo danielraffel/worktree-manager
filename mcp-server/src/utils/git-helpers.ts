@@ -419,4 +419,184 @@ export class GitHelpers {
       return { locked: false };
     }
   }
+
+  /**
+   * Rename branch in a worktree
+   */
+  static async renameBranch(
+    worktreePath: string,
+    oldName: string,
+    newName: string,
+    cwd?: string
+  ): Promise<{ success: boolean; error?: string }> {
+    try {
+      const workingDir = cwd || worktreePath;
+
+      // Check if old branch exists
+      const oldExists = await this.branchExists(oldName, workingDir);
+      if (!oldExists) {
+        return {
+          success: false,
+          error: `Branch does not exist: ${oldName}`,
+        };
+      }
+
+      // Check if new branch already exists
+      const newExists = await this.branchExists(newName, workingDir);
+      if (newExists) {
+        return {
+          success: false,
+          error: `Branch already exists: ${newName}`,
+        };
+      }
+
+      // Rename branch
+      await execAsync(`git branch -m ${oldName} ${newName}`, { cwd: worktreePath });
+      return { success: true };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message || 'Unknown error renaming branch',
+      };
+    }
+  }
+
+  /**
+   * Delete a branch (local and optionally remote)
+   */
+  static async deleteBranch(
+    branchName: string,
+    options: {
+      force?: boolean;
+      deleteRemote?: boolean;
+      remoteName?: string;
+    } = {},
+    cwd?: string
+  ): Promise<{ success: boolean; error?: string; warnings?: string[] }> {
+    try {
+      const workingDir = cwd || process.cwd();
+      const { force = false, deleteRemote = false, remoteName = 'origin' } = options;
+      const warnings: string[] = [];
+
+      // Check if branch exists
+      const exists = await this.branchExists(branchName, workingDir);
+      if (!exists) {
+        return {
+          success: false,
+          error: `Branch does not exist: ${branchName}`,
+        };
+      }
+
+      // Delete local branch
+      const deleteFlag = force ? '-D' : '-d';
+      try {
+        await execAsync(`git branch ${deleteFlag} ${branchName}`, { cwd: workingDir });
+      } catch (error: any) {
+        if (error.message.includes('not fully merged')) {
+          return {
+            success: false,
+            error: `Branch '${branchName}' is not fully merged. Use force option to delete anyway.`,
+          };
+        }
+        throw error;
+      }
+
+      // Delete remote branch if requested
+      if (deleteRemote) {
+        try {
+          await execAsync(`git push ${remoteName} --delete ${branchName}`, {
+            cwd: workingDir,
+          });
+        } catch (error: any) {
+          warnings.push(`Failed to delete remote branch: ${error.message}`);
+        }
+      }
+
+      return {
+        success: true,
+        warnings: warnings.length > 0 ? warnings : undefined,
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message || 'Unknown error deleting branch',
+      };
+    }
+  }
+
+  /**
+   * Get list of all branches (local and remote)
+   */
+  static async getAllBranches(cwd?: string): Promise<{
+    local: string[];
+    remote: string[];
+  }> {
+    try {
+      const workingDir = cwd || process.cwd();
+
+      // Get local branches
+      const { stdout: localOutput } = await execAsync('git branch --format="%(refname:short)"', {
+        cwd: workingDir,
+      });
+      const local = localOutput
+        .split('\n')
+        .map((b) => b.trim())
+        .filter((b) => b.length > 0);
+
+      // Get remote branches
+      const { stdout: remoteOutput } = await execAsync(
+        'git branch -r --format="%(refname:short)"',
+        { cwd: workingDir }
+      );
+      const remote = remoteOutput
+        .split('\n')
+        .map((b) => b.trim())
+        .filter((b) => b.length > 0 && !b.includes('HEAD'));
+
+      return { local, remote };
+    } catch (error) {
+      return { local: [], remote: [] };
+    }
+  }
+
+  /**
+   * Create worktree from existing branch (checkout instead of create)
+   */
+  static async createWorktreeFromExisting(params: {
+    path: string;
+    branch: string;
+    cwd?: string;
+  }): Promise<{ success: boolean; error?: string }> {
+    try {
+      const workingDir = params.cwd || process.cwd();
+
+      // Check if worktree path already exists
+      if (fs.existsSync(params.path)) {
+        return {
+          success: false,
+          error: `Worktree path already exists: ${params.path}`,
+        };
+      }
+
+      // Check if branch exists
+      const branchExists = await this.branchExists(params.branch, workingDir);
+      if (!branchExists) {
+        return {
+          success: false,
+          error: `Branch does not exist: ${params.branch}`,
+        };
+      }
+
+      // Create worktree from existing branch (no -b flag, just checkout)
+      const command = `git worktree add "${params.path}" ${params.branch}`;
+      await execAsync(command, { cwd: workingDir });
+
+      return { success: true };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message || 'Unknown error creating worktree from existing branch',
+      };
+    }
+  }
 }

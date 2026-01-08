@@ -8371,6 +8371,131 @@ var GitHelpers = class {
       return { locked: false };
     }
   }
+  /**
+   * Rename branch in a worktree
+   */
+  static async renameBranch(worktreePath, oldName, newName, cwd) {
+    try {
+      const workingDir = cwd || worktreePath;
+      const oldExists = await this.branchExists(oldName, workingDir);
+      if (!oldExists) {
+        return {
+          success: false,
+          error: `Branch does not exist: ${oldName}`
+        };
+      }
+      const newExists = await this.branchExists(newName, workingDir);
+      if (newExists) {
+        return {
+          success: false,
+          error: `Branch already exists: ${newName}`
+        };
+      }
+      await execAsync(`git branch -m ${oldName} ${newName}`, { cwd: worktreePath });
+      return { success: true };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message || "Unknown error renaming branch"
+      };
+    }
+  }
+  /**
+   * Delete a branch (local and optionally remote)
+   */
+  static async deleteBranch(branchName, options = {}, cwd) {
+    try {
+      const workingDir = cwd || process.cwd();
+      const { force = false, deleteRemote = false, remoteName = "origin" } = options;
+      const warnings = [];
+      const exists = await this.branchExists(branchName, workingDir);
+      if (!exists) {
+        return {
+          success: false,
+          error: `Branch does not exist: ${branchName}`
+        };
+      }
+      const deleteFlag = force ? "-D" : "-d";
+      try {
+        await execAsync(`git branch ${deleteFlag} ${branchName}`, { cwd: workingDir });
+      } catch (error) {
+        if (error.message.includes("not fully merged")) {
+          return {
+            success: false,
+            error: `Branch '${branchName}' is not fully merged. Use force option to delete anyway.`
+          };
+        }
+        throw error;
+      }
+      if (deleteRemote) {
+        try {
+          await execAsync(`git push ${remoteName} --delete ${branchName}`, {
+            cwd: workingDir
+          });
+        } catch (error) {
+          warnings.push(`Failed to delete remote branch: ${error.message}`);
+        }
+      }
+      return {
+        success: true,
+        warnings: warnings.length > 0 ? warnings : void 0
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message || "Unknown error deleting branch"
+      };
+    }
+  }
+  /**
+   * Get list of all branches (local and remote)
+   */
+  static async getAllBranches(cwd) {
+    try {
+      const workingDir = cwd || process.cwd();
+      const { stdout: localOutput } = await execAsync('git branch --format="%(refname:short)"', {
+        cwd: workingDir
+      });
+      const local = localOutput.split("\n").map((b) => b.trim()).filter((b) => b.length > 0);
+      const { stdout: remoteOutput } = await execAsync(
+        'git branch -r --format="%(refname:short)"',
+        { cwd: workingDir }
+      );
+      const remote = remoteOutput.split("\n").map((b) => b.trim()).filter((b) => b.length > 0 && !b.includes("HEAD"));
+      return { local, remote };
+    } catch (error) {
+      return { local: [], remote: [] };
+    }
+  }
+  /**
+   * Create worktree from existing branch (checkout instead of create)
+   */
+  static async createWorktreeFromExisting(params) {
+    try {
+      const workingDir = params.cwd || process.cwd();
+      if (fs.existsSync(params.path)) {
+        return {
+          success: false,
+          error: `Worktree path already exists: ${params.path}`
+        };
+      }
+      const branchExists = await this.branchExists(params.branch, workingDir);
+      if (!branchExists) {
+        return {
+          success: false,
+          error: `Branch does not exist: ${params.branch}`
+        };
+      }
+      const command = `git worktree add "${params.path}" ${params.branch}`;
+      await execAsync(command, { cwd: workingDir });
+      return { success: true };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message || "Unknown error creating worktree from existing branch"
+      };
+    }
+  }
 };
 
 // src/utils/project-detector.ts
@@ -8845,7 +8970,8 @@ var WorktreeStartTool = class {
       params.feature_name
     );
     const worktreePath = params.worktree_path || defaultWorktreePath;
-    const branchName = `${config.branch_prefix}${params.feature_name}`;
+    const useExistingBranch = !!params.existing_branch;
+    const branchName = params.existing_branch || `${config.branch_prefix}${params.feature_name}`;
     try {
       const isGitRepo = await GitHelpers.isGitRepo(cwd);
       if (!isGitRepo) {
@@ -8859,7 +8985,11 @@ var WorktreeStartTool = class {
           next_steps: ["Navigate to a git repository and try again"]
         };
       }
-      const createResult = await GitHelpers.createWorktree({
+      const createResult = useExistingBranch ? await GitHelpers.createWorktreeFromExisting({
+        path: worktreePath,
+        branch: branchName,
+        cwd
+      }) : await GitHelpers.createWorktree({
         path: worktreePath,
         branch: branchName,
         baseBranch,
@@ -8933,6 +9063,10 @@ var WorktreeStartTool = class {
       const setupMessages = reusingExisting ? [
         `\u267B\uFE0F  Reusing existing clean worktree: ${worktreePath}`,
         `Branch: ${branchName}`,
+        `Project type: ${projectInfo.type}`
+      ] : useExistingBranch ? [
+        `Worktree created: ${worktreePath}`,
+        `Branch: ${branchName} (checked out existing branch)`,
         `Project type: ${projectInfo.type}`
       ] : [
         `Worktree created: ${worktreePath}`,
@@ -9621,6 +9755,139 @@ var WorktreePruneTool = class {
   }
 };
 
+// src/tools/worktree-rename-branch.ts
+var WorktreeRenameBranchTool = class {
+  /**
+   * Rename a branch within a worktree
+   */
+  static async execute(params) {
+    const { worktree_path, old_name, new_name } = params;
+    const messages = [];
+    try {
+      messages.push(`Renaming branch in worktree: ${worktree_path}`);
+      messages.push(`From: ${old_name}`);
+      messages.push(`To:   ${new_name}`);
+      messages.push("");
+      const result = await GitHelpers.renameBranch(worktree_path, old_name, new_name);
+      if (!result.success) {
+        return {
+          success: false,
+          worktree_path,
+          old_name,
+          new_name,
+          messages: [
+            ...messages,
+            `\u274C Failed to rename branch: ${result.error}`,
+            "",
+            "Common issues:",
+            "- Old branch name does not exist",
+            "- New branch name already exists",
+            "- Not currently on the branch being renamed"
+          ],
+          error: result.error
+        };
+      }
+      messages.push("\u2705 Branch renamed successfully");
+      messages.push("");
+      messages.push("Git references have been updated automatically.");
+      return {
+        success: true,
+        worktree_path,
+        old_name,
+        new_name,
+        messages
+      };
+    } catch (error) {
+      return {
+        success: false,
+        worktree_path,
+        old_name,
+        new_name,
+        messages: [...messages, `\u274C Rename failed: ${error.message}`],
+        error: error.message || "Unknown error renaming branch"
+      };
+    }
+  }
+};
+
+// src/tools/worktree-delete-branch.ts
+var WorktreeDeleteBranchTool = class {
+  /**
+   * Delete a branch with safety checks
+   */
+  static async execute(params) {
+    const {
+      branch_name,
+      force = false,
+      delete_remote = false,
+      remote_name = "origin"
+    } = params;
+    const messages = [];
+    try {
+      messages.push(`Deleting branch: ${branch_name}`);
+      if (force) {
+        messages.push("\u26A0\uFE0F  Force mode enabled - bypassing merge checks");
+      }
+      if (delete_remote) {
+        messages.push(`Will also delete from remote: ${remote_name}`);
+      }
+      messages.push("");
+      const result = await GitHelpers.deleteBranch(
+        branch_name,
+        { force, deleteRemote: delete_remote, remoteName: remote_name }
+      );
+      if (!result.success) {
+        return {
+          success: false,
+          branch_name,
+          deleted_local: false,
+          messages: [
+            ...messages,
+            `\u274C Failed to delete branch: ${result.error}`,
+            "",
+            "Common issues:",
+            "- Branch does not exist",
+            "- Branch not fully merged (use --force to override)",
+            "- Currently checked out on this branch",
+            "- Remote deletion failed (check network/permissions)"
+          ],
+          error: result.error
+        };
+      }
+      messages.push("\u2705 Local branch deleted successfully");
+      const deletedRemote = delete_remote && (!result.warnings || result.warnings.length === 0);
+      if (delete_remote) {
+        if (deletedRemote) {
+          messages.push(`\u2705 Remote branch deleted from ${remote_name}`);
+        } else {
+          messages.push(`\u26A0\uFE0F  Local deleted but remote deletion failed`);
+        }
+      }
+      if (result.warnings && result.warnings.length > 0) {
+        messages.push("");
+        messages.push("Warnings:");
+        result.warnings.forEach((w) => messages.push(`  - ${w}`));
+      }
+      return {
+        success: true,
+        branch_name,
+        deleted_local: true,
+        deleted_remote: deletedRemote,
+        messages,
+        warnings: result.warnings
+      };
+    } catch (error) {
+      return {
+        success: false,
+        branch_name,
+        deleted_local: false,
+        messages: [...messages, `\u274C Delete failed: ${error.message}`],
+        error: error.message || "Unknown error deleting branch"
+      };
+    }
+  }
+};
+
 // src/index.ts
 var TOOLS = [
   {
@@ -9644,6 +9911,10 @@ var TOOLS = [
         worktree_path: {
           type: "string",
           description: "Custom worktree path (default: ~/worktrees/<feature-name>)"
+        },
+        existing_branch: {
+          type: "string",
+          description: "Checkout existing branch instead of creating new one"
         }
       },
       required: ["feature_name"]
@@ -9777,6 +10048,54 @@ var TOOLS = [
       type: "object",
       properties: {}
     }
+  },
+  {
+    name: "worktree_rename_branch",
+    description: "Rename a git branch within a worktree. Updates all git references automatically.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        worktree_path: {
+          type: "string",
+          description: "Worktree path where branch exists"
+        },
+        old_name: {
+          type: "string",
+          description: "Current branch name"
+        },
+        new_name: {
+          type: "string",
+          description: "New branch name"
+        }
+      },
+      required: ["worktree_path", "old_name", "new_name"]
+    }
+  },
+  {
+    name: "worktree_delete_branch",
+    description: "Delete a git branch (local and optionally remote) with safety checks. Prevents deletion of unmerged branches unless force is used.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        branch_name: {
+          type: "string",
+          description: "Branch name to delete"
+        },
+        force: {
+          type: "boolean",
+          description: "Force delete even if not fully merged (default: false)"
+        },
+        delete_remote: {
+          type: "boolean",
+          description: "Also delete from remote repository (default: false)"
+        },
+        remote_name: {
+          type: "string",
+          description: "Remote name (default: origin)"
+        }
+      },
+      required: ["branch_name"]
+    }
   }
 ];
 var server = new Server(
@@ -9887,6 +10206,28 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
       case "worktree_prune": {
         const result = await WorktreePruneTool.execute(args);
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(result, null, 2)
+            }
+          ]
+        };
+      }
+      case "worktree_rename_branch": {
+        const result = await WorktreeRenameBranchTool.execute(args);
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(result, null, 2)
+            }
+          ]
+        };
+      }
+      case "worktree_delete_branch": {
+        const result = await WorktreeDeleteBranchTool.execute(args);
         return {
           content: [
             {

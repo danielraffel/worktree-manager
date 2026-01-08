@@ -28,7 +28,10 @@ export class WorktreeStartTool {
       params.feature_name
     );
     const worktreePath = params.worktree_path || defaultWorktreePath;
-    const branchName = `${config.branch_prefix}${params.feature_name}`;
+
+    // Determine branch name - use existing_branch if provided, else create new one
+    const useExistingBranch = !!params.existing_branch;
+    const branchName = params.existing_branch || `${config.branch_prefix}${params.feature_name}`;
 
     try {
       // Step 1: Verify we're in a git repo
@@ -46,12 +49,18 @@ export class WorktreeStartTool {
       }
 
       // Step 2: Create worktree (or reuse existing clean one)
-      const createResult = await GitHelpers.createWorktree({
-        path: worktreePath,
-        branch: branchName,
-        baseBranch: baseBranch,
-        cwd,
-      });
+      const createResult = useExistingBranch
+        ? await GitHelpers.createWorktreeFromExisting({
+            path: worktreePath,
+            branch: branchName,
+            cwd,
+          })
+        : await GitHelpers.createWorktree({
+            path: worktreePath,
+            branch: branchName,
+            baseBranch: baseBranch,
+            cwd,
+          });
 
       let reusingExisting = false;
       if (!createResult.success) {
@@ -142,6 +151,12 @@ export class WorktreeStartTool {
         ? [
             `♻️  Reusing existing clean worktree: ${worktreePath}`,
             `Branch: ${branchName}`,
+            `Project type: ${projectInfo.type}`,
+          ]
+        : useExistingBranch
+        ? [
+            `Worktree created: ${worktreePath}`,
+            `Branch: ${branchName} (checked out existing branch)`,
             `Project type: ${projectInfo.type}`,
           ]
         : [

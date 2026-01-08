@@ -14,6 +14,8 @@ export interface WorktreeStartParams {
   task_description?: string;
   /** Custom worktree location (default: ~/worktrees/<feature_name>) */
   worktree_path?: string;
+  /** Checkout existing branch instead of creating new one */
+  existing_branch?: string;
 }
 
 export interface WorktreeInfo {

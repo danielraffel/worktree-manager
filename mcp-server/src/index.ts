@@ -21,6 +21,8 @@ import { WorktreeLockTool } from './tools/worktree-lock.js';
 import { WorktreeUnlockTool } from './tools/worktree-unlock.js';
 import { WorktreeRepairTool } from './tools/worktree-repair.js';
 import { WorktreePruneTool } from './tools/worktree-prune.js';
+import { WorktreeRenameBranchTool } from './tools/worktree-rename-branch.js';
+import { WorktreeDeleteBranchTool } from './tools/worktree-delete-branch.js';
 
 // Define MCP tools
 const TOOLS: Tool[] = [
@@ -46,6 +48,10 @@ const TOOLS: Tool[] = [
         worktree_path: {
           type: 'string',
           description: 'Custom worktree path (default: ~/worktrees/<feature-name>)',
+        },
+        existing_branch: {
+          type: 'string',
+          description: 'Checkout existing branch instead of creating new one',
         },
       },
       required: ['feature_name'],
@@ -188,6 +194,56 @@ const TOOLS: Tool[] = [
       properties: {},
     },
   },
+  {
+    name: 'worktree_rename_branch',
+    description:
+      'Rename a git branch within a worktree. Updates all git references automatically.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        worktree_path: {
+          type: 'string',
+          description: 'Worktree path where branch exists',
+        },
+        old_name: {
+          type: 'string',
+          description: 'Current branch name',
+        },
+        new_name: {
+          type: 'string',
+          description: 'New branch name',
+        },
+      },
+      required: ['worktree_path', 'old_name', 'new_name'],
+    },
+  },
+  {
+    name: 'worktree_delete_branch',
+    description:
+      'Delete a git branch (local and optionally remote) with safety checks. Prevents deletion of unmerged branches unless force is used.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        branch_name: {
+          type: 'string',
+          description: 'Branch name to delete',
+        },
+        force: {
+          type: 'boolean',
+          description: 'Force delete even if not fully merged (default: false)',
+        },
+        delete_remote: {
+          type: 'boolean',
+          description: 'Also delete from remote repository (default: false)',
+        },
+        remote_name: {
+          type: 'string',
+          description: 'Remote name (default: origin)',
+        },
+      },
+      required: ['branch_name'],
+    },
+  },
 ];
 
 // Create MCP server
@@ -312,6 +368,30 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
       case 'worktree_prune': {
         const result = await WorktreePruneTool.execute(args as any);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      }
+
+      case 'worktree_rename_branch': {
+        const result = await WorktreeRenameBranchTool.execute(args as any);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      }
+
+      case 'worktree_delete_branch': {
+        const result = await WorktreeDeleteBranchTool.execute(args as any);
         return {
           content: [
             {
