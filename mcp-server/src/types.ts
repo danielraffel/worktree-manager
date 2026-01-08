@@ -57,6 +57,7 @@ export interface ProjectDetectionResult {
   setup_commands: SetupCommand[];
   /** Detection details */
   details: {
+    detected_ecosystems?: string[];
     has_web: boolean;
     has_ios: boolean;
     has_root_package_json: boolean;

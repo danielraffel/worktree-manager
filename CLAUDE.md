@@ -93,7 +93,7 @@ worktree-manager/                # Repository root (IS the plugin)
 - **Delete**: Remove branches with safety checks (prevents unmerged deletion unless --force)
 - **Create from existing**: Checkout existing branches in new worktrees
 
-**Auto-detection**: Web projects (package.json) trigger `npm install`, iOS projects (Package.swift) trigger `swift build`
+**Universal Auto-detection**: Automatically detects 15+ ecosystems (Node.js, Python, Ruby, Go, Rust, Java, PHP, Elixir, .NET, Scala, Flutter, Dart, iOS) and runs appropriate setup commands. Priority-based detection ensures only one primary setup runs.
 
 **File Copying**: Automatically copies development environment files (.env, .vscode) using configurable glob patterns with include/exclude support
 

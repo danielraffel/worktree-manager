@@ -8502,87 +8502,240 @@ var GitHelpers = class {
 var fs2 = __toESM(require("fs"));
 var path2 = __toESM(require("path"));
 var ProjectDetector = class {
+  static {
+    /**
+     * Ecosystem detectors - checked in priority order
+     */
+    this.ecosystems = [
+      // JavaScript/Node.js - highest priority (most common)
+      {
+        name: "Node.js (web)",
+        markers: ["web/package.json"],
+        command: "npm install",
+        description: "Install web dependencies"
+      },
+      {
+        name: "Node.js",
+        markers: ["package.json"],
+        command: "npm install",
+        description: "Install dependencies"
+      },
+      // Python
+      {
+        name: "Python (Poetry)",
+        markers: ["pyproject.toml", "poetry.lock"],
+        command: "poetry install",
+        description: "Install Python dependencies with Poetry"
+      },
+      {
+        name: "Python (pip)",
+        markers: ["requirements.txt"],
+        command: "pip install -r requirements.txt",
+        description: "Install Python dependencies"
+      },
+      {
+        name: "Python",
+        markers: ["setup.py"],
+        command: "pip install -e .",
+        description: "Install Python package in development mode"
+      },
+      // Ruby
+      {
+        name: "Ruby",
+        markers: ["Gemfile"],
+        command: "bundle install",
+        description: "Install Ruby dependencies"
+      },
+      // Go
+      {
+        name: "Go",
+        markers: ["go.mod"],
+        command: "go mod download",
+        description: "Download Go module dependencies"
+      },
+      // Rust
+      {
+        name: "Rust",
+        markers: ["Cargo.toml"],
+        command: "cargo fetch",
+        description: "Fetch Rust dependencies"
+      },
+      // Java - Maven
+      {
+        name: "Java (Maven)",
+        markers: ["pom.xml"],
+        command: "mvn dependency:resolve",
+        description: "Resolve Maven dependencies"
+      },
+      // Java/Kotlin - Gradle
+      {
+        name: "Java/Kotlin (Gradle)",
+        markers: ["build.gradle", "build.gradle.kts"],
+        command: "./gradlew dependencies || gradle dependencies",
+        description: "Resolve Gradle dependencies"
+      },
+      // PHP
+      {
+        name: "PHP (Composer)",
+        markers: ["composer.json"],
+        command: "composer install",
+        description: "Install PHP dependencies"
+      },
+      // Elixir
+      {
+        name: "Elixir",
+        markers: ["mix.exs"],
+        command: "mix deps.get",
+        description: "Get Elixir dependencies"
+      },
+      // .NET
+      {
+        name: ".NET",
+        markers: [],
+        command: "dotnet restore",
+        description: "Restore .NET dependencies",
+        checkFunction: (worktreePath) => {
+          try {
+            const files = fs2.readdirSync(worktreePath);
+            return files.some((f) => f.endsWith(".csproj") || f.endsWith(".fsproj") || f.endsWith(".vbproj"));
+          } catch {
+            return false;
+          }
+        }
+      },
+      // Scala
+      {
+        name: "Scala (sbt)",
+        markers: ["build.sbt"],
+        command: "sbt update",
+        description: "Update Scala dependencies"
+      },
+      // Dart/Flutter
+      {
+        name: "Flutter",
+        markers: ["pubspec.yaml"],
+        command: "flutter pub get",
+        description: "Get Flutter dependencies",
+        checkFunction: (worktreePath) => {
+          try {
+            const pubspecPath = path2.join(worktreePath, "pubspec.yaml");
+            if (!fs2.existsSync(pubspecPath)) return false;
+            const content = fs2.readFileSync(pubspecPath, "utf-8");
+            return content.includes("flutter:");
+          } catch {
+            return false;
+          }
+        }
+      },
+      {
+        name: "Dart",
+        markers: ["pubspec.yaml"],
+        command: "dart pub get",
+        description: "Get Dart dependencies"
+      },
+      // iOS/Swift - keep for backwards compatibility
+      {
+        name: "iOS",
+        markers: ["ios"],
+        command: 'echo "iOS project detected. Open in Xcode if needed."',
+        description: "iOS project setup (manual)",
+        checkFunction: (worktreePath) => {
+          const iosDir = path2.join(worktreePath, "ios");
+          try {
+            return fs2.existsSync(iosDir) && fs2.statSync(iosDir).isDirectory();
+          } catch {
+            return false;
+          }
+        }
+      }
+    ];
+  }
   /**
-   * Detect project type and return setup commands
+   * Detect all applicable ecosystems and return setup commands
    */
   static detect(worktreePath) {
-    const hasWeb = this.hasWebProject(worktreePath);
-    const hasIos = this.hasIosProject(worktreePath);
-    const hasRootPackageJson = this.hasRootPackageJson(worktreePath);
-    let type;
-    if (hasWeb && hasIos) {
-      type = "full-stack";
-    } else if (hasWeb) {
-      type = "web";
-    } else if (hasIos) {
-      type = "ios";
-    } else {
-      type = "unknown";
+    const detectedEcosystems = [];
+    const setupCommands = [];
+    let hasDetectedPrimary = false;
+    let hasDetectedWeb = false;
+    let hasDetectedNode = false;
+    const iosEcosystem = this.ecosystems.find((e) => e.name === "iOS");
+    const hasIosDirectory = iosEcosystem ? this.isEcosystemPresent(worktreePath, iosEcosystem) : false;
+    for (const ecosystem of this.ecosystems) {
+      if (this.isEcosystemPresent(worktreePath, ecosystem)) {
+        if (ecosystem.name === "iOS" && (hasDetectedWeb || hasDetectedNode)) {
+          continue;
+        }
+        if (hasDetectedPrimary && (ecosystem.name.includes("Node.js") || ecosystem.name === "iOS")) {
+          continue;
+        }
+        if (ecosystem.name === "Node.js" && hasDetectedWeb) {
+          continue;
+        }
+        detectedEcosystems.push(ecosystem.name);
+        const commandDirectory = ecosystem.name === "Node.js (web)" ? path2.join(worktreePath, "web") : worktreePath;
+        setupCommands.push({
+          directory: commandDirectory,
+          command: ecosystem.command,
+          description: ecosystem.description
+        });
+        if (ecosystem.name.includes("Node.js (web)")) {
+          hasDetectedWeb = true;
+          hasDetectedPrimary = true;
+        } else if (ecosystem.name.includes("Node.js")) {
+          hasDetectedNode = true;
+          hasDetectedPrimary = true;
+        } else if (ecosystem.name === "iOS") {
+          hasDetectedPrimary = true;
+        }
+        if (hasDetectedPrimary) {
+          break;
+        }
+      }
     }
-    const setupCommands = this.getSetupCommands({
-      worktreePath,
-      hasWeb,
-      hasIos,
-      hasRootPackageJson
-    });
+    const type = this.determineProjectType(detectedEcosystems, hasIosDirectory, hasDetectedWeb);
     return {
       type,
       setup_commands: setupCommands,
       details: {
-        has_web: hasWeb,
-        has_ios: hasIos,
-        has_root_package_json: hasRootPackageJson
+        detected_ecosystems: detectedEcosystems,
+        // Backwards compatibility
+        has_web: hasDetectedWeb || detectedEcosystems.some((e) => e.includes("Node.js")),
+        has_ios: hasIosDirectory,
+        has_root_package_json: fs2.existsSync(path2.join(worktreePath, "package.json"))
       }
     };
   }
   /**
-   * Check if project has web/ directory with package.json
+   * Check if an ecosystem is present in the worktree
    */
-  static hasWebProject(worktreePath) {
-    const webPackageJson = path2.join(worktreePath, "web", "package.json");
-    return fs2.existsSync(webPackageJson);
+  static isEcosystemPresent(worktreePath, ecosystem) {
+    if (ecosystem.checkFunction) {
+      return ecosystem.checkFunction(worktreePath);
+    }
+    for (const marker of ecosystem.markers) {
+      const markerPath = path2.join(worktreePath, marker);
+      const exists = fs2.existsSync(markerPath);
+      if (exists) {
+        if (marker.endsWith("/")) {
+          return fs2.statSync(markerPath).isDirectory();
+        }
+        return true;
+      }
+    }
+    return false;
   }
   /**
-   * Check if project has ios/ directory
+   * Determine overall project type for backwards compatibility
    */
-  static hasIosProject(worktreePath) {
-    const iosDir = path2.join(worktreePath, "ios");
-    return fs2.existsSync(iosDir) && fs2.statSync(iosDir).isDirectory();
-  }
-  /**
-   * Check if project has package.json at root
-   */
-  static hasRootPackageJson(worktreePath) {
-    const rootPackageJson = path2.join(worktreePath, "package.json");
-    return fs2.existsSync(rootPackageJson);
-  }
-  /**
-   * Generate setup commands based on detected project structure
-   */
-  static getSetupCommands(params) {
-    const commands = [];
-    if (params.hasWeb) {
-      commands.push({
-        directory: path2.join(params.worktreePath, "web"),
-        command: "npm install",
-        description: "Install web dependencies"
-      });
-    }
-    if (params.hasRootPackageJson && !params.hasWeb) {
-      commands.push({
-        directory: params.worktreePath,
-        command: "npm install",
-        description: "Install dependencies"
-      });
-    }
-    if (params.hasIos && !params.hasWeb) {
-      commands.push({
-        directory: params.worktreePath,
-        command: 'echo "iOS project detected. Open in Xcode if needed."',
-        description: "iOS project setup (manual)"
-      });
-    }
-    return commands;
+  static determineProjectType(ecosystems, hasIosDirectory, hasWebDirectory) {
+    const hasRootNode = ecosystems.some((e) => e === "Node.js");
+    if (hasWebDirectory && hasIosDirectory) return "full-stack";
+    if (hasWebDirectory) return "web";
+    if (hasIosDirectory) return "ios";
+    if (hasRootNode) return "unknown";
+    if (ecosystems.length > 0) return "web";
+    return "unknown";
   }
 };
 

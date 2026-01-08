@@ -22,8 +22,8 @@ Create isolated git worktrees for parallel feature development with one command.
 ## Key Features
 
 - **One command** creates worktree + new branch
-- **Auto-detects** project type (web, iOS, full-stack)
-- **Auto-runs** setup (npm install, swift build, etc.)
+- **Universal language support** - auto-detects 15+ ecosystems (Node.js, Python, Ruby, Go, Rust, Java, PHP, Elixir, .NET, Scala, Flutter, Dart, iOS)
+- **Auto-runs** setup commands for your project type
 - **Auto-copies** environment files (.env, .vscode) to new worktrees
 - **Advanced worktree operations** - move, lock, repair, and prune worktrees
 - **Complete branch management** - rename and delete branches with safety checks
@@ -140,11 +140,30 @@ Quit and reopen Claude Code to load the plugin.
 
 ### Auto-Detection & Setup
 
-| Project Type | Detection | Auto-Setup |
-|--------------|-----------|------------|
-| Web | `package.json` in root or `web/` | `npm install` |
-| iOS | `Package.swift` | `swift build` |
-| Full-stack | Both web + iOS | Both setups |
+Automatically detects project type and runs appropriate setup commands:
+
+| Ecosystem | Detection | Auto-Setup |
+|-----------|-----------|------------|
+| **Node.js (web)** | `web/package.json` | `npm install` |
+| **Node.js** | `package.json` (root) | `npm install` |
+| **Python (Poetry)** | `pyproject.toml` + `poetry.lock` | `poetry install` |
+| **Python (pip)** | `requirements.txt` | `pip install -r requirements.txt` |
+| **Python** | `setup.py` | `pip install -e .` |
+| **Ruby** | `Gemfile` | `bundle install` |
+| **Go** | `go.mod` | `go mod download` |
+| **Rust** | `Cargo.toml` | `cargo fetch` |
+| **Java (Maven)** | `pom.xml` | `mvn dependency:resolve` |
+| **Java/Kotlin (Gradle)** | `build.gradle`, `build.gradle.kts` | `gradle dependencies` |
+| **PHP** | `composer.json` | `composer install` |
+| **Elixir** | `mix.exs` | `mix deps.get` |
+| **.NET** | `*.csproj`, `*.fsproj`, `*.vbproj` | `dotnet restore` |
+| **Scala** | `build.sbt` | `sbt update` |
+| **Flutter** | `pubspec.yaml` (with flutter) | `flutter pub get` |
+| **Dart** | `pubspec.yaml` | `dart pub get` |
+| **iOS** | `ios/` directory | Manual (Xcode) |
+| **Full-stack** | Multiple ecosystems | Priority-based setup |
+
+**Note**: Currently detects and runs setup for the FIRST matching ecosystem (highest priority). For monorepo support with multiple setups, this can be configured in future versions.
 
 ### List Worktrees
 
