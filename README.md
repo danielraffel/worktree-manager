@@ -22,13 +22,13 @@ Create isolated git worktrees for parallel feature development with one command.
 ## Key Features
 
 - **One command** creates worktree + new branch
-- **Universal language support** - auto-detects 18+ ecosystems with smart package manager detection (Node.js with npm/yarn/pnpm/bun, Python with uv/Poetry/pipenv/pip, Ruby, Go, Rust, Java, PHP, Elixir, .NET, Scala, Flutter, Dart, iOS)
+- **Universal language support** - auto-detects 22+ ecosystems with smart package manager detection (Node.js with npm/yarn/pnpm/bun, Python with uv/Conda/Poetry/pipenv/pip, Swift, Deno, C++/CMake, Ruby, Go, Rust, Java, PHP, Elixir, .NET, Scala, Flutter, Dart, iOS)
 - **Auto-runs** setup commands for your project type
 - **Auto-copies** environment files (.env, .vscode) to new worktrees
 - **Advanced worktree operations** - move, lock, repair, and prune worktrees
 - **Complete branch management** - rename and delete branches with safety checks
 - **Create from existing branches** - checkout existing branches in new worktrees
-- **99% test coverage** - reliable and well-tested (81 passing tests)
+- **99% test coverage** - reliable and well-tested (86 passing tests)
 - **Parallel development** - work on multiple features simultaneously
 
 ## Architecture
@@ -147,10 +147,14 @@ Automatically detects project type and runs appropriate setup commands:
 | **Node.js (web)** | `web/package.json` | `npm install` (or pnpm/yarn/bun based on lockfile) |
 | **Node.js** | `package.json` (root) | `npm install` (or pnpm/yarn/bun based on lockfile) |
 | **Python (uv)** | `uv.lock` | `uv sync` |
+| **Python (Conda)** | `environment.yml` | `conda env create -f environment.yml` |
 | **Python (Poetry)** | `pyproject.toml` + `poetry.lock` | `poetry install` |
 | **Python (pipenv)** | `Pipfile` | `pipenv install` |
 | **Python (pip)** | `requirements.txt` | `pip install -r requirements.txt` |
 | **Python** | `setup.py` | `pip install -e .` |
+| **Swift** | `Package.swift` | `swift package resolve` |
+| **Deno** | `deno.json`, `deno.jsonc` | `deno cache --reload` |
+| **C++ (CMake)** | `CMakeLists.txt` | `cmake -B build` |
 | **Ruby** | `Gemfile` | `bundle install` |
 | **Go** | `go.mod` | `go mod download` |
 | **Rust** | `Cargo.toml` | `cargo fetch` |

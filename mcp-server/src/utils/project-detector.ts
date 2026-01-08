@@ -62,12 +62,18 @@ export class ProjectDetector {
       description: 'Install dependencies'
     },
 
-    // Python - uv first (fastest, modern)
+    // Python - uv first (fastest, modern), then Conda (data science)
     {
       name: 'Python (uv)',
       markers: ['uv.lock'],
       command: 'uv sync',
       description: 'Install Python dependencies with uv'
+    },
+    {
+      name: 'Python (Conda)',
+      markers: ['environment.yml', 'environment.yaml'],
+      command: 'conda env create -f environment.yml',
+      description: 'Create Conda environment'
     },
     {
       name: 'Python (Poetry)',
@@ -198,6 +204,30 @@ export class ProjectDetector {
       markers: ['pubspec.yaml'],
       command: 'dart pub get',
       description: 'Get Dart dependencies'
+    },
+
+    // Swift Package Manager
+    {
+      name: 'Swift',
+      markers: ['Package.swift'],
+      command: 'swift package resolve',
+      description: 'Resolve Swift package dependencies'
+    },
+
+    // Deno - modern JavaScript/TypeScript runtime
+    {
+      name: 'Deno',
+      markers: ['deno.json', 'deno.jsonc'],
+      command: 'deno cache --reload',
+      description: 'Cache Deno dependencies'
+    },
+
+    // CMake - C/C++ build system
+    {
+      name: 'C++ (CMake)',
+      markers: ['CMakeLists.txt'],
+      command: 'cmake -B build',
+      description: 'Configure CMake build'
     },
 
     // iOS/Swift - keep for backwards compatibility

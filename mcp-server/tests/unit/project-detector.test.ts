@@ -257,5 +257,71 @@ describe('ProjectDetector', () => {
       expect(result.setup_commands).toHaveLength(1);
       expect(result.setup_commands[0].command).toBe('poetry install');
     });
+
+    it('should detect Swift Package Manager based on Package.swift', () => {
+      (fs.existsSync as jest.Mock).mockImplementation((filePath: string) => {
+        if (filePath.endsWith('Package.swift')) return true;
+        return false;
+      });
+
+      const result = ProjectDetector.detect('/path/to/worktree');
+
+      expect(result.setup_commands).toHaveLength(1);
+      expect(result.setup_commands[0].command).toBe('swift package resolve');
+      expect(result.setup_commands[0].description).toBe('Resolve Swift package dependencies');
+    });
+
+    it('should detect Deno based on deno.json', () => {
+      (fs.existsSync as jest.Mock).mockImplementation((filePath: string) => {
+        if (filePath.endsWith('deno.json')) return true;
+        return false;
+      });
+
+      const result = ProjectDetector.detect('/path/to/worktree');
+
+      expect(result.setup_commands).toHaveLength(1);
+      expect(result.setup_commands[0].command).toBe('deno cache --reload');
+      expect(result.setup_commands[0].description).toBe('Cache Deno dependencies');
+    });
+
+    it('should detect Conda based on environment.yml', () => {
+      (fs.existsSync as jest.Mock).mockImplementation((filePath: string) => {
+        if (filePath.endsWith('environment.yml')) return true;
+        return false;
+      });
+
+      const result = ProjectDetector.detect('/path/to/worktree');
+
+      expect(result.setup_commands).toHaveLength(1);
+      expect(result.setup_commands[0].command).toBe('conda env create -f environment.yml');
+      expect(result.setup_commands[0].description).toBe('Create Conda environment');
+    });
+
+    it('should detect CMake based on CMakeLists.txt', () => {
+      (fs.existsSync as jest.Mock).mockImplementation((filePath: string) => {
+        if (filePath.endsWith('CMakeLists.txt')) return true;
+        return false;
+      });
+
+      const result = ProjectDetector.detect('/path/to/worktree');
+
+      expect(result.setup_commands).toHaveLength(1);
+      expect(result.setup_commands[0].command).toBe('cmake -B build');
+      expect(result.setup_commands[0].description).toBe('Configure CMake build');
+    });
+
+    it('should prioritize Conda over Poetry when both exist', () => {
+      (fs.existsSync as jest.Mock).mockImplementation((filePath: string) => {
+        if (filePath.endsWith('environment.yml')) return true;
+        if (filePath.endsWith('pyproject.toml')) return true;
+        if (filePath.endsWith('poetry.lock')) return true;
+        return false;
+      });
+
+      const result = ProjectDetector.detect('/path/to/worktree');
+
+      expect(result.setup_commands).toHaveLength(1);
+      expect(result.setup_commands[0].command).toBe('conda env create -f environment.yml');
+    });
   });
 });

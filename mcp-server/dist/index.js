@@ -8542,12 +8542,18 @@ var ProjectDetector = class {
         // Will be overridden by detectPackageManager
         description: "Install dependencies"
       },
-      // Python - uv first (fastest, modern)
+      // Python - uv first (fastest, modern), then Conda (data science)
       {
         name: "Python (uv)",
         markers: ["uv.lock"],
         command: "uv sync",
         description: "Install Python dependencies with uv"
+      },
+      {
+        name: "Python (Conda)",
+        markers: ["environment.yml", "environment.yaml"],
+        command: "conda env create -f environment.yml",
+        description: "Create Conda environment"
       },
       {
         name: "Python (Poetry)",
@@ -8666,6 +8672,27 @@ var ProjectDetector = class {
         markers: ["pubspec.yaml"],
         command: "dart pub get",
         description: "Get Dart dependencies"
+      },
+      // Swift Package Manager
+      {
+        name: "Swift",
+        markers: ["Package.swift"],
+        command: "swift package resolve",
+        description: "Resolve Swift package dependencies"
+      },
+      // Deno - modern JavaScript/TypeScript runtime
+      {
+        name: "Deno",
+        markers: ["deno.json", "deno.jsonc"],
+        command: "deno cache --reload",
+        description: "Cache Deno dependencies"
+      },
+      // CMake - C/C++ build system
+      {
+        name: "C++ (CMake)",
+        markers: ["CMakeLists.txt"],
+        command: "cmake -B build",
+        description: "Configure CMake build"
       },
       // iOS/Swift - keep for backwards compatibility
       {
@@ -9399,6 +9426,7 @@ This file captures insights, decisions, and learnings during development.
       "Node.js (web)": "cd web && npm install  # or pnpm/yarn/bun based on lockfile",
       "Node.js": "npm install  # or pnpm/yarn/bun based on lockfile",
       "Python (uv)": "uv sync",
+      "Python (Conda)": "conda env create -f environment.yml",
       "Python (Poetry)": "poetry install",
       "Python (pipenv)": "pipenv install",
       "Python (pip)": "pip install -r requirements.txt",
@@ -9414,6 +9442,9 @@ This file captures insights, decisions, and learnings during development.
       "Scala (sbt)": "sbt update",
       "Flutter": "flutter pub get",
       "Dart": "dart pub get",
+      "Swift": "swift package resolve",
+      "Deno": "deno cache --reload",
+      "C++ (CMake)": "cmake -B build",
       "iOS": "# Open in Xcode (manual setup)"
     };
     return commandMap[ecosystem] || null;

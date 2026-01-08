@@ -307,6 +307,7 @@ This file captures insights, decisions, and learnings during development.
       'Node.js (web)': 'cd web && npm install  # or pnpm/yarn/bun based on lockfile',
       'Node.js': 'npm install  # or pnpm/yarn/bun based on lockfile',
       'Python (uv)': 'uv sync',
+      'Python (Conda)': 'conda env create -f environment.yml',
       'Python (Poetry)': 'poetry install',
       'Python (pipenv)': 'pipenv install',
       'Python (pip)': 'pip install -r requirements.txt',
@@ -322,6 +323,9 @@ This file captures insights, decisions, and learnings during development.
       'Scala (sbt)': 'sbt update',
       'Flutter': 'flutter pub get',
       'Dart': 'dart pub get',
+      'Swift': 'swift package resolve',
+      'Deno': 'deno cache --reload',
+      'C++ (CMake)': 'cmake -B build',
       'iOS': '# Open in Xcode (manual setup)',
     };
 
