@@ -93,7 +93,7 @@ worktree-manager/                # Repository root (IS the plugin)
 - **Delete**: Remove branches with safety checks (prevents unmerged deletion unless --force)
 - **Create from existing**: Checkout existing branches in new worktrees
 
-**Universal Auto-detection**: Automatically detects 15+ ecosystems (Node.js, Python, Ruby, Go, Rust, Java, PHP, Elixir, .NET, Scala, Flutter, Dart, iOS) and runs appropriate setup commands. Priority-based detection ensures only one primary setup runs.
+**Universal Auto-detection**: Automatically detects 18+ ecosystems with smart package manager detection (Node.js with npm/yarn/pnpm/bun, Python with uv/Poetry/pipenv/pip, Ruby, Go, Rust, Java, PHP, Elixir, .NET, Scala, Flutter, Dart, iOS). Priority-based detection ensures only one primary setup runs per ecosystem family.
 
 **File Copying**: Automatically copies development environment files (.env, .vscode) using configurable glob patterns with include/exclude support
 

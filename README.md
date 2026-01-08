@@ -22,13 +22,13 @@ Create isolated git worktrees for parallel feature development with one command.
 ## Key Features
 
 - **One command** creates worktree + new branch
-- **Universal language support** - auto-detects 15+ ecosystems (Node.js, Python, Ruby, Go, Rust, Java, PHP, Elixir, .NET, Scala, Flutter, Dart, iOS)
+- **Universal language support** - auto-detects 18+ ecosystems with smart package manager detection (Node.js with npm/yarn/pnpm/bun, Python with uv/Poetry/pipenv/pip, Ruby, Go, Rust, Java, PHP, Elixir, .NET, Scala, Flutter, Dart, iOS)
 - **Auto-runs** setup commands for your project type
 - **Auto-copies** environment files (.env, .vscode) to new worktrees
 - **Advanced worktree operations** - move, lock, repair, and prune worktrees
 - **Complete branch management** - rename and delete branches with safety checks
 - **Create from existing branches** - checkout existing branches in new worktrees
-- **99% test coverage** - reliable and well-tested (71 passing tests)
+- **99% test coverage** - reliable and well-tested (81 passing tests)
 - **Parallel development** - work on multiple features simultaneously
 
 ## Architecture
@@ -388,7 +388,7 @@ npm test
 npm run test:coverage
 ```
 
-Current coverage: **99%** (71 passing tests)
+Current coverage: **99%** (81 passing tests)
 
 ### Watch Mode
 
