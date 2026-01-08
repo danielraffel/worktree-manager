@@ -155,7 +155,7 @@ build/
 In Claude Code, run:
 
 ```bash
-/plugin marketplace add danielraffel/worktree-manager
+/plugin marketplace add danielraffel/generous-corp-marketplace
 ```
 
 ### 2. Install the Plugin
@@ -191,7 +191,7 @@ Quit and reopen Claude Code to load the plugin.
 <div class="installation-steps">
   <h3>Quick Install</h3>
   <pre><code><span class="code-comment"># 1. Add the marketplace (in Claude Code)</span>
-/plugin marketplace add danielraffel/worktree-manager
+/plugin marketplace add danielraffel/generous-corp-marketplace
 
 <span class="code-comment"># 2. Install Chainer</span>
 /plugin install chainer@generous-corp-marketplace
@@ -216,7 +216,7 @@ NEW:
 ```
 Q: How do I install plugins?
 A: Use the marketplace system:
-   1. /plugin marketplace add danielraffel/worktree-manager
+   1. /plugin marketplace add danielraffel/generous-corp-marketplace
    2. /plugin install chainer@generous-corp-marketplace
    3. Restart Claude Code
 ```
@@ -289,7 +289,7 @@ npm run build
 
 **After** (marketplace installation):
 ```bash
-/plugin marketplace add danielraffel/worktree-manager
+/plugin marketplace add danielraffel/generous-corp-marketplace
 /plugin install chainer@generous-corp-marketplace
 # Restart Claude Code
 ```

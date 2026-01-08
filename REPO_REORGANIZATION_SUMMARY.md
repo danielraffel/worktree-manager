@@ -178,7 +178,7 @@ claude --plugin-dir=../plugin
 ### 1. Add the Marketplace
 
 ```bash
-/plugin marketplace add danielraffel/worktree-manager
+/plugin marketplace add danielraffel/generous-corp-marketplace
 ```
 
 ### 2. Install the Plugin
@@ -200,7 +200,7 @@ claude --plugin-dir=../plugin
 **index.html**:
 ```html
 <pre><code><span class="code-comment"># 1. Add the marketplace (in Claude Code)</span>
-/plugin marketplace add danielraffel/worktree-manager
+/plugin marketplace add danielraffel/generous-corp-marketplace
 
 <span class="code-comment"># 2. Install the plugin</span>
 /plugin install worktree-manager@generous-corp-marketplace
@@ -221,7 +221,7 @@ A: Use the --plugin-dir flag when starting Claude Code
 ```
 Q: How do I install plugins?
 A: Use the marketplace system:
-   1. /plugin marketplace add danielraffel/worktree-manager
+   1. /plugin marketplace add danielraffel/generous-corp-marketplace
    2. /plugin install plugin-name@generous-corp-marketplace
    3. Restart Claude Code
 ```
@@ -303,7 +303,7 @@ node index.js
 ### Installation Test
 ```bash
 # In Claude Code:
-/plugin marketplace add danielraffel/worktree-manager
+/plugin marketplace add danielraffel/generous-corp-marketplace
 /plugin install worktree-manager@generous-corp-marketplace
 # Restart Claude Code
 /plugin list

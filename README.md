@@ -69,7 +69,7 @@ This project consists of two layers:
 In Claude Code, run:
 
 ```bash
-/plugin marketplace add danielraffel/worktree-manager
+/plugin marketplace add danielraffel/generous-corp-marketplace
 ```
 
 ### 2. Install the Plugin

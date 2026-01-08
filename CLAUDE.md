@@ -76,7 +76,7 @@ Users configure via `~/.claude/worktree-manager.local.md` (global) or `.claude/w
 
 Users install via Claude Code marketplace:
 ```bash
-/plugin marketplace add danielraffel/worktree-manager
+/plugin marketplace add danielraffel/generous-corp-marketplace
 /plugin install worktree-manager@generous-corp-marketplace
 # Restart Claude Code
 ```

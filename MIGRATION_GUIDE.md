@@ -310,7 +310,7 @@ Since Chainer will use the existing worktree-manager marketplace, update `.claud
 
 ```bash
 # Add marketplace (if not already added)
-/plugin marketplace add danielraffel/worktree-manager
+/plugin marketplace add danielraffel/generous-corp-marketplace
 
 # Install Chainer
 /plugin install chainer@generous-corp-marketplace

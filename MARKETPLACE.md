@@ -7,7 +7,7 @@ This repository serves as both a Claude Code plugin and a plugin marketplace.
 ### Step 1: Add the Marketplace
 
 ```bash
-/plugin marketplace add danielraffel/worktree-manager
+/plugin marketplace add danielraffel/generous-corp-marketplace
 ```
 
 ### Step 2: Install the Plugin
