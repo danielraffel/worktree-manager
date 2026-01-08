@@ -203,5 +203,32 @@ describe('ProjectDetector', () => {
       expect(result.setup_commands[0].command).toBe('pnpm install');
       expect(result.setup_commands[0].directory).toContain('web');
     });
+
+    it('should detect Python (uv) based on uv.lock', () => {
+      (fs.existsSync as jest.Mock).mockImplementation((filePath: string) => {
+        if (filePath.endsWith('uv.lock')) return true;
+        return false;
+      });
+
+      const result = ProjectDetector.detect('/path/to/worktree');
+
+      expect(result.setup_commands).toHaveLength(1);
+      expect(result.setup_commands[0].command).toBe('uv sync');
+      expect(result.setup_commands[0].description).toBe('Install Python dependencies with uv');
+    });
+
+    it('should prioritize uv over Poetry when both exist', () => {
+      (fs.existsSync as jest.Mock).mockImplementation((filePath: string) => {
+        if (filePath.endsWith('uv.lock')) return true;
+        if (filePath.endsWith('pyproject.toml')) return true;
+        if (filePath.endsWith('poetry.lock')) return true;
+        return false;
+      });
+
+      const result = ProjectDetector.detect('/path/to/worktree');
+
+      expect(result.setup_commands).toHaveLength(1);
+      expect(result.setup_commands[0].command).toBe('uv sync');
+    });
   });
 });

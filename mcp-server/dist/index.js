@@ -8542,7 +8542,13 @@ var ProjectDetector = class {
         // Will be overridden by detectPackageManager
         description: "Install dependencies"
       },
-      // Python
+      // Python - uv first (fastest, modern)
+      {
+        name: "Python (uv)",
+        markers: ["uv.lock"],
+        command: "uv sync",
+        description: "Install Python dependencies with uv"
+      },
       {
         name: "Python (Poetry)",
         markers: ["pyproject.toml", "poetry.lock"],
@@ -8681,6 +8687,7 @@ var ProjectDetector = class {
     let hasDetectedPrimary = false;
     let hasDetectedWeb = false;
     let hasDetectedNode = false;
+    let hasDetectedPython = false;
     const iosEcosystem = this.ecosystems.find((e) => e.name === "iOS");
     const hasIosDirectory = iosEcosystem ? this.isEcosystemPresent(worktreePath, iosEcosystem) : false;
     for (const ecosystem of this.ecosystems) {
@@ -8692,6 +8699,9 @@ var ProjectDetector = class {
           continue;
         }
         if (ecosystem.name === "Node.js" && hasDetectedWeb) {
+          continue;
+        }
+        if (ecosystem.name.includes("Python") && hasDetectedPython) {
           continue;
         }
         detectedEcosystems.push(ecosystem.name);
@@ -8714,6 +8724,8 @@ var ProjectDetector = class {
           hasDetectedPrimary = true;
         } else if (ecosystem.name === "iOS") {
           hasDetectedPrimary = true;
+        } else if (ecosystem.name.includes("Python")) {
+          hasDetectedPython = true;
         }
         if (hasDetectedPrimary) {
           break;
@@ -9380,6 +9392,7 @@ This file captures insights, decisions, and learnings during development.
     const commandMap = {
       "Node.js (web)": "cd web && npm install  # or pnpm/yarn/bun based on lockfile",
       "Node.js": "npm install  # or pnpm/yarn/bun based on lockfile",
+      "Python (uv)": "uv sync",
       "Python (Poetry)": "poetry install",
       "Python (pip)": "pip install -r requirements.txt",
       "Python": "pip install -e .",

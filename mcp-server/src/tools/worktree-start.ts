@@ -306,6 +306,7 @@ This file captures insights, decisions, and learnings during development.
     const commandMap: { [key: string]: string } = {
       'Node.js (web)': 'cd web && npm install  # or pnpm/yarn/bun based on lockfile',
       'Node.js': 'npm install  # or pnpm/yarn/bun based on lockfile',
+      'Python (uv)': 'uv sync',
       'Python (Poetry)': 'poetry install',
       'Python (pip)': 'pip install -r requirements.txt',
       'Python': 'pip install -e .',

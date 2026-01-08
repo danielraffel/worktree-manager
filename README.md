@@ -144,8 +144,9 @@ Automatically detects project type and runs appropriate setup commands:
 
 | Ecosystem | Detection | Auto-Setup |
 |-----------|-----------|------------|
-| **Node.js (web)** | `web/package.json` | `npm install` |
-| **Node.js** | `package.json` (root) | `npm install` |
+| **Node.js (web)** | `web/package.json` | `npm install` (or pnpm/yarn/bun based on lockfile) |
+| **Node.js** | `package.json` (root) | `npm install` (or pnpm/yarn/bun based on lockfile) |
+| **Python (uv)** | `uv.lock` | `uv sync` |
 | **Python (Poetry)** | `pyproject.toml` + `poetry.lock` | `poetry install` |
 | **Python (pip)** | `requirements.txt` | `pip install -r requirements.txt` |
 | **Python** | `setup.py` | `pip install -e .` |

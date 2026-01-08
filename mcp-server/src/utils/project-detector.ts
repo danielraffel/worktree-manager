@@ -62,7 +62,13 @@ export class ProjectDetector {
       description: 'Install dependencies'
     },
 
-    // Python
+    // Python - uv first (fastest, modern)
+    {
+      name: 'Python (uv)',
+      markers: ['uv.lock'],
+      command: 'uv sync',
+      description: 'Install Python dependencies with uv'
+    },
     {
       name: 'Python (Poetry)',
       markers: ['pyproject.toml', 'poetry.lock'],
@@ -214,6 +220,7 @@ export class ProjectDetector {
     let hasDetectedPrimary = false; // Stop after detecting first primary ecosystem
     let hasDetectedWeb = false;
     let hasDetectedNode = false;
+    let hasDetectedPython = false;
 
     // Pre-scan for iOS to determine full-stack type
     const iosEcosystem = this.ecosystems.find(e => e.name === 'iOS');
@@ -234,6 +241,11 @@ export class ProjectDetector {
 
         // Skip generic Node.js if we detected web variant
         if (ecosystem.name === 'Node.js' && hasDetectedWeb) {
+          continue;
+        }
+
+        // Skip other Python variants if we've already detected one (uv > poetry > pip > setup.py)
+        if (ecosystem.name.includes('Python') && hasDetectedPython) {
           continue;
         }
 
@@ -266,6 +278,8 @@ export class ProjectDetector {
           hasDetectedPrimary = true;
         } else if (ecosystem.name === 'iOS') {
           hasDetectedPrimary = true;
+        } else if (ecosystem.name.includes('Python')) {
+          hasDetectedPython = true;
         }
 
         // For non-web/iOS ecosystems, break after first detection to maintain single-setup behavior
