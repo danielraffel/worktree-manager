@@ -6,6 +6,7 @@ import { GitHelpers } from '../utils/git-helpers';
 import { ProjectDetector } from '../utils/project-detector';
 import { SetupRunner } from '../utils/setup-runner';
 import { ConfigReader, WorktreeConfig } from '../utils/config-reader';
+import { FileCopier } from '../utils/file-copier';
 
 /**
  * Main tool for creating git worktrees with auto-setup
@@ -104,7 +105,23 @@ export class WorktreeStartTool {
       // Step 3: Detect project type
       const projectInfo = ProjectDetector.detect(worktreePath);
 
-      // Step 3.5: Initialize submodules if present and configured
+      // Step 3.5: Copy development environment files (if enabled)
+      let copyFilesCount = 0;
+      let copyFilesErrors = 0;
+
+      if (config.copy_files_enabled && !reusingExisting) {
+        const copyResult = await FileCopier.copyFiles(
+          cwd,
+          worktreePath,
+          config.copy_file_patterns,
+          config.exclude_file_patterns
+        );
+
+        copyFilesCount = copyResult.copied.length;
+        copyFilesErrors = copyResult.errors.length;
+      }
+
+      // Step 4: Initialize submodules if present and configured
       let submoduleSuccess: boolean | undefined;
       let submoduleError: string | undefined;
 
@@ -138,6 +155,16 @@ export class WorktreeStartTool {
         // Skip setup when reusing - already done
         setupMessages.push('Skipping setup (already configured)');
       } else {
+        // Add file copying messages if applicable
+        if (config.copy_files_enabled) {
+          if (copyFilesCount > 0) {
+            setupMessages.push(`📋 Copied ${copyFilesCount} environment file(s)`);
+          }
+          if (copyFilesErrors > 0) {
+            setupMessages.push(`⚠️  ${copyFilesErrors} file(s) failed to copy`);
+          }
+        }
+
         // Add submodule initialization messages if applicable
         if (config.auto_init_submodules && GitHelpers.hasSubmodules(cwd)) {
           setupMessages.push('Detected git submodules, initializing...');

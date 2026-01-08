@@ -24,6 +24,15 @@ export interface WorktreeConfig {
   /** Auto-initialize git submodules (default: true) */
   auto_init_submodules: boolean;
 
+  /** Auto-copy environment files to new worktrees (default: true) */
+  copy_files_enabled: boolean;
+
+  /** Glob patterns for files to copy (default: ['.env', '.env.*', '.vscode/**', '*.local']) */
+  copy_file_patterns: string[];
+
+  /** Glob patterns to exclude from copying (default: ['node_modules', 'dist', 'build', 'coverage', '.git']) */
+  exclude_file_patterns: string[];
+
   /** Directory for spec files (default: audit) */
   spec_directory: string;
 
@@ -41,6 +50,9 @@ const DEFAULT_CONFIG: WorktreeConfig = {
   auto_push: false,
   create_learnings_file: false,
   auto_init_submodules: true,
+  copy_files_enabled: true,
+  copy_file_patterns: ['.env', '.env.*', '.vscode/**', '*.local'],
+  exclude_file_patterns: ['node_modules', 'dist', 'build', 'coverage', '.git'],
   spec_directory: 'audit',
   default_max_iterations: 50,
 };
@@ -165,6 +177,29 @@ export class ConfigReader {
         case 'auto_init_submodules':
           config.auto_init_submodules = value === 'true';
           break;
+        case 'copy_files_enabled':
+          config.copy_files_enabled = value === 'true';
+          break;
+        case 'copy_file_patterns':
+          try {
+            const patterns = JSON.parse(value);
+            if (Array.isArray(patterns)) {
+              config.copy_file_patterns = patterns;
+            }
+          } catch {
+            // Invalid JSON, skip
+          }
+          break;
+        case 'exclude_file_patterns':
+          try {
+            const patterns = JSON.parse(value);
+            if (Array.isArray(patterns)) {
+              config.exclude_file_patterns = patterns;
+            }
+          } catch {
+            // Invalid JSON, skip
+          }
+          break;
         case 'spec_directory':
           config.spec_directory = value;
           break;
@@ -205,6 +240,15 @@ create_learnings_file: false
 
 # Auto-initialize git submodules (default: true)
 auto_init_submodules: true
+
+# Auto-copy environment files to new worktrees (default: true)
+copy_files_enabled: true
+
+# Glob patterns for files to copy (default: ['.env', '.env.*', '.vscode/**', '*.local'])
+copy_file_patterns: [".env", ".env.*", ".vscode/**", "*.local"]
+
+# Glob patterns to exclude from copying (default: ['node_modules', 'dist', 'build', 'coverage', '.git'])
+exclude_file_patterns: ["node_modules", "dist", "build", "coverage", ".git"]
 
 # Directory for spec files (default: audit)
 spec_directory: audit

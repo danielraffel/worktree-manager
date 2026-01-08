@@ -43,7 +43,7 @@ worktree-manager/                # Repository root (IS the plugin)
     ├── src/
     │   ├── index.ts             # MCP server entry, tool definitions
     │   ├── tools/               # worktree-start.ts, -list.ts, -status.ts, -cleanup.ts
-    │   ├── utils/               # git-helpers, project-detector, setup-runner, config-reader
+    │   ├── utils/               # git-helpers, project-detector, setup-runner, config-reader, file-copier
     │   ├── templates/           # Ralph prompt templates
     │   └── types.ts             # TypeScript interfaces
     └── dist/                    # Pre-built (committed to repo for easy installation)
@@ -59,9 +59,11 @@ worktree-manager/                # Repository root (IS the plugin)
 
 **Auto-detection**: Web projects (package.json) trigger `npm install`, iOS projects (Package.swift) trigger `swift build`
 
+**File Copying**: Automatically copies development environment files (.env, .vscode) using configurable glob patterns
+
 ## Configuration
 
-Users configure via `~/.claude/worktree-manager.local.md` (global) or `.claude/worktree-manager.local.md` (project). YAML frontmatter controls worktree_base_path, branch_prefix, default_workflow, auto_commit, auto_push, spec_directory, default_max_iterations.
+Users configure via `~/.claude/worktree-manager.local.md` (global) or `.claude/worktree-manager.local.md` (project). YAML frontmatter controls worktree_base_path, branch_prefix, default_workflow, auto_commit, auto_push, copy_files_enabled, copy_file_patterns, exclude_file_patterns, spec_directory, default_max_iterations.
 
 ## Adding Features
 

@@ -24,6 +24,7 @@ Create isolated git worktrees for parallel feature development with one command.
 - **One command** creates worktree + new branch
 - **Auto-detects** project type (web, iOS, full-stack)
 - **Auto-runs** setup (npm install, swift build, etc.)
+- **Auto-copies** environment files (.env, .vscode) to new worktrees
 - **99% test coverage** - reliable and well-tested
 - **Parallel development** - work on multiple features simultaneously
 
@@ -210,6 +211,15 @@ create_learnings_file: false
 # Auto-initialize git submodules (default: true)
 auto_init_submodules: true
 
+# Auto-copy environment files to new worktrees (default: true)
+copy_files_enabled: true
+
+# Glob patterns for files to copy (default: ['.env', '.env.*', '.vscode/**', '*.local'])
+copy_file_patterns: [".env", ".env.*", ".vscode/**", "*.local"]
+
+# Glob patterns to exclude from copying (default: ['node_modules', 'dist', 'build', 'coverage', '.git'])
+exclude_file_patterns: ["node_modules", "dist", "build", "coverage", ".git"]
+
 # Auto-commit changes during AI agent execution
 auto_commit: false
 
@@ -238,6 +248,9 @@ Add any project-specific context or conventions here.
 | `branch_prefix` | `feature/` | Prefix for new branches (e.g., `feature/my-task`) |
 | `create_learnings_file` | `false` | Create `LEARNINGS.md` in worktree to capture insights |
 | `auto_init_submodules` | `true` | Auto-initialize git submodules recursively in new worktrees |
+| `copy_files_enabled` | `true` | Auto-copy development environment files to new worktrees |
+| `copy_file_patterns` | `['.env', '.vscode/**', '*.local']` | Glob patterns for files to copy from main repo |
+| `exclude_file_patterns` | `['node_modules', 'dist', '.git']` | Glob patterns to exclude from copying |
 | `auto_commit` | `false` | Auto-commit changes during AI agent execution |
 | `auto_push` | `false` | Auto-push to remote after commits |
 | `default_workflow` | `simple` | Default workflow when not specified |

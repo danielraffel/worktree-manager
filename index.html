@@ -502,6 +502,7 @@
                     <ul class="feature-list">
                         <li>Creates isolated Git Worktrees automatically</li>
                         <li>Auto-detects project type & installs dependencies</li>
+                        <li>Auto-copies development environment files (.env, .vscode)</li>
                         <li>Automatically initializes git submodules</li>
                         <li>Pairs with <a href="https://www.generouscorp.com/Chainer">Chainer</a> for workflow automation</li>
                         <li>Safe experimentation without contaminating main</li>
@@ -623,6 +624,10 @@ create_learnings_file: false
 <span class="code-comment"># Auto-initialize git submodules</span>
 auto_init_submodules: true
 
+<span class="code-comment"># Auto-copy environment files</span>
+copy_files_enabled: true
+copy_file_patterns: [".env", ".vscode/**"]
+
 <span class="code-comment"># Auto-commit changes</span>
 auto_commit: false
 
@@ -660,6 +665,21 @@ auto_push: false
                                 <td><code>auto_init_submodules</code></td>
                                 <td><code>true</code></td>
                                 <td>Auto-initialize git submodules recursively in new worktrees</td>
+                            </tr>
+                            <tr>
+                                <td><code>copy_files_enabled</code></td>
+                                <td><code>true</code></td>
+                                <td>Auto-copy development environment files to new worktrees</td>
+                            </tr>
+                            <tr>
+                                <td><code>copy_file_patterns</code></td>
+                                <td><code>['.env', '.vscode/**']</code></td>
+                                <td>Glob patterns for files to copy from main repo</td>
+                            </tr>
+                            <tr>
+                                <td><code>exclude_file_patterns</code></td>
+                                <td><code>['node_modules', 'dist']</code></td>
+                                <td>Glob patterns to exclude from copying</td>
                             </tr>
                             <tr>
                                 <td><code>auto_commit</code></td>
