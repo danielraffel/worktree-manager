@@ -9259,6 +9259,28 @@ var WorktreeStartTool = class {
           setupMessages.push("No setup commands needed");
         }
       }
+      if (!reusingExisting) {
+        const detectedEcosystems = projectInfo.details?.detected_ecosystems || [];
+        if (detectedEcosystems.length > 1) {
+          setupMessages.push("");
+          setupMessages.push("\u{1F4E6} Found multiple project types:");
+          setupMessages.push(`   \u2713 ${detectedEcosystems[0]} - installed`);
+          const additionalEcosystems = detectedEcosystems.slice(1);
+          for (const eco of additionalEcosystems) {
+            setupMessages.push(`   \u2022 ${eco} - available`);
+          }
+          setupMessages.push("");
+          setupMessages.push("\u{1F4A1} Need the other project types? Just run their install commands:");
+          for (const eco of additionalEcosystems) {
+            const cmd = this.getInstallCommandForEcosystem(eco);
+            if (cmd) {
+              setupMessages.push(`   ${cmd}`);
+            }
+          }
+          setupMessages.push("");
+          setupMessages.push("\u2139\uFE0F  What does this mean? See: https://danielraffel.github.io/worktree-manager/#faq-multiple-languages");
+        }
+      }
       if (config.create_learnings_file) {
         const learningsPath = path5.join(worktreePath, "LEARNINGS.md");
         if (reusingExisting && fs5.existsSync(learningsPath)) {
@@ -9306,6 +9328,31 @@ This file captures insights, decisions, and learnings during development.
         next_steps: ["Check error message above", "Verify git and npm are installed"]
       };
     }
+  }
+  /**
+   * Get install command for a detected ecosystem
+   */
+  static getInstallCommandForEcosystem(ecosystem) {
+    const commandMap = {
+      "Node.js (web)": "cd web && npm install",
+      "Node.js": "npm install",
+      "Python (Poetry)": "poetry install",
+      "Python (pip)": "pip install -r requirements.txt",
+      "Python": "pip install -e .",
+      "Ruby": "bundle install",
+      "Go": "go mod download",
+      "Rust": "cargo fetch",
+      "Java (Maven)": "mvn dependency:resolve",
+      "Java/Kotlin (Gradle)": "./gradlew dependencies",
+      "PHP (Composer)": "composer install",
+      "Elixir": "mix deps.get",
+      ".NET": "dotnet restore",
+      "Scala (sbt)": "sbt update",
+      "Flutter": "flutter pub get",
+      "Dart": "dart pub get",
+      "iOS": "# Open in Xcode (manual setup)"
+    };
+    return commandMap[ecosystem] || null;
   }
   /**
    * Build success result with Chainer detection and suggestions

@@ -206,7 +206,36 @@ export class WorktreeStartTool {
         }
       }
 
-      // Step 4.5: Create learnings file if configured (skip if reusing and file exists)
+      // Step 4.5: Add multi-ecosystem detection report if applicable
+      if (!reusingExisting) {
+        const detectedEcosystems = projectInfo.details?.detected_ecosystems || [];
+        if (detectedEcosystems.length > 1) {
+          setupMessages.push('');
+          setupMessages.push('📦 Found multiple project types:');
+          setupMessages.push(`   ✓ ${detectedEcosystems[0]} - installed`);
+
+          const additionalEcosystems = detectedEcosystems.slice(1);
+          for (const eco of additionalEcosystems) {
+            setupMessages.push(`   • ${eco} - available`);
+          }
+
+          setupMessages.push('');
+          setupMessages.push('💡 Need the other project types? Just run their install commands:');
+
+          // Provide simple copy/paste commands based on detected ecosystems
+          for (const eco of additionalEcosystems) {
+            const cmd = this.getInstallCommandForEcosystem(eco);
+            if (cmd) {
+              setupMessages.push(`   ${cmd}`);
+            }
+          }
+
+          setupMessages.push('');
+          setupMessages.push('ℹ️  What does this mean? See: https://danielraffel.github.io/worktree-manager/#faq-multiple-languages');
+        }
+      }
+
+      // Step 4.6: Create learnings file if configured (skip if reusing and file exists)
       if (config.create_learnings_file) {
         const learningsPath = path.join(worktreePath, 'LEARNINGS.md');
         if (reusingExisting && fs.existsSync(learningsPath)) {
@@ -257,6 +286,33 @@ This file captures insights, decisions, and learnings during development.
         next_steps: ['Check error message above', 'Verify git and npm are installed'],
       };
     }
+  }
+
+  /**
+   * Get install command for a detected ecosystem
+   */
+  private static getInstallCommandForEcosystem(ecosystem: string): string | null {
+    const commandMap: { [key: string]: string } = {
+      'Node.js (web)': 'cd web && npm install',
+      'Node.js': 'npm install',
+      'Python (Poetry)': 'poetry install',
+      'Python (pip)': 'pip install -r requirements.txt',
+      'Python': 'pip install -e .',
+      'Ruby': 'bundle install',
+      'Go': 'go mod download',
+      'Rust': 'cargo fetch',
+      'Java (Maven)': 'mvn dependency:resolve',
+      'Java/Kotlin (Gradle)': './gradlew dependencies',
+      'PHP (Composer)': 'composer install',
+      'Elixir': 'mix deps.get',
+      '.NET': 'dotnet restore',
+      'Scala (sbt)': 'sbt update',
+      'Flutter': 'flutter pub get',
+      'Dart': 'dart pub get',
+      'iOS': '# Open in Xcode (manual setup)',
+    };
+
+    return commandMap[ecosystem] || null;
   }
 
   /**
