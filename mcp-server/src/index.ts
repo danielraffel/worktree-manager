@@ -16,6 +16,11 @@ import { WorktreeStartTool } from './tools/worktree-start.js';
 import { WorktreeListTool } from './tools/worktree-list.js';
 import { WorktreeStatusTool } from './tools/worktree-status.js';
 import { WorktreeCleanupTool } from './tools/worktree-cleanup.js';
+import { WorktreeMoveTool } from './tools/worktree-move.js';
+import { WorktreeLockTool } from './tools/worktree-lock.js';
+import { WorktreeUnlockTool } from './tools/worktree-unlock.js';
+import { WorktreeRepairTool } from './tools/worktree-repair.js';
+import { WorktreePruneTool } from './tools/worktree-prune.js';
 
 // Define MCP tools
 const TOOLS: Tool[] = [
@@ -106,6 +111,83 @@ const TOOLS: Tool[] = [
       required: ['worktree_path'],
     },
   },
+  {
+    name: 'worktree_move',
+    description:
+      'Move worktree to a new filesystem location. Git automatically updates all internal references.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        current_path: {
+          type: 'string',
+          description: 'Current worktree path',
+        },
+        new_path: {
+          type: 'string',
+          description: 'New worktree path',
+        },
+      },
+      required: ['current_path', 'new_path'],
+    },
+  },
+  {
+    name: 'worktree_lock',
+    description:
+      'Lock worktree to prevent accidental removal. Use when you want to protect a worktree from being deleted.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        worktree_path: {
+          type: 'string',
+          description: 'Path to the worktree to lock',
+        },
+        reason: {
+          type: 'string',
+          description: 'Optional reason for locking',
+        },
+      },
+      required: ['worktree_path'],
+    },
+  },
+  {
+    name: 'worktree_unlock',
+    description:
+      'Unlock a locked worktree to allow removal. Use after locking to restore normal worktree operations.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        worktree_path: {
+          type: 'string',
+          description: 'Path to the worktree to unlock',
+        },
+      },
+      required: ['worktree_path'],
+    },
+  },
+  {
+    name: 'worktree_repair',
+    description:
+      'Repair broken worktree administrative files. Use when worktree was manually moved or parent repository moved.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        worktree_path: {
+          type: 'string',
+          description: 'Path to the worktree to repair',
+        },
+      },
+      required: ['worktree_path'],
+    },
+  },
+  {
+    name: 'worktree_prune',
+    description:
+      'Prune orphaned worktree administrative references. Cleans up references to worktrees that were manually deleted.',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+    },
+  },
 ];
 
 // Create MCP server
@@ -170,6 +252,66 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
       case 'worktree_cleanup': {
         const result = await WorktreeCleanupTool.execute(args as any);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      }
+
+      case 'worktree_move': {
+        const result = await WorktreeMoveTool.execute(args as any);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      }
+
+      case 'worktree_lock': {
+        const result = await WorktreeLockTool.execute(args as any);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      }
+
+      case 'worktree_unlock': {
+        const result = await WorktreeUnlockTool.execute(args as any);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      }
+
+      case 'worktree_repair': {
+        const result = await WorktreeRepairTool.execute(args as any);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      }
+
+      case 'worktree_prune': {
+        const result = await WorktreePruneTool.execute(args as any);
         return {
           content: [
             {

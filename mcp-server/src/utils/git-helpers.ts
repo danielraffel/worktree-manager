@@ -117,6 +117,13 @@ export class GitHelpers {
           current.commit = line.substring('HEAD '.length);
         } else if (line.startsWith('bare')) {
           current.is_main = false;
+        } else if (line.startsWith('locked')) {
+          current.locked = true;
+          // Extract reason if present (format: "locked <reason>")
+          const reasonMatch = line.match(/^locked (.+)$/);
+          if (reasonMatch) {
+            current.lock_reason = reasonMatch[1];
+          }
         } else if (line === '') {
           // End of worktree entry
           if (current.path) {
@@ -125,6 +132,8 @@ export class GitHelpers {
               branch: current.branch || 'unknown',
               is_main: current.is_main !== false,
               commit: current.commit,
+              locked: current.locked || false,
+              lock_reason: current.lock_reason,
             });
           }
           current = {};
@@ -223,6 +232,191 @@ export class GitHelpers {
         success: false,
         error: error.message || 'Unknown error initializing submodules',
       };
+    }
+  }
+
+  /**
+   * Move worktree to new location
+   */
+  static async moveWorktree(
+    currentPath: string,
+    newPath: string,
+    cwd?: string
+  ): Promise<{ success: boolean; error?: string }> {
+    try {
+      const workingDir = cwd || process.cwd();
+
+      // Check if current path exists
+      if (!fs.existsSync(currentPath)) {
+        return {
+          success: false,
+          error: `Current worktree path does not exist: ${currentPath}`,
+        };
+      }
+
+      // Check if new path already exists
+      if (fs.existsSync(newPath)) {
+        return {
+          success: false,
+          error: `Destination path already exists: ${newPath}`,
+        };
+      }
+
+      await execAsync(`git worktree move "${currentPath}" "${newPath}"`, { cwd: workingDir });
+      return { success: true };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message || 'Unknown error moving worktree',
+      };
+    }
+  }
+
+  /**
+   * Lock worktree to prevent accidental removal
+   */
+  static async lockWorktree(
+    worktreePath: string,
+    reason?: string,
+    cwd?: string
+  ): Promise<{ success: boolean; error?: string }> {
+    try {
+      const workingDir = cwd || process.cwd();
+      const reasonArg = reason ? ` --reason "${reason}"` : '';
+      await execAsync(`git worktree lock "${worktreePath}"${reasonArg}`, { cwd: workingDir });
+      return { success: true };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message || 'Unknown error locking worktree',
+      };
+    }
+  }
+
+  /**
+   * Unlock worktree
+   */
+  static async unlockWorktree(
+    worktreePath: string,
+    cwd?: string
+  ): Promise<{ success: boolean; error?: string }> {
+    try {
+      const workingDir = cwd || process.cwd();
+      await execAsync(`git worktree unlock "${worktreePath}"`, { cwd: workingDir });
+      return { success: true };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message || 'Unknown error unlocking worktree',
+      };
+    }
+  }
+
+  /**
+   * Repair broken worktree
+   */
+  static async repairWorktree(
+    worktreePath: string,
+    cwd?: string
+  ): Promise<{ success: boolean; error?: string }> {
+    try {
+      const workingDir = cwd || process.cwd();
+      await execAsync(`git worktree repair "${worktreePath}"`, { cwd: workingDir });
+      return { success: true };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message || 'Unknown error repairing worktree',
+      };
+    }
+  }
+
+  /**
+   * Prune orphaned worktree references
+   */
+  static async pruneWorktrees(cwd?: string): Promise<{
+    pruned: string[];
+    errors: string[];
+  }> {
+    try {
+      const workingDir = cwd || process.cwd();
+
+      // Get list of worktrees before pruning to detect orphans
+      const beforeWorktrees = await this.listWorktrees(workingDir);
+
+      // Run prune with verbose output
+      const { stdout, stderr } = await execAsync('git worktree prune --verbose', {
+        cwd: workingDir,
+      });
+
+      // Parse pruned worktrees from output
+      const pruned: string[] = [];
+      const lines = stdout.split('\n').concat(stderr.split('\n'));
+      for (const line of lines) {
+        if (line.includes('Removing worktrees/')) {
+          const match = line.match(/Removing (.+):/);
+          if (match) {
+            pruned.push(match[1]);
+          }
+        }
+      }
+
+      return { pruned, errors: [] };
+    } catch (error: any) {
+      return {
+        pruned: [],
+        errors: [error.message || 'Unknown error pruning worktrees'],
+      };
+    }
+  }
+
+  /**
+   * Check if worktree is locked
+   */
+  static async isWorktreeLocked(worktreePath: string, cwd?: string): Promise<{
+    locked: boolean;
+    reason?: string;
+  }> {
+    try {
+      const workingDir = cwd || process.cwd();
+      const { stdout } = await execAsync('git worktree list --porcelain', {
+        cwd: workingDir,
+      });
+
+      let currentPath = '';
+      let isLocked = false;
+      let lockReason = '';
+
+      const lines = stdout.split('\n');
+      for (const line of lines) {
+        if (line.startsWith('worktree ')) {
+          currentPath = line.substring('worktree '.length);
+        } else if (line.startsWith('locked')) {
+          if (currentPath === worktreePath) {
+            isLocked = true;
+            // Extract reason if present (format: "locked <reason>")
+            const reasonMatch = line.match(/^locked (.+)$/);
+            if (reasonMatch) {
+              lockReason = reasonMatch[1];
+            }
+          }
+        } else if (line === '') {
+          // Reset for next worktree
+          if (currentPath === worktreePath) {
+            break;
+          }
+          currentPath = '';
+          isLocked = false;
+          lockReason = '';
+        }
+      }
+
+      return {
+        locked: isLocked,
+        reason: lockReason || undefined,
+      };
+    } catch (error) {
+      return { locked: false };
     }
   }
 }

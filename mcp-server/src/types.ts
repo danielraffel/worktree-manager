@@ -25,6 +25,10 @@ export interface WorktreeInfo {
   is_main: boolean;
   /** Commit SHA */
   commit?: string;
+  /** Is worktree locked? */
+  locked?: boolean;
+  /** Lock reason if locked */
+  lock_reason?: string;
 }
 
 export interface WorktreeStartResult {

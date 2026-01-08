@@ -183,12 +183,16 @@ branch refs/heads/feature/test2
         branch: 'main',
         is_main: true,
         commit: 'abc123',
+        locked: false,
+        lock_reason: undefined,
       });
       expect(result[1]).toEqual({
         path: '/path/to/feature1',
         branch: 'feature/test1',
         is_main: true,
         commit: 'def456',
+        locked: false,
+        lock_reason: undefined,
       });
     });
 
