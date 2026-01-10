@@ -9,7 +9,7 @@ A Claude Code plugin that creates and manages git worktrees with automatic envir
 Create isolated git worktrees for parallel feature development. Automatically detects project type and runs setup (npm install, swift build, etc.).
 
 ```bash
-/worktree-manager:start bug-fix
+/worktree-manager:create bug-fix
 # Creates ~/worktrees/bug-fix/ on branch feature/bug-fix with auto-setup
 ```
 
@@ -34,7 +34,7 @@ This project consists of two layers:
 │      Claude Code Plugin (Frontend)      │
 │                                         │
 │  • User-facing slash commands           │
-│  • /worktree-manager:start              │
+│  • /worktree-manager:create              │
 │  • /worktree-manager:list               │
 │  • /worktree-manager:status             │
 │  • /worktree-manager:cleanup            │
@@ -112,16 +112,16 @@ Quit and reopen Claude Code to load the plugin.
 
 ```bash
 # Create worktree with new branch
-/worktree-manager:start my-feature
+/worktree-manager:create my-feature
 
 # Create worktree from existing branch
-/worktree-manager:start my-feature --existing-branch=feature/existing
+/worktree-manager:create my-feature --existing-branch=feature/existing
 
 # Custom base branch
-/worktree-manager:start hotfix --base-branch=develop
+/worktree-manager:create hotfix --base-branch=develop
 
 # Custom location
-/worktree-manager:start experiment --worktree-path=/tmp/test
+/worktree-manager:create experiment --worktree-path=/tmp/test
 ```
 
 ### What Happens
@@ -288,12 +288,12 @@ Worktree Manager enables true parallel development. You can:
 
 ```bash
 # Terminal 1: Work on feature A
-/worktree-manager:start feature-a
+/worktree-manager:create feature-a
 cd ~/worktrees/feature-a
 claude
 
 # Terminal 2: Work on feature B
-/worktree-manager:start feature-b
+/worktree-manager:create feature-b
 cd ~/worktrees/feature-b
 claude
 ```
@@ -304,7 +304,7 @@ For automated workflows (planning + implementation), pair with [Chainer](https:/
 
 ```bash
 # Create worktree
-/worktree-manager:start payments
+/worktree-manager:create payments
 
 # Use Chainer for automated development
 /chainer:run plan-and-implement \
@@ -424,7 +424,7 @@ npm run lint
 ```
 worktree-manager/
 ├── commands/                    # Claude Code plugin commands
-│   ├── start.md                # Create worktree
+│   ├── create.md               # Create worktree
 │   ├── list.md                 # List worktrees
 │   ├── status.md               # Check status
 │   ├── cleanup.md              # Remove worktree

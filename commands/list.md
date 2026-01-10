@@ -61,7 +61,7 @@ When user invokes this command:
 
 5. **If no worktrees**:
    - Inform user no worktrees found besides main
-   - Suggest using `/worktree-manager:start` to create one
+   - Suggest using `/worktree-manager:create` to create one
 
 ## Examples
 

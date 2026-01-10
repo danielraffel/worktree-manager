@@ -50,12 +50,12 @@ You should see `worktree-manager` in the list.
 Test the plugin:
 
 ```bash
-/worktree-manager:start test-feature
+/worktree-manager:create test-feature
 ```
 
 ## Available Commands
 
-- `/worktree-manager:start <feature-name>` - Create new worktree with auto-setup
+- `/worktree-manager:create <feature-name>` - Create new worktree with auto-setup
 - `/worktree-manager:list` - List all worktrees
 - `/worktree-manager:status` - Check worktree status
 - `/worktree-manager:cleanup <path>` - Remove worktree safely

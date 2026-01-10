@@ -16,7 +16,7 @@ Create a new git worktree for parallel feature development with automatic enviro
 ## Usage
 
 ```bash
-/worktree-manager:start <feature-name> [options]
+/worktree-manager:create <feature-name> [options]
 ```
 
 ## What It Does
@@ -31,21 +31,21 @@ Create a new git worktree for parallel feature development with automatic enviro
 
 ### Basic Usage
 ```
-/worktree-manager:start oauth-flow
+/worktree-manager:create oauth-flow
 ```
 
 Creates worktree at `~/worktrees/oauth-flow` with branch `feature/oauth-flow`.
 
 ### Custom Base Branch
 ```
-/worktree-manager:start hotfix --base-branch=develop
+/worktree-manager:create hotfix --base-branch=develop
 ```
 
 Branches from `develop` instead of `main`.
 
 ### Custom Location
 ```
-/worktree-manager:start experiment --worktree-path=/tmp/test-worktree
+/worktree-manager:create experiment --worktree-path=/tmp/test-worktree
 ```
 
 Creates worktree at custom path.
@@ -71,7 +71,7 @@ git clone https://github.com/danielraffel/Chainer ~/.claude/plugins/chainer
   --feature_name="oauth"
 
 # Or create worktree first, then chain
-/worktree-manager:start oauth
+/worktree-manager:create oauth
 /chainer:run plan-and-implement \
   --cwd="~/worktrees/oauth" \
   --prompt="Build OAuth" \
