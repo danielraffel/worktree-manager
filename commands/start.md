@@ -3,6 +3,9 @@ description: Create git worktree with auto-setup
 argument-hint: "<feature-name> [options]"
 allowed-tools:
   - "mcp__worktree__worktree_start"
+  - "mcp__worktree__worktree_detect_ecosystems"
+  - "mcp__worktree__worktree_run_setup"
+  - "AskUserQuestion"
   - "Read"
 ---
 
@@ -77,9 +80,9 @@ git clone https://github.com/danielraffel/Chainer ~/.claude/plugins/chainer
 
 ## Implementation
 
-Read the feature name from the user's input.
+### Step 1: Create the worktree
 
-Call the MCP tool to create the worktree:
+Read the feature name from the user's input and call the MCP tool to create the worktree:
 
 ```javascript
 const result = await mcp__worktree__worktree_start({
@@ -89,7 +92,87 @@ const result = await mcp__worktree__worktree_start({
 });
 ```
 
-Display the result to the user:
+### Step 2: Handle ecosystem detection and setup
+
+Check the `auto_run_setup` config value from the result:
+
+**If `auto_run_setup: 'auto'`**: The worktree tool already ran setup automatically. Skip to displaying results.
+
+**If `auto_run_setup: false`**: Setup was skipped entirely. Display results with manual setup instructions.
+
+**If `auto_run_setup: 'prompt'` (DEFAULT)**: Proceed with interactive ecosystem selection:
+
+1. **Detect ecosystems**:
+```javascript
+const detected = await mcp__worktree__worktree_detect_ecosystems({
+  worktree_path: result.worktree_path
+});
+```
+
+2. **Handle based on ecosystem count**:
+
+**If 0 ecosystems detected**: Skip setup, proceed to display results.
+
+**If 1 ecosystem detected**: Ask simple yes/no question:
+```javascript
+const answer = await AskUserQuestion({
+  questions: [{
+    question: `Run ${detected.ecosystems[0].command}?`,
+    header: "Setup",
+    options: [
+      { label: "Yes", description: `Run ${detected.ecosystems[0].description}` },
+      { label: "Skip", description: "I'll set up manually" }
+    ],
+    multiSelect: false
+  }]
+});
+
+if (answer.Setup === "Yes") {
+  await mcp__worktree__worktree_run_setup({
+    worktree_path: result.worktree_path,
+    ecosystem_names: [detected.ecosystems[0].name]
+  });
+}
+```
+
+**If 2+ ecosystems detected**: Show multi-select options:
+```javascript
+const answer = await AskUserQuestion({
+  questions: [{
+    question: "Which project types should I set up?",
+    header: "Ecosystems",
+    options: detected.ecosystems.map(e => ({
+      label: `${e.name} (${e.package_manager})`,
+      description: e.command
+    })),
+    multiSelect: true
+  }]
+});
+
+// Extract selected ecosystem names from answer
+const selected = Object.entries(answer.Ecosystems || {})
+  .filter(([_, isSelected]) => isSelected)
+  .map(([label, _]) => {
+    // Extract ecosystem name from label (e.g., "Node.js (npm)" -> "Node.js")
+    return label.split(' (')[0];
+  });
+
+if (selected.length > 0) {
+  const setupResult = await mcp__worktree__worktree_run_setup({
+    worktree_path: result.worktree_path,
+    ecosystem_names: selected
+  });
+
+  // Display setup results
+  for (const msg of setupResult.messages) {
+    console.log(msg);
+  }
+}
+```
+
+### Step 3: Display results
+
+Show the worktree creation success message with next steps:
 
 ```
 ✅ Worktree created successfully!
@@ -109,24 +192,6 @@ Display the result to the user:
 
   # Or manual development
   cd ~/worktrees/oauth-flow && claude
-```
-
-Or if Chainer is not installed:
-
-```
-✅ Worktree created successfully!
-📁 Path: ~/worktrees/oauth-flow
-🌿 Branch: feature/oauth-flow
-
-Next steps:
-  cd ~/worktrees/oauth-flow
-  claude
-
-💡 For automated workflows, install Chainer:
-   git clone https://github.com/danielraffel/Chainer ~/.claude/plugins/chainer
-
-   Then use:
-   /chainer:run plan-and-implement --prompt="Your idea" --feature_name="name"
 ```
 
 ## Error Handling

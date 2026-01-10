@@ -2,16 +2,34 @@ import { WorktreeStartTool } from '../../src/tools/worktree-start';
 import { GitHelpers } from '../../src/utils/git-helpers';
 import { ProjectDetector } from '../../src/utils/project-detector';
 import { SetupRunner } from '../../src/utils/setup-runner';
+import { ConfigReader } from '../../src/utils/config-reader';
 import * as os from 'os';
 import * as path from 'path';
 
 jest.mock('../../src/utils/git-helpers');
 jest.mock('../../src/utils/project-detector');
 jest.mock('../../src/utils/setup-runner');
+jest.mock('../../src/utils/config-reader');
 
 describe('WorktreeStartTool', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+
+    // Mock ConfigReader to return 'auto' mode for backward-compatible tests
+    (ConfigReader.getConfig as jest.Mock).mockReturnValue({
+      worktree_base_path: path.join(os.homedir(), 'worktrees'),
+      branch_prefix: 'feature/',
+      auto_commit: false,
+      auto_push: false,
+      create_learnings_file: false,
+      auto_init_submodules: true,
+      auto_run_setup: 'auto', // Changed from true to 'auto'
+      copy_files_enabled: true,
+      copy_file_patterns: ['.env', '.env.*', '.vscode/**', '*.local'],
+      exclude_file_patterns: ['node_modules', 'dist', 'build', 'coverage', '.git'],
+      spec_directory: 'audit',
+      default_max_iterations: 50,
+    });
   });
 
   describe('execute', () => {

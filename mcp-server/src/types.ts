@@ -93,3 +93,67 @@ export interface GitHelpers {
   /** Get current branch name */
   getCurrentBranch(path: string): Promise<string | null>;
 }
+
+/**
+ * Detected ecosystem information for user selection
+ */
+export interface DetectedEcosystem {
+  /** Ecosystem name (e.g., "Node.js", "Rust") */
+  name: string;
+  /** Package manager or tool (e.g., "npm", "cargo") */
+  package_manager: string;
+  /** Full command to run (e.g., "npm install") */
+  command: string;
+  /** Human-readable description */
+  description: string;
+  /** Directory where command should run */
+  directory: string;
+}
+
+/**
+ * Parameters for ecosystem detection
+ */
+export interface WorktreeDetectParams {
+  /** Path to worktree to scan */
+  worktree_path: string;
+}
+
+/**
+ * Result from ecosystem detection
+ */
+export interface WorktreeDetectResult {
+  /** Success status */
+  success: boolean;
+  /** Detected ecosystems */
+  ecosystems: DetectedEcosystem[];
+  /** Number of ecosystems found */
+  count: number;
+  /** Error message if any */
+  error?: string;
+}
+
+/**
+ * Parameters for running setup
+ */
+export interface WorktreeSetupParams {
+  /** Path to worktree */
+  worktree_path: string;
+  /** Ecosystem names to set up (from detect result) */
+  ecosystem_names: string[];
+}
+
+/**
+ * Result from running setup
+ */
+export interface WorktreeSetupResult {
+  /** Success status */
+  success: boolean;
+  /** Ecosystems that ran successfully */
+  ran: string[];
+  /** Ecosystems that failed */
+  failed: string[];
+  /** Setup messages */
+  messages: string[];
+  /** Error message if any */
+  error?: string;
+}

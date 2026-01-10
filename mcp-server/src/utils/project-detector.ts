@@ -381,4 +381,66 @@ export class ProjectDetector {
     return 'unknown';
   }
 
+  /**
+   * Detect ALL ecosystems without short-circuiting
+   * Used for multi-ecosystem detection and user prompting
+   */
+  static detectAll(worktreePath: string): SetupCommand[] {
+    const setupCommands: SetupCommand[] = [];
+    const seenEcosystems = new Set<string>();
+
+    for (const ecosystem of this.ecosystems) {
+      if (this.isEcosystemPresent(worktreePath, ecosystem)) {
+        // Deduplicate by ecosystem family
+        const ecosystemFamily = this.getEcosystemFamily(ecosystem.name);
+
+        // For Node.js family, only add one variant (web takes precedence)
+        if (ecosystemFamily === 'nodejs') {
+          if (seenEcosystems.has('nodejs')) {
+            continue;
+          }
+          seenEcosystems.add('nodejs');
+        }
+
+        // For Python family, only add the first detected (priority order)
+        if (ecosystemFamily === 'python') {
+          if (seenEcosystems.has('python')) {
+            continue;
+          }
+          seenEcosystems.add('python');
+        }
+
+        // Get the correct directory for the command
+        const commandDirectory = ecosystem.name === 'Node.js (web)'
+          ? path.join(worktreePath, 'web')
+          : worktreePath;
+
+        // For Node.js projects, detect the actual package manager
+        let command = ecosystem.command;
+        if (ecosystem.name.includes('Node.js')) {
+          const subdir = ecosystem.name === 'Node.js (web)' ? 'web' : undefined;
+          command = this.detectPackageManager(worktreePath, subdir);
+        }
+
+        setupCommands.push({
+          directory: commandDirectory,
+          command: command,
+          description: ecosystem.description,
+        });
+      }
+    }
+
+    return setupCommands;
+  }
+
+  /**
+   * Get ecosystem family for deduplication
+   */
+  private static getEcosystemFamily(ecosystemName: string): string {
+    if (ecosystemName.includes('Node.js')) return 'nodejs';
+    if (ecosystemName.includes('Python')) return 'python';
+    if (ecosystemName.includes('Java')) return 'java';
+    return ecosystemName.toLowerCase();
+  }
+
 }

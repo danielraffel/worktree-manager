@@ -23,6 +23,8 @@ import { WorktreeRepairTool } from './tools/worktree-repair.js';
 import { WorktreePruneTool } from './tools/worktree-prune.js';
 import { WorktreeRenameBranchTool } from './tools/worktree-rename-branch.js';
 import { WorktreeDeleteBranchTool } from './tools/worktree-delete-branch.js';
+import { WorktreeDetectTool } from './tools/worktree-detect.js';
+import { WorktreeSetupTool } from './tools/worktree-setup.js';
 
 // Define MCP tools
 const TOOLS: Tool[] = [
@@ -244,6 +246,43 @@ const TOOLS: Tool[] = [
       required: ['branch_name'],
     },
   },
+  {
+    name: 'worktree_detect_ecosystems',
+    description:
+      'Detect all project ecosystems in a worktree. Scans for all supported ecosystems (Node.js, Python, Rust, Go, etc.) and returns them for user selection.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        worktree_path: {
+          type: 'string',
+          description: 'Path to worktree to scan for ecosystems',
+        },
+      },
+      required: ['worktree_path'],
+    },
+  },
+  {
+    name: 'worktree_run_setup',
+    description:
+      'Run setup commands for selected ecosystems. Used after user makes selection via AskUserQuestion.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        worktree_path: {
+          type: 'string',
+          description: 'Path to worktree',
+        },
+        ecosystem_names: {
+          type: 'array',
+          items: {
+            type: 'string',
+          },
+          description: 'Names of ecosystems to set up (e.g., ["Node.js", "Rust"])',
+        },
+      },
+      required: ['worktree_path', 'ecosystem_names'],
+    },
+  },
 ];
 
 // Create MCP server
@@ -392,6 +431,30 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
       case 'worktree_delete_branch': {
         const result = await WorktreeDeleteBranchTool.execute(args as any);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      }
+
+      case 'worktree_detect_ecosystems': {
+        const result = await WorktreeDetectTool.execute(args as any);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      }
+
+      case 'worktree_run_setup': {
+        const result = await WorktreeSetupTool.execute(args as any);
         return {
           content: [
             {

@@ -6,17 +6,11 @@ A Claude Code plugin that creates and manages git worktrees with automatic envir
 
 ## What This Does
 
-Create isolated git worktrees for parallel feature development with one command. Automatically detects your project type and runs setup (npm install, swift build, etc.).
+Create isolated git worktrees for parallel feature development. Automatically detects project type and runs setup (npm install, swift build, etc.).
 
-**Quick example**:
 ```bash
-# Create worktree with auto-setup
 /worktree-manager:start bug-fix
-
-# Creates:
-# - ~/worktrees/bug-fix/ directory
-# - feature/bug-fix branch
-# - Runs npm install (or appropriate setup)
+# Creates ~/worktrees/bug-fix/ on branch feature/bug-fix with auto-setup
 ```
 
 ## Key Features
@@ -169,7 +163,21 @@ Automatically detects project type and runs appropriate setup commands:
 | **iOS** | `ios/` directory | Manual (Xcode) |
 | **Full-stack** | Multiple ecosystems | Priority-based setup |
 
-**Note**: Currently detects and runs setup for the FIRST matching ecosystem (highest priority). For monorepo support with multiple setups, this can be configured in future versions.
+#### Multi-Ecosystem Support
+
+Projects with multiple languages (Node.js + Rust, Python + Go, etc.) get an interactive menu:
+
+```
+Which project types should I set up?
+[x] Node.js (npm) - npm install
+[ ] Rust - cargo fetch
+[ ] Swift - swift package resolve
+```
+
+Select what you need, skip the rest. Configure behavior via `auto_run_setup`:
+- `'prompt'` (default): Interactive selection
+- `'auto'`: Run first detected only
+- `false`: Skip all setup
 
 ### List Worktrees
 
@@ -322,8 +330,11 @@ create_learnings_file: false
 # Auto-initialize git submodules (default: true)
 auto_init_submodules: true
 
-# Auto-run setup commands like npm install, poetry install, etc. (default: true)
-auto_run_setup: true
+# Setup behavior: 'auto' (run first detected), 'prompt' (ask which to run), false (skip)
+# - 'prompt' (default): Interactive - asks which ecosystems to set up (recommended for multi-ecosystem repos)
+# - 'auto': Legacy behavior - runs first detected ecosystem automatically
+# - false: Skips all setup
+auto_run_setup: prompt
 
 # Auto-copy environment files to new worktrees (default: true)
 copy_files_enabled: true
@@ -362,7 +373,7 @@ Add any project-specific context or conventions here.
 | `branch_prefix` | `feature/` | Prefix for new branches (e.g., `feature/my-task`) |
 | `create_learnings_file` | `false` | Create `LEARNINGS.md` in worktree to capture insights |
 | `auto_init_submodules` | `true` | Auto-initialize git submodules recursively in new worktrees |
-| `auto_run_setup` | `true` | Auto-run setup commands (npm install, etc.) when creating worktrees |
+| `auto_run_setup` | `'prompt'` | Setup behavior: `'prompt'` (ask user), `'auto'` (run first detected), `false` (skip) |
 | `copy_files_enabled` | `true` | Auto-copy development environment files to new worktrees |
 | `copy_file_patterns` | `['.env', '.vscode/**', '*.local']` | Glob patterns for files to copy from main repo |
 | `exclude_file_patterns` | `['node_modules', 'dist', '.git']` | Glob patterns to exclude from copying |

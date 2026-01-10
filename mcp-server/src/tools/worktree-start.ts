@@ -169,16 +169,22 @@ export class WorktreeStartTool {
       if (reusingExisting) {
         // Skip setup when reusing - already done
         setupMessages.push('Skipping setup (already configured)');
-      } else if (!config.auto_run_setup) {
+      } else if (config.auto_run_setup === false) {
         // Skip setup when auto_run_setup is disabled
-        setupMessages.push('⚙️  Auto-setup disabled (set auto_run_setup: true in config to enable)');
+        setupMessages.push('⚙️  Auto-setup disabled (set auto_run_setup: auto or prompt in config to enable)');
         if (projectInfo.setup_commands.length > 0) {
           setupMessages.push('💡 To set up manually, run:');
           for (const cmd of projectInfo.setup_commands) {
             setupMessages.push(`   cd ${cmd.directory} && ${cmd.command}`);
           }
         }
-      } else {
+      } else if (config.auto_run_setup === 'prompt') {
+        // Prompt mode - skip auto-setup, let command layer handle it with AskUserQuestion
+        setupMessages.push('⚙️  Setup deferred to command layer (prompt mode)');
+        if (projectInfo.setup_commands.length > 0) {
+          setupMessages.push('💡 The /start command will ask which ecosystems to set up');
+        }
+      } else if (config.auto_run_setup === 'auto') {
         // Add file copying messages if applicable
         if (config.copy_files_enabled) {
           if (copyFilesCount > 0) {

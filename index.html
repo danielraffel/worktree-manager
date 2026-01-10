@@ -669,6 +669,9 @@ create_learnings_file: false
 <span class="code-comment"># Auto-initialize git submodules</span>
 auto_init_submodules: true
 
+<span class="code-comment"># Setup behavior: prompt | auto | false</span>
+auto_run_setup: prompt
+
 <span class="code-comment"># Auto-copy environment files</span>
 copy_files_enabled: true
 copy_file_patterns: [".env", ".vscode/**"]
@@ -710,6 +713,11 @@ auto_push: false
                                 <td><code>auto_init_submodules</code></td>
                                 <td><code>true</code></td>
                                 <td>Auto-initialize git submodules recursively in new worktrees</td>
+                            </tr>
+                            <tr>
+                                <td><code>auto_run_setup</code></td>
+                                <td><code>'prompt'</code></td>
+                                <td>Setup behavior: <code>'prompt'</code> (ask which ecosystems), <code>'auto'</code> (run first detected), <code>false</code> (skip all)</td>
                             </tr>
                             <tr>
                                 <td><code>copy_files_enabled</code></td>
@@ -803,15 +811,24 @@ auto_push: false
                         </div>
                     </div>
                     <div class="faq-item">
-                        <div class="faq-question" onclick="toggleFaq(this)" id="faq-multiple-languages">What does "multiple project types detected" mean?</div>
+                        <div class="faq-question" onclick="toggleFaq(this)" id="faq-multiple-languages">How does multi-ecosystem detection work?</div>
                         <div class="faq-answer">
-                            <p>Worktree Manager scans your project to figure out what it's built with (Node.js, Python, Go, etc.) and automatically runs the setup command. When it detects more than one ecosystem, it picks the first one to install and tells you about the others.</p>
-                            <p><strong>What we support:</strong> Node.js (npm/yarn/pnpm/bun), Python (uv/Conda/Poetry/pipenv/pip), Swift, Deno, C++ (CMake), Ruby, Go, Rust, Java (Maven/Gradle), PHP, Elixir, .NET, Scala, Flutter, Dart, and iOS projects.</p>
-                            <p><strong>What happens:</strong> We install the first detected ecosystem (like <code>npm install</code> for Node.js). If your project has multiple types—common in full-stack projects or monorepos—we show you simple copy/paste commands for the others.</p>
-                            <p><strong>Why only one?</strong> Running all setups could take 2-5 minutes. By installing just the primary ecosystem (usually 30 seconds), you get started faster. If you need the others, the commands we show work—just run them manually.</p>
-                            <p><strong>Example output:</strong> If your project has both <code>package.json</code> (Node.js) and <code>pyproject.toml</code> (Python), we'll run <code>npm install</code> first, then show you "<code>poetry install</code>" as an available option if you need Python dependencies too.</p>
-                            <p><strong>What if I don't run the extras?</strong> Your primary ecosystem will work fine. Only run additional commands if you're actively working with that part of your codebase. For example, if you're only editing JavaScript, you don't need Python dependencies installed.</p>
-                            <p><strong>Don't want automatic setup?</strong> Set <code>auto_run_setup: false</code> in your config. See <a href="#faq-auto-setup-safety">Is it safe to auto-run setup commands?</a> for details.</p>
+                            <p><strong>The problem:</strong> Many projects use multiple languages—Node.js frontend + Rust backend, Python data pipeline + Go API, etc. Running the wrong setup (5-minute npm install when you wanted Rust) wastes time.</p>
+                            <p><strong>How it works:</strong></p>
+                            <p>1. <strong>Scans all ecosystems</strong> - Detects all 18+ supported project types in ~100ms<br>
+                            2. <strong>Shows interactive menu</strong> - You pick which to install (single or multiple)<br>
+                            3. <strong>Runs selected setups</strong> - Executes only what you chose</p>
+                            <p><strong>Example:</strong> Project with <code>package.json</code>, <code>Cargo.toml</code>, and <code>Package.swift</code> shows:</p>
+                            <p><code>Which project types should I set up?<br>
+                            [x] Node.js (npm) - npm install<br>
+                            [ ] Rust - cargo fetch<br>
+                            [ ] Swift - swift package resolve</code></p>
+                            <p>Check Node.js, hit Enter, and you're coding in 30 seconds. Need Rust later? The setup command is shown in output—just run it.</p>
+                            <p><strong>Supported ecosystems:</strong> Node.js (npm/yarn/pnpm/bun), Python (uv/Conda/Poetry/pipenv/pip), Swift, Deno, C++ (CMake), Ruby, Go, Rust, Java (Maven/Gradle), PHP, Elixir, .NET, Scala, Flutter, Dart, iOS.</p>
+                            <p><strong>Setup modes (config: <code>auto_run_setup</code>):</strong></p>
+                            <p>• <code>'prompt'</code> (default) - Interactive menu for multi-ecosystem repos<br>
+                            • <code>'auto'</code> - Runs first detected (legacy, fast for single-ecosystem projects)<br>
+                            • <code>false</code> - Skip all setup, manual control</p>
                         </div>
                     </div>
                     <div class="faq-item">

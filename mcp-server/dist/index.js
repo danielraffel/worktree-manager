@@ -8809,6 +8809,52 @@ var ProjectDetector = class {
     if (ecosystems.length > 0) return "web";
     return "unknown";
   }
+  /**
+   * Detect ALL ecosystems without short-circuiting
+   * Used for multi-ecosystem detection and user prompting
+   */
+  static detectAll(worktreePath) {
+    const setupCommands = [];
+    const seenEcosystems = /* @__PURE__ */ new Set();
+    for (const ecosystem of this.ecosystems) {
+      if (this.isEcosystemPresent(worktreePath, ecosystem)) {
+        const ecosystemFamily = this.getEcosystemFamily(ecosystem.name);
+        if (ecosystemFamily === "nodejs") {
+          if (seenEcosystems.has("nodejs")) {
+            continue;
+          }
+          seenEcosystems.add("nodejs");
+        }
+        if (ecosystemFamily === "python") {
+          if (seenEcosystems.has("python")) {
+            continue;
+          }
+          seenEcosystems.add("python");
+        }
+        const commandDirectory = ecosystem.name === "Node.js (web)" ? path2.join(worktreePath, "web") : worktreePath;
+        let command = ecosystem.command;
+        if (ecosystem.name.includes("Node.js")) {
+          const subdir = ecosystem.name === "Node.js (web)" ? "web" : void 0;
+          command = this.detectPackageManager(worktreePath, subdir);
+        }
+        setupCommands.push({
+          directory: commandDirectory,
+          command,
+          description: ecosystem.description
+        });
+      }
+    }
+    return setupCommands;
+  }
+  /**
+   * Get ecosystem family for deduplication
+   */
+  static getEcosystemFamily(ecosystemName) {
+    if (ecosystemName.includes("Node.js")) return "nodejs";
+    if (ecosystemName.includes("Python")) return "python";
+    if (ecosystemName.includes("Java")) return "java";
+    return ecosystemName.toLowerCase();
+  }
 };
 
 // src/utils/setup-runner.ts
@@ -8885,7 +8931,7 @@ var DEFAULT_CONFIG = {
   auto_push: false,
   create_learnings_file: false,
   auto_init_submodules: true,
-  auto_run_setup: true,
+  auto_run_setup: "prompt",
   copy_files_enabled: true,
   copy_file_patterns: [".env", ".env.*", ".vscode/**", "*.local"],
   exclude_file_patterns: ["node_modules", "dist", "build", "coverage", ".git"],
@@ -8973,7 +9019,13 @@ var ConfigReader = class {
           config.auto_init_submodules = value === "true";
           break;
         case "auto_run_setup":
-          config.auto_run_setup = value === "true";
+          if (value === "true") {
+            config.auto_run_setup = "auto";
+          } else if (value === "false") {
+            config.auto_run_setup = false;
+          } else if (value === "auto" || value === "prompt") {
+            config.auto_run_setup = value;
+          }
           break;
         case "copy_files_enabled":
           config.copy_files_enabled = value === "true";
@@ -9035,8 +9087,8 @@ create_learnings_file: false
 # Auto-initialize git submodules (default: true)
 auto_init_submodules: true
 
-# Auto-run setup commands like npm install, poetry install, etc. (default: true)
-auto_run_setup: true
+# Setup behavior: 'auto' (run first detected), 'prompt' (ask which to run), false (skip) (default: 'prompt')
+auto_run_setup: prompt
 
 # Auto-copy environment files to new worktrees (default: true)
 copy_files_enabled: true
@@ -9308,15 +9360,20 @@ var WorktreeStartTool = class {
       let setupComplete = true;
       if (reusingExisting) {
         setupMessages.push("Skipping setup (already configured)");
-      } else if (!config.auto_run_setup) {
-        setupMessages.push("\u2699\uFE0F  Auto-setup disabled (set auto_run_setup: true in config to enable)");
+      } else if (config.auto_run_setup === false) {
+        setupMessages.push("\u2699\uFE0F  Auto-setup disabled (set auto_run_setup: auto or prompt in config to enable)");
         if (projectInfo.setup_commands.length > 0) {
           setupMessages.push("\u{1F4A1} To set up manually, run:");
           for (const cmd of projectInfo.setup_commands) {
             setupMessages.push(`   cd ${cmd.directory} && ${cmd.command}`);
           }
         }
-      } else {
+      } else if (config.auto_run_setup === "prompt") {
+        setupMessages.push("\u2699\uFE0F  Setup deferred to command layer (prompt mode)");
+        if (projectInfo.setup_commands.length > 0) {
+          setupMessages.push("\u{1F4A1} The /start command will ask which ecosystems to set up");
+        }
+      } else if (config.auto_run_setup === "auto") {
         if (config.copy_files_enabled) {
           if (copyFilesCount > 0) {
             setupMessages.push(`\u{1F4CB} Copied ${copyFilesCount} environment file(s)`);
@@ -10183,6 +10240,208 @@ var WorktreeDeleteBranchTool = class {
   }
 };
 
+// src/tools/worktree-detect.ts
+var WorktreeDetectTool = class {
+  /**
+   * Detect all ecosystems without short-circuiting
+   */
+  static async execute(params) {
+    try {
+      const { worktree_path } = params;
+      const setupCommands = ProjectDetector.detectAll(worktree_path);
+      const ecosystems = setupCommands.map((cmd) => {
+        const name = this.extractEcosystemName(cmd.command, cmd.description);
+        const packageManager = this.extractPackageManager(cmd.command);
+        return {
+          name,
+          package_manager: packageManager,
+          command: cmd.command,
+          description: cmd.description,
+          directory: cmd.directory
+        };
+      });
+      return {
+        success: true,
+        ecosystems,
+        count: ecosystems.length
+      };
+    } catch (error) {
+      return {
+        success: false,
+        ecosystems: [],
+        count: 0,
+        error: error.message || "Failed to detect ecosystems"
+      };
+    }
+  }
+  /**
+   * Extract ecosystem name from command
+   */
+  static extractEcosystemName(command, description) {
+    if (command.includes("npm") || command.includes("yarn") || command.includes("pnpm") || command.includes("bun")) {
+      return "Node.js";
+    }
+    if (command.includes("cargo")) return "Rust";
+    if (command.includes("swift")) return "Swift";
+    if (command.includes("go ")) return "Go";
+    if (command.includes("bundle")) return "Ruby";
+    if (command.includes("pip") || command.includes("poetry") || command.includes("pipenv") || command.includes("uv ") || command.includes("conda")) {
+      return "Python";
+    }
+    if (command.includes("mvn")) return "Java (Maven)";
+    if (command.includes("gradle")) return "Java (Gradle)";
+    if (command.includes("composer")) return "PHP";
+    if (command.includes("mix")) return "Elixir";
+    if (command.includes("dotnet")) return ".NET";
+    if (command.includes("sbt")) return "Scala";
+    if (command.includes("flutter")) return "Flutter";
+    if (command.includes("dart")) return "Dart";
+    if (command.includes("deno")) return "Deno";
+    if (command.includes("cmake")) return "C++ (CMake)";
+    return description.split(" ")[0];
+  }
+  /**
+   * Extract package manager from command
+   */
+  static extractPackageManager(command) {
+    if (command.includes("pnpm")) return "pnpm";
+    if (command.includes("bun")) return "bun";
+    if (command.includes("yarn")) return "yarn";
+    if (command.includes("npm")) return "npm";
+    if (command.includes("cargo")) return "cargo";
+    if (command.includes("swift")) return "swift";
+    if (command.includes("go ")) return "go";
+    if (command.includes("bundle")) return "bundle";
+    if (command.includes("uv ")) return "uv";
+    if (command.includes("poetry")) return "poetry";
+    if (command.includes("pipenv")) return "pipenv";
+    if (command.includes("pip")) return "pip";
+    if (command.includes("conda")) return "conda";
+    if (command.includes("mvn")) return "mvn";
+    if (command.includes("gradle")) return "gradle";
+    if (command.includes("composer")) return "composer";
+    if (command.includes("mix")) return "mix";
+    if (command.includes("dotnet")) return "dotnet";
+    if (command.includes("sbt")) return "sbt";
+    if (command.includes("flutter")) return "flutter";
+    if (command.includes("dart")) return "dart";
+    if (command.includes("deno")) return "deno";
+    if (command.includes("cmake")) return "cmake";
+    return "unknown";
+  }
+};
+
+// src/tools/worktree-setup.ts
+var WorktreeSetupTool = class {
+  /**
+   * Run setup commands for specified ecosystems
+   */
+  static async execute(params) {
+    try {
+      const { worktree_path, ecosystem_names } = params;
+      const allCommands = ProjectDetector.detectAll(worktree_path);
+      const selectedCommands = allCommands.filter((cmd) => {
+        return ecosystem_names.some((name) => {
+          return this.matchesEcosystem(cmd.command, name);
+        });
+      });
+      if (selectedCommands.length === 0) {
+        return {
+          success: true,
+          ran: [],
+          failed: [],
+          messages: ["No ecosystems selected for setup"]
+        };
+      }
+      const messages = [];
+      const ran = [];
+      const failed = [];
+      for (const cmd of selectedCommands) {
+        messages.push(`Running: ${cmd.description} (${cmd.command})`);
+        const result = await SetupRunner.runCommand(cmd);
+        if (result.success) {
+          ran.push(this.extractEcosystemName(cmd.command));
+          messages.push(`\u2705 ${cmd.description} complete`);
+        } else {
+          failed.push(this.extractEcosystemName(cmd.command));
+          messages.push(`\u274C ${cmd.description} failed: ${result.error}`);
+        }
+      }
+      return {
+        success: failed.length === 0,
+        ran,
+        failed,
+        messages
+      };
+    } catch (error) {
+      return {
+        success: false,
+        ran: [],
+        failed: [],
+        messages: [],
+        error: error.message || "Failed to run setup"
+      };
+    }
+  }
+  /**
+   * Check if command matches ecosystem name
+   */
+  static matchesEcosystem(command, ecosystemName) {
+    const name = ecosystemName.toLowerCase();
+    if (name.includes("node") && (command.includes("npm") || command.includes("yarn") || command.includes("pnpm") || command.includes("bun"))) {
+      return true;
+    }
+    if (name.includes("rust") && command.includes("cargo")) return true;
+    if (name.includes("swift") && command.includes("swift")) return true;
+    if (name.includes("go") && command.includes("go ")) return true;
+    if (name.includes("ruby") && command.includes("bundle")) return true;
+    if (name.includes("python") && (command.includes("pip") || command.includes("poetry") || command.includes("pipenv") || command.includes("uv ") || command.includes("conda"))) {
+      return true;
+    }
+    if (name.includes("java") && name.includes("maven") && command.includes("mvn")) return true;
+    if (name.includes("java") && name.includes("gradle") && command.includes("gradle")) return true;
+    if (name.includes("gradle") && command.includes("gradle")) return true;
+    if (name.includes("php") && command.includes("composer")) return true;
+    if (name.includes("elixir") && command.includes("mix")) return true;
+    if (name.includes(".net") && command.includes("dotnet")) return true;
+    if (name.includes("scala") && command.includes("sbt")) return true;
+    if (name.includes("flutter") && command.includes("flutter")) return true;
+    if (name.includes("dart") && command.includes("dart")) return true;
+    if (name.includes("deno") && command.includes("deno")) return true;
+    if (name.includes("c++") && command.includes("cmake")) return true;
+    if (name.includes("cmake") && command.includes("cmake")) return true;
+    return false;
+  }
+  /**
+   * Extract ecosystem name from command
+   */
+  static extractEcosystemName(command) {
+    if (command.includes("npm") || command.includes("yarn") || command.includes("pnpm") || command.includes("bun")) {
+      return "Node.js";
+    }
+    if (command.includes("cargo")) return "Rust";
+    if (command.includes("swift")) return "Swift";
+    if (command.includes("go ")) return "Go";
+    if (command.includes("bundle")) return "Ruby";
+    if (command.includes("uv ")) return "Python (uv)";
+    if (command.includes("poetry")) return "Python (Poetry)";
+    if (command.includes("pipenv")) return "Python (pipenv)";
+    if (command.includes("pip")) return "Python";
+    if (command.includes("conda")) return "Python (Conda)";
+    if (command.includes("mvn")) return "Java (Maven)";
+    if (command.includes("gradle")) return "Java (Gradle)";
+    if (command.includes("composer")) return "PHP";
+    if (command.includes("mix")) return "Elixir";
+    if (command.includes("dotnet")) return ".NET";
+    if (command.includes("sbt")) return "Scala";
+    if (command.includes("flutter")) return "Flutter";
+    if (command.includes("dart")) return "Dart";
+    if (command.includes("deno")) return "Deno";
+    if (command.includes("cmake")) return "C++ (CMake)";
+    return "Unknown";
+  }
+};
+
 // src/index.ts
 var TOOLS = [
   {
@@ -10391,6 +10650,41 @@ var TOOLS = [
       },
       required: ["branch_name"]
     }
+  },
+  {
+    name: "worktree_detect_ecosystems",
+    description: "Detect all project ecosystems in a worktree. Scans for all supported ecosystems (Node.js, Python, Rust, Go, etc.) and returns them for user selection.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        worktree_path: {
+          type: "string",
+          description: "Path to worktree to scan for ecosystems"
+        }
+      },
+      required: ["worktree_path"]
+    }
+  },
+  {
+    name: "worktree_run_setup",
+    description: "Run setup commands for selected ecosystems. Used after user makes selection via AskUserQuestion.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        worktree_path: {
+          type: "string",
+          description: "Path to worktree"
+        },
+        ecosystem_names: {
+          type: "array",
+          items: {
+            type: "string"
+          },
+          description: 'Names of ecosystems to set up (e.g., ["Node.js", "Rust"])'
+        }
+      },
+      required: ["worktree_path", "ecosystem_names"]
+    }
   }
 ];
 var server = new Server(
@@ -10523,6 +10817,28 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
       case "worktree_delete_branch": {
         const result = await WorktreeDeleteBranchTool.execute(args);
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(result, null, 2)
+            }
+          ]
+        };
+      }
+      case "worktree_detect_ecosystems": {
+        const result = await WorktreeDetectTool.execute(args);
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(result, null, 2)
+            }
+          ]
+        };
+      }
+      case "worktree_run_setup": {
+        const result = await WorktreeSetupTool.execute(args);
         return {
           content: [
             {

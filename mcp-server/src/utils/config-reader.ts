@@ -24,8 +24,8 @@ export interface WorktreeConfig {
   /** Auto-initialize git submodules (default: true) */
   auto_init_submodules: boolean;
 
-  /** Auto-run setup commands (npm install, etc.) (default: true) */
-  auto_run_setup: boolean;
+  /** Auto-run setup commands: 'auto' (run first detected), 'prompt' (ask user), false (skip) (default: 'prompt') */
+  auto_run_setup: 'auto' | 'prompt' | false;
 
   /** Auto-copy environment files to new worktrees (default: true) */
   copy_files_enabled: boolean;
@@ -53,7 +53,7 @@ const DEFAULT_CONFIG: WorktreeConfig = {
   auto_push: false,
   create_learnings_file: false,
   auto_init_submodules: true,
-  auto_run_setup: true,
+  auto_run_setup: 'prompt',
   copy_files_enabled: true,
   copy_file_patterns: ['.env', '.env.*', '.vscode/**', '*.local'],
   exclude_file_patterns: ['node_modules', 'dist', 'build', 'coverage', '.git'],
@@ -182,7 +182,15 @@ export class ConfigReader {
           config.auto_init_submodules = value === 'true';
           break;
         case 'auto_run_setup':
-          config.auto_run_setup = value === 'true';
+          // Support new modes: 'auto', 'prompt', or false
+          // Backward compatibility: true -> 'auto', false -> false
+          if (value === 'true') {
+            config.auto_run_setup = 'auto';
+          } else if (value === 'false') {
+            config.auto_run_setup = false;
+          } else if (value === 'auto' || value === 'prompt') {
+            config.auto_run_setup = value;
+          }
           break;
         case 'copy_files_enabled':
           config.copy_files_enabled = value === 'true';
@@ -248,8 +256,8 @@ create_learnings_file: false
 # Auto-initialize git submodules (default: true)
 auto_init_submodules: true
 
-# Auto-run setup commands like npm install, poetry install, etc. (default: true)
-auto_run_setup: true
+# Setup behavior: 'auto' (run first detected), 'prompt' (ask which to run), false (skip) (default: 'prompt')
+auto_run_setup: prompt
 
 # Auto-copy environment files to new worktrees (default: true)
 copy_files_enabled: true
