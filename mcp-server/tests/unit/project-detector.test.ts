@@ -324,4 +324,91 @@ describe('ProjectDetector', () => {
       expect(result.setup_commands[0].command).toBe('conda env create -f environment.yml');
     });
   });
+
+  describe('detectAll', () => {
+    it('should detect all ecosystems without short-circuiting', () => {
+      (fs.existsSync as jest.Mock).mockImplementation((filePath: string) => {
+        if (filePath.endsWith('package.json')) return true;
+        if (filePath.endsWith('Cargo.toml')) return true;
+        if (filePath.endsWith('Package.swift')) return true;
+        return false;
+      });
+
+      const result = ProjectDetector.detectAll('/path/to/worktree');
+
+      expect(result).toHaveLength(3);
+      expect(result[0].command).toBe('npm install');
+      expect(result[1].command).toBe('cargo fetch');
+      expect(result[2].command).toBe('swift package resolve');
+    });
+
+    it('should deduplicate Node.js family (web takes precedence)', () => {
+      (fs.existsSync as jest.Mock).mockImplementation((filePath: string) => {
+        if (filePath.endsWith('web/package.json')) return true;
+        if (filePath.endsWith('package.json')) return true; // Root package.json
+        return false;
+      });
+
+      const result = ProjectDetector.detectAll('/path/to/worktree');
+
+      // Should only return one Node.js entry (web)
+      expect(result).toHaveLength(1);
+      expect(result[0].directory).toBe(path.join('/path/to/worktree', 'web'));
+    });
+
+    it('should deduplicate Python family (first detected wins)', () => {
+      (fs.existsSync as jest.Mock).mockImplementation((filePath: string) => {
+        if (filePath.endsWith('uv.lock')) return true;
+        if (filePath.endsWith('pyproject.toml')) return true;
+        if (filePath.endsWith('poetry.lock')) return true;
+        return false;
+      });
+
+      const result = ProjectDetector.detectAll('/path/to/worktree');
+
+      // Should only return one Python entry (uv - highest priority)
+      expect(result).toHaveLength(1);
+      expect(result[0].command).toBe('uv sync');
+    });
+
+    it('should detect package manager from lockfiles for Node.js', () => {
+      (fs.existsSync as jest.Mock).mockImplementation((filePath: string) => {
+        if (filePath.endsWith('package.json')) return true;
+        if (filePath.endsWith('pnpm-lock.yaml')) return true;
+        return false;
+      });
+
+      const result = ProjectDetector.detectAll('/path/to/worktree');
+
+      expect(result).toHaveLength(1);
+      expect(result[0].command).toBe('pnpm install');
+    });
+
+    it('should return empty array when no ecosystems detected', () => {
+      (fs.existsSync as jest.Mock).mockReturnValue(false);
+
+      const result = ProjectDetector.detectAll('/path/to/worktree');
+
+      expect(result).toHaveLength(0);
+    });
+
+    it('should handle multiple different ecosystems', () => {
+      (fs.existsSync as jest.Mock).mockImplementation((filePath: string) => {
+        if (filePath.endsWith('package.json')) return true;
+        if (filePath.endsWith('go.mod')) return true;
+        if (filePath.endsWith('Gemfile')) return true;
+        if (filePath.endsWith('composer.json')) return true;
+        return false;
+      });
+
+      const result = ProjectDetector.detectAll('/path/to/worktree');
+
+      expect(result).toHaveLength(4);
+      const commands = result.map(r => r.command);
+      expect(commands).toContain('npm install');
+      expect(commands).toContain('go mod download');
+      expect(commands).toContain('bundle install');
+      expect(commands).toContain('composer install');
+    });
+  });
 });

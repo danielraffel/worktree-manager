@@ -33,6 +33,68 @@ describe('WorktreeStartTool', () => {
   });
 
   describe('execute', () => {
+    it('should handle auto_run_setup: "all" mode', async () => {
+      (ConfigReader.getConfig as jest.Mock).mockReturnValue({
+        worktree_base_path: path.join(os.homedir(), 'worktrees'),
+        branch_prefix: 'feature/',
+        auto_commit: false,
+        auto_push: false,
+        create_learnings_file: false,
+        auto_init_submodules: true,
+        auto_run_setup: 'all', // Test 'all' mode
+        copy_files_enabled: true,
+        copy_file_patterns: ['.env', '.env.*', '.vscode/**', '*.local'],
+        exclude_file_patterns: ['node_modules', 'dist', 'build', 'coverage', '.git'],
+        spec_directory: 'audit',
+        default_max_iterations: 50,
+      });
+
+      (GitHelpers.isGitRepo as jest.Mock).mockResolvedValue(true);
+      (GitHelpers.createWorktree as jest.Mock).mockResolvedValue({ success: true });
+      (ProjectDetector.detect as jest.Mock).mockReturnValue({
+        type: 'web',
+        setup_commands: [],
+        details: { has_web: true, has_ios: false, has_root_package_json: false },
+      });
+      (ProjectDetector.detectAll as jest.Mock).mockReturnValue([
+        {
+          directory: '/path/to/worktree',
+          command: 'npm install',
+          description: 'Install Node.js dependencies',
+        },
+        {
+          directory: '/path/to/worktree',
+          command: 'cargo fetch',
+          description: 'Fetch Rust dependencies',
+        },
+      ]);
+      (SetupRunner.runSetupCommands as jest.Mock).mockResolvedValue({
+        success: true,
+        messages: ['✅ Install Node.js dependencies complete', '✅ Fetch Rust dependencies complete'],
+        errors: [],
+      });
+
+      const result = await WorktreeStartTool.execute({
+        feature_name: 'test-feature',
+      });
+
+      expect(result.success).toBe(true);
+      expect(ProjectDetector.detectAll).toHaveBeenCalled();
+      expect(SetupRunner.runSetupCommands).toHaveBeenCalledWith([
+        {
+          directory: '/path/to/worktree',
+          command: 'npm install',
+          description: 'Install Node.js dependencies',
+        },
+        {
+          directory: '/path/to/worktree',
+          command: 'cargo fetch',
+          description: 'Fetch Rust dependencies',
+        },
+      ]);
+      expect(result.setup_messages.some(m => m.includes('Installing 2 ecosystem'))).toBe(true);
+    });
+
     it('should create worktree successfully with default parameters', async () => {
       (GitHelpers.isGitRepo as jest.Mock).mockResolvedValue(true);
       (GitHelpers.createWorktree as jest.Mock).mockResolvedValue({ success: true });
