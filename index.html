@@ -811,39 +811,32 @@ auto_push: false
                         </div>
                     </div>
                     <div class="faq-item">
-                        <div class="faq-question" onclick="toggleFaq(this)" id="faq-multiple-languages">How does multi-ecosystem detection work?</div>
+                        <div class="faq-question" onclick="toggleFaq(this)" id="faq-environment-setup">Will this automatically set up my development environment?</div>
                         <div class="faq-answer">
-                            <p><strong>The problem:</strong> Many projects use multiple languages—Node.js frontend + Rust backend, Python data pipeline + Go API, etc. Running the wrong setup (5-minute npm install when you wanted Rust) wastes time.</p>
+                            <p><strong>Yes, but you control what gets installed.</strong> We detect your project type and ask you which dependencies to install—we don't run anything without your permission.</p>
                             <p><strong>How it works:</strong></p>
-                            <p>1. <strong>Scans all ecosystems</strong> - Detects all 18+ supported project types in ~100ms<br>
-                            2. <strong>Shows interactive menu</strong> - You pick which to install (single or multiple)<br>
-                            3. <strong>Runs selected setups</strong> - Executes only what you chose</p>
-                            <p><strong>Example:</strong> Project with <code>package.json</code>, <code>Cargo.toml</code>, and <code>Package.swift</code> shows:</p>
+                            <p>1. <strong>You create a worktree</strong> - Run <code>/worktree-manager:create my-feature</code><br>
+                            2. <strong>We scan for ecosystems</strong> - Detects all 18+ project types in ~100ms<br>
+                            3. <strong>You pick what to install</strong> - Interactive menu shows options, you select what you need<br>
+                            4. <strong>We run only your selections</strong> - Executes only what you chose</p>
+                            <p><strong>Example:</strong> Project with Node.js, Rust, and Swift shows:</p>
                             <p><code>Which project types should I set up?<br>
                             [x] Node.js (npm) - npm install<br>
                             [ ] Rust - cargo fetch<br>
-                            [ ] Swift - swift package resolve</code></p>
-                            <p>Check Node.js, hit Enter, and you're coding in 30 seconds. Need Rust later? The setup command is shown in output—just run it.</p>
-                            <p><strong>Supported ecosystems:</strong> Node.js (npm/yarn/pnpm/bun), Python (uv/Conda/Poetry/pipenv/pip), Swift, Deno, C++ (CMake), Ruby, Go, Rust, Java (Maven/Gradle), PHP, Elixir, .NET, Scala, Flutter, Dart, iOS.</p>
-                            <p><strong>Setup modes (config: <code>auto_run_setup</code>):</strong></p>
-                            <p>• <code>'prompt'</code> (default) - Interactive menu for multi-ecosystem repos<br>
-                            • <code>'auto'</code> - Runs first detected (legacy, fast for single-ecosystem projects)<br>
-                            • <code>false</code> - Skip all setup, manual control</p>
-                        </div>
-                    </div>
-                    <div class="faq-item">
-                        <div class="faq-question" onclick="toggleFaq(this)" id="faq-auto-setup-safety">Is it safe to auto-run setup commands?</div>
-                        <div class="faq-answer">
-                            <p><strong>For 99% of use cases: Yes, it's safe.</strong> You're already trusting Claude Code to write code in your repository, so running standard package manager commands is the same level of trust.</p>
-                            <p><strong>What we run:</strong> Standard dependency installation commands like <code>npm install</code>, <code>pip install</code>, <code>go mod download</code>, etc. These are the same commands you'd run manually to set up the project.</p>
-                            <p><strong>Theoretical risks:</strong></p>
-                            <p>• <strong>npm/pip postinstall scripts</strong> - Can execute arbitrary code from dependencies. But if your project's dependencies are malicious, you have bigger problems than auto-install.<br>
-                            • <strong>Resource usage</strong> - Large installs could use disk space or time. The plugin shows progress so you can cancel if needed.<br>
-                            • <strong>Corporate/security-conscious environments</strong> - Some organizations prefer manual approval for all installs.</p>
-                            <p><strong>How to disable:</strong> Add to your config file (<code>.claude/worktree-manager.local.md</code>):</p>
-                            <p><code>auto_run_setup: false</code></p>
-                            <p>When disabled, the plugin will show you the commands to run manually instead of executing them automatically.</p>
-                            <p><strong>Our recommendation:</strong> Keep it enabled (default) for personal projects and trusted repositories. Disable it for untrusted codebases or corporate environments with strict security policies.</p>
+                            [ ] Swift - swift package resolve<br>
+                            [Other...]</code></p>
+                            <p>Select Node.js, press Enter, and you're coding in 30 seconds. Need Rust later? The command is shown—just run it manually. Want to skip all setup? Deselect everything.</p>
+                            <p><strong>What we detect and can install:</strong></p>
+                            <p>• <strong>Node.js</strong> - npm, yarn, pnpm, or bun (auto-detects from lockfiles)<br>
+                            • <strong>Python</strong> - uv, Conda, Poetry, pipenv, or pip<br>
+                            • <strong>Native/Mobile</strong> - Swift Package Manager, Flutter, iOS (Xcode)<br>
+                            • <strong>Backend</strong> - Go, Rust, Java (Maven/Gradle), PHP, Elixir, .NET, Scala, Ruby<br>
+                            • <strong>Other</strong> - Deno, C++ (CMake), Dart</p>
+                            <p><strong>Control how this works:</strong> Set <code>auto_run_setup</code> in your config (<code>.claude/worktree-manager.local.md</code>):</p>
+                            <p>• <code>'prompt'</code> (default) - We ask you what to install (nothing runs without permission)<br>
+                            • <code>'auto'</code> - Automatically runs first detected ecosystem (faster for single-language projects)<br>
+                            • <code>false</code> - Skip all detection and setup</p>
+                            <p><strong>Is this safe?</strong> Yes. We only run standard package manager commands (<code>npm install</code>, <code>pip install</code>, etc.)—the same commands you'd run manually. In default mode, you explicitly select what runs. If you're in a corporate environment with strict policies, set <code>auto_run_setup: false</code> to disable all automatic setup.</p>
                         </div>
                     </div>
                 </div>

@@ -163,21 +163,29 @@ Automatically detects project type and runs appropriate setup commands:
 | **iOS** | `ios/` directory | Manual (Xcode) |
 | **Full-stack** | Multiple ecosystems | Priority-based setup |
 
-#### Multi-Ecosystem Support
+#### Automatic Environment Setup
 
-Projects with multiple languages (Node.js + Rust, Python + Go, etc.) get an interactive menu:
+**We detect your project type and ask you what to install—nothing runs without your permission.**
 
+When you create a worktree:
+1. We scan for all ecosystems (~100ms)
+2. Show interactive menu with detected options
+3. You select what to install (or skip all)
+4. We run only your selections
+
+**Multi-ecosystem example** (Node.js + Rust + Swift):
 ```
 Which project types should I set up?
 [x] Node.js (npm) - npm install
 [ ] Rust - cargo fetch
 [ ] Swift - swift package resolve
 ```
+*Deselect all to skip setup entirely.*
 
-Select what you need, skip the rest. Configure behavior via `auto_run_setup`:
-- `'prompt'` (default): Interactive selection
-- `'auto'`: Run first detected only
-- `false`: Skip all setup
+**Control this behavior** via `auto_run_setup` config:
+- `'prompt'` (default): Ask what to install - nothing runs without permission
+- `'auto'`: Run first detected automatically - faster for single-language projects
+- `false`: Skip all detection and setup
 
 ### List Worktrees
 
