@@ -63,7 +63,7 @@ For automated planning and implementation, use **Chainer** plugin:
 
 ```bash
 # Install Chainer
-git clone https://github.com/danielraffel/Chainer ~/.claude/plugins/chainer
+/plugin install chainer@generous-corp-marketplace
 
 # Full workflow (plan + implement)
 /chainer:run plan-and-implement \

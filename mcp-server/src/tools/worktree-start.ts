@@ -437,7 +437,7 @@ This file captures insights, decisions, and learnings during development.
         nextSteps.push('  claude');
         nextSteps.push('');
         nextSteps.push('💡 For automated workflows, install Chainer:');
-        nextSteps.push('   git clone https://github.com/danielraffel/Chainer ~/.claude/plugins/chainer');
+        nextSteps.push('   /plugin install chainer@generous-corp-marketplace');
         nextSteps.push('');
         nextSteps.push('   Then use:');
         nextSteps.push('   /chainer:run plan-and-implement --prompt="Your idea" --feature_name="name"');
