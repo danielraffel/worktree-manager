@@ -797,10 +797,23 @@ auto_push: false
                         </div>
                     </div>
                     <div class="faq-item">
-                        <div class="faq-question" onclick="toggleFaq(this)" id="faq-standalone">What can I do with just the worktree-manager plugin?</div>
+                        <div class="faq-question" onclick="toggleFaq(this)" id="faq-workflow">What's a typical workflow?</div>
                         <div class="faq-answer">
-                            <p>Even without the optional plugins, Worktree Manager handles the tedious parts: creating the worktree directory, checking out a new branch, detecting your project type, and running setup commands like <code>npm install</code>.</p>
-                            <p>You can spin up multiple worktrees and open separate Claude Code sessions in each—giving you parallel AI agents working on different features simultaneously. When you're done, use <code>/worktree-manager:cleanup --merge</code> to merge changes back to main and clean up. Push to git manually or let Claude do it.</p>
+                            <p><strong>Create a worktree for your feature:</strong></p>
+                            <p><code>/worktree-manager:create payment-flow</code><br>
+                            Creates isolated workspace at <code>~/worktrees/payment-flow</code> on branch <code>feature/payment-flow</code>. Detects your project type, asks what to install.</p>
+                            <p><strong>Work on your feature:</strong></p>
+                            <p>Open Claude Code in the worktree directory and build. Your main branch stays clean while you experiment.</p>
+                            <p><strong>Check status when needed:</strong></p>
+                            <p><code>/worktree-manager:list</code> - See all active worktrees<br>
+                            <code>/worktree-manager:status ~/worktrees/payment-flow</code> - Check uncommitted changes</p>
+                            <p><strong>Manage as you go:</strong></p>
+                            <p><code>/worktree-manager:lock ~/worktrees/payment-flow --reason="In progress"</code> - Prevent accidental deletion<br>
+                            <code>/worktree-manager:rename-branch ~/worktrees/payment-flow feature/payment-flow feature/new-payments</code> - Rename if needed</p>
+                            <p><strong>Clean up when done:</strong></p>
+                            <p><code>/worktree-manager:cleanup ~/worktrees/payment-flow --merge</code><br>
+                            Merges changes to main, removes worktree, deletes feature branch. Push to git or let Claude handle it.</p>
+                            <p><strong>Parallel development:</strong> Create multiple worktrees, open separate Claude Code sessions in each, work on different features simultaneously.</p>
                         </div>
                     </div>
                     <div class="faq-item">
@@ -811,12 +824,12 @@ auto_push: false
                         </div>
                     </div>
                     <div class="faq-item">
-                        <div class="faq-question" onclick="toggleFaq(this)" id="faq-environment-setup">Will this automatically set up my development environment?</div>
+                        <div class="faq-question" onclick="toggleFaq(this)" id="faq-environment-setup">Can this automatically set up my development environment?</div>
                         <div class="faq-answer">
                             <p><strong>Yes, but you control what gets installed.</strong> We detect your project type and ask you which dependencies to install—we don't run anything without your permission.</p>
                             <p><strong>How it works:</strong></p>
                             <p>1. <strong>You create a worktree</strong> - Run <code>/worktree-manager:create my-feature</code><br>
-                            2. <strong>We scan for ecosystems</strong> - Detects all 18+ project types in ~100ms<br>
+                            2. <strong>We scan for ecosystems</strong> - Detects all <a href="https://github.com/danielraffel/worktree-manager/blob/main/mcp-server/src/utils/project-detector.ts" target="_blank">18+ project types</a> in ~100ms<br>
                             3. <strong>You pick what to install</strong> - Interactive menu shows options, you select what you need<br>
                             4. <strong>We run only your selections</strong> - Executes only what you chose</p>
                             <p><strong>Example:</strong> Project with Node.js, Rust, and Swift shows:</p>
@@ -833,8 +846,9 @@ auto_push: false
                             • <strong>Backend</strong> - Go, Rust, Java (Maven/Gradle), PHP, Elixir, .NET, Scala, Ruby<br>
                             • <strong>Other</strong> - Deno, C++ (CMake), Dart</p>
                             <p><strong>Control how this works:</strong> Set <code>auto_run_setup</code> in your config (<code>.claude/worktree-manager.local.md</code>):</p>
-                            <p>• <code>'prompt'</code> (default) - We ask you what to install (nothing runs without permission)<br>
-                            • <code>'auto'</code> - Automatically runs first detected ecosystem (faster for single-language projects)<br>
+                            <p>• <code>'prompt'</code> (default) - Interactive menu, you choose what to install (recommended)<br>
+                            • <code>'auto'</code> - Runs first detected ecosystem only (faster for single-language projects)<br>
+                            • <code>'all'</code> - Installs all detected ecosystems (slower, could take 5+ minutes for polyglot repos)<br>
                             • <code>false</code> - Skip all detection and setup</p>
                             <p><strong>Is this safe?</strong> Yes. We only run standard package manager commands (<code>npm install</code>, <code>pip install</code>, etc.)—the same commands you'd run manually. In default mode, you explicitly select what runs. If you're in a corporate environment with strict policies, set <code>auto_run_setup: false</code> to disable all automatic setup.</p>
                         </div>

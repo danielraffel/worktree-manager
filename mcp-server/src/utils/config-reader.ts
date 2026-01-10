@@ -24,8 +24,8 @@ export interface WorktreeConfig {
   /** Auto-initialize git submodules (default: true) */
   auto_init_submodules: boolean;
 
-  /** Auto-run setup commands: 'auto' (run first detected), 'prompt' (ask user), false (skip) (default: 'prompt') */
-  auto_run_setup: 'auto' | 'prompt' | false;
+  /** Auto-run setup commands: 'auto' (run first detected), 'prompt' (ask user), 'all' (run all detected), false (skip) (default: 'prompt') */
+  auto_run_setup: 'auto' | 'prompt' | 'all' | false;
 
   /** Auto-copy environment files to new worktrees (default: true) */
   copy_files_enabled: boolean;
@@ -182,13 +182,13 @@ export class ConfigReader {
           config.auto_init_submodules = value === 'true';
           break;
         case 'auto_run_setup':
-          // Support new modes: 'auto', 'prompt', or false
+          // Support new modes: 'auto', 'prompt', 'all', or false
           // Backward compatibility: true -> 'auto', false -> false
           if (value === 'true') {
             config.auto_run_setup = 'auto';
           } else if (value === 'false') {
             config.auto_run_setup = false;
-          } else if (value === 'auto' || value === 'prompt') {
+          } else if (value === 'auto' || value === 'prompt' || value === 'all') {
             config.auto_run_setup = value;
           }
           break;
@@ -256,7 +256,7 @@ create_learnings_file: false
 # Auto-initialize git submodules (default: true)
 auto_init_submodules: true
 
-# Setup behavior: 'auto' (run first detected), 'prompt' (ask which to run), false (skip) (default: 'prompt')
+# Setup behavior: 'prompt' (ask user), 'auto' (run first), 'all' (run all), false (skip) (default: 'prompt')
 auto_run_setup: prompt
 
 # Auto-copy environment files to new worktrees (default: true)

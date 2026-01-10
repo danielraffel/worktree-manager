@@ -183,8 +183,9 @@ Which project types should I set up?
 *Deselect all to skip setup entirely.*
 
 **Control this behavior** via `auto_run_setup` config:
-- `'prompt'` (default): Ask what to install - nothing runs without permission
-- `'auto'`: Run first detected automatically - faster for single-language projects
+- `'prompt'` (default): Interactive menu - you choose what to install
+- `'auto'`: Run first detected only - faster for single-language projects
+- `'all'`: Install all detected ecosystems - slower, could take 5+ minutes for polyglot repos
 - `false`: Skip all detection and setup
 
 ### List Worktrees

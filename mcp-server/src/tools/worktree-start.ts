@@ -182,7 +182,48 @@ export class WorktreeStartTool {
         // Prompt mode - skip auto-setup, let command layer handle it with AskUserQuestion
         setupMessages.push('⚙️  Setup deferred to command layer (prompt mode)');
         if (projectInfo.setup_commands.length > 0) {
-          setupMessages.push('💡 The /start command will ask which ecosystems to set up');
+          setupMessages.push('💡 The /create command will ask which ecosystems to set up');
+        }
+      } else if (config.auto_run_setup === 'all') {
+        // All mode - detect and run ALL ecosystems
+        setupMessages.push('⚙️  Running setup for ALL detected ecosystems...');
+
+        // Add file copying messages
+        if (config.copy_files_enabled) {
+          if (copyFilesCount > 0) {
+            setupMessages.push(`📋 Copied ${copyFilesCount} environment file(s)`);
+          }
+          if (copyFilesErrors > 0) {
+            setupMessages.push(`⚠️  ${copyFilesErrors} file(s) failed to copy`);
+          }
+        }
+
+        // Add submodule initialization messages
+        if (config.auto_init_submodules && GitHelpers.hasSubmodules(cwd)) {
+          setupMessages.push('Detected git submodules, initializing...');
+          if (typeof submoduleSuccess !== 'undefined' && submoduleSuccess) {
+            setupMessages.push('✅ Git submodules initialized');
+          } else if (typeof submoduleError !== 'undefined') {
+            setupMessages.push(`⚠️  Submodule initialization failed: ${submoduleError}`);
+            setupMessages.push('You may need to run: git submodule update --init --recursive');
+          }
+        }
+
+        // Get ALL ecosystems, not just first detected
+        const allEcosystems = ProjectDetector.detectAll(worktreePath);
+
+        if (allEcosystems.length > 0) {
+          setupMessages.push(`Installing ${allEcosystems.length} ecosystem(s)...`);
+
+          const setupResult = await SetupRunner.runSetupCommands(allEcosystems);
+          setupMessages.push(...setupResult.messages);
+
+          if (!setupResult.success) {
+            setupComplete = false;
+            setupMessages.push(...setupResult.errors);
+          }
+        } else {
+          setupMessages.push('No ecosystems detected');
         }
       } else if (config.auto_run_setup === 'auto') {
         // Add file copying messages if applicable

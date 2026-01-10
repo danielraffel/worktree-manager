@@ -9023,7 +9023,7 @@ var ConfigReader = class {
             config.auto_run_setup = "auto";
           } else if (value === "false") {
             config.auto_run_setup = false;
-          } else if (value === "auto" || value === "prompt") {
+          } else if (value === "auto" || value === "prompt" || value === "all") {
             config.auto_run_setup = value;
           }
           break;
@@ -9087,7 +9087,7 @@ create_learnings_file: false
 # Auto-initialize git submodules (default: true)
 auto_init_submodules: true
 
-# Setup behavior: 'auto' (run first detected), 'prompt' (ask which to run), false (skip) (default: 'prompt')
+# Setup behavior: 'prompt' (ask user), 'auto' (run first), 'all' (run all), false (skip) (default: 'prompt')
 auto_run_setup: prompt
 
 # Auto-copy environment files to new worktrees (default: true)
@@ -9371,7 +9371,38 @@ var WorktreeStartTool = class {
       } else if (config.auto_run_setup === "prompt") {
         setupMessages.push("\u2699\uFE0F  Setup deferred to command layer (prompt mode)");
         if (projectInfo.setup_commands.length > 0) {
-          setupMessages.push("\u{1F4A1} The /start command will ask which ecosystems to set up");
+          setupMessages.push("\u{1F4A1} The /create command will ask which ecosystems to set up");
+        }
+      } else if (config.auto_run_setup === "all") {
+        setupMessages.push("\u2699\uFE0F  Running setup for ALL detected ecosystems...");
+        if (config.copy_files_enabled) {
+          if (copyFilesCount > 0) {
+            setupMessages.push(`\u{1F4CB} Copied ${copyFilesCount} environment file(s)`);
+          }
+          if (copyFilesErrors > 0) {
+            setupMessages.push(`\u26A0\uFE0F  ${copyFilesErrors} file(s) failed to copy`);
+          }
+        }
+        if (config.auto_init_submodules && GitHelpers.hasSubmodules(cwd)) {
+          setupMessages.push("Detected git submodules, initializing...");
+          if (typeof submoduleSuccess !== "undefined" && submoduleSuccess) {
+            setupMessages.push("\u2705 Git submodules initialized");
+          } else if (typeof submoduleError !== "undefined") {
+            setupMessages.push(`\u26A0\uFE0F  Submodule initialization failed: ${submoduleError}`);
+            setupMessages.push("You may need to run: git submodule update --init --recursive");
+          }
+        }
+        const allEcosystems = ProjectDetector.detectAll(worktreePath);
+        if (allEcosystems.length > 0) {
+          setupMessages.push(`Installing ${allEcosystems.length} ecosystem(s)...`);
+          const setupResult = await SetupRunner.runSetupCommands(allEcosystems);
+          setupMessages.push(...setupResult.messages);
+          if (!setupResult.success) {
+            setupComplete = false;
+            setupMessages.push(...setupResult.errors);
+          }
+        } else {
+          setupMessages.push("No ecosystems detected");
         }
       } else if (config.auto_run_setup === "auto") {
         if (config.copy_files_enabled) {
