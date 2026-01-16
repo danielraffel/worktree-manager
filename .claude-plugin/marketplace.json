@@ -11,7 +11,11 @@
   "plugins": [
     {
       "name": "worktree-manager",
-      "source": "./",
+      "source": {
+        "source": "git",
+        "repo": "https://github.com/danielraffel/worktree-manager.git",
+        "path": "."
+      },
       "description": "Effortless git worktrees for parallel development with automatic environment setup",
       "version": "2.0.0",
       "author": {
